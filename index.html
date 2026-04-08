@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
     <title>Tenis ATR 2026</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap"
@@ -11,39 +11,31 @@
     <style>
         :root {
             --bg: #0a0e17;
-            --bg2: #111827;
             --card: #1a2236;
             --card-h: #1f2a42;
             --acc: #34d399;
-            --acc-d: rgba(52, 211, 153, 0.15);
-            --acc-g: rgba(52, 211, 153, 0.3);
+            --acc-d: rgba(52, 211, 153, .15);
+            --acc-g: rgba(52, 211, 153, .3);
             --t1: #f1f5f9;
             --t2: #94a3b8;
             --tm: #64748b;
-            --brd: rgba(255, 255, 255, 0.06);
-            --c1: #f59e0b;
-            --c2: #3b82f6;
-            --c3: #ef4444;
-            --c4: #8b5cf6;
-            --c5: #ec4899;
-            --c6: #14b8a6;
-            --c7: #f97316;
-            --nav-h: 72px;
+            --brd: rgba(255, 255, 255, .06);
             --r: 16px;
             --rs: 10px;
+            --nav-h: 72px;
             --sig: #a855f7;
             --oro: #fbbf24;
             --pla: #cbd5e1;
             --bro: #f59e0b;
             --mad: #a3763d;
-            --muj: #f472b6;
+            --muj: #f472b6
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+            -webkit-tap-highlight-color: transparent
         }
 
         body {
@@ -52,19 +44,18 @@
             color: var(--t1);
             min-height: 100dvh;
             overflow-x: hidden;
-            padding-bottom: calc(var(--nav-h)+20px);
+            padding-bottom: calc(var(--nav-h)+20px)
         }
 
-        /* HEADER */
         .hdr {
             position: sticky;
             top: 0;
             z-index: 100;
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            background: rgba(10, 14, 23, 0.85);
+            background: rgba(10, 14, 23, .85);
             border-bottom: 1px solid var(--brd);
-            padding: 16px 20px;
+            padding: 16px 20px
         }
 
         .hdr-in {
@@ -72,13 +63,13 @@
             margin: 0 auto;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: space-between
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 12px
         }
 
         .brand-ic {
@@ -90,115 +81,136 @@
             align-items: center;
             justify-content: center;
             font-size: 20px;
-            box-shadow: 0 4px 15px var(--acc-g);
-        }
-
-        .brand-tx {
-            display: flex;
-            flex-direction: column;
+            box-shadow: 0 4px 15px var(--acc-g)
         }
 
         .brand-nm {
             font-weight: 800;
             font-size: 1.15rem;
-            letter-spacing: -0.5px;
             background: linear-gradient(135deg, var(--acc), #6ee7b7);
             -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-text-fill-color: transparent
         }
 
         .brand-sb {
-            font-size: 0.7rem;
+            font-size: .7rem;
             color: var(--tm);
             font-weight: 500;
             letter-spacing: 2px;
-            text-transform: uppercase;
+            text-transform: uppercase
         }
 
         .hdr-yr {
             font-family: 'Space Mono', monospace;
-            font-size: 0.85rem;
+            font-size: .85rem;
             color: var(--acc);
             background: var(--acc-d);
             padding: 6px 14px;
             border-radius: 20px;
-            font-weight: 700;
+            font-weight: 700
         }
 
-        /* MAIN */
         .main {
             max-width: 500px;
             margin: 0 auto;
             padding: 20px 16px;
-            overflow-x: hidden;
-            opacity: 0;
-            transition: opacity .4s ease;
+            transition: opacity .3s
         }
 
         .slbl {
-            font-size: 0.7rem;
+            font-size: .7rem;
             font-weight: 700;
             color: var(--tm);
             letter-spacing: 2.5px;
             text-transform: uppercase;
             margin-bottom: 12px;
-            padding-left: 4px;
+            padding-left: 4px
         }
 
         .page {
-            display: none;
-            overflow-x: hidden;
+            display: none
         }
 
         .page.active {
             display: block;
-            animation: fadeUp .4s ease both;
+            animation: fu .4s ease both
         }
 
-        @media(max-width:380px) {
-            .main {
-                padding: 16px 10px;
+        @keyframes fu {
+            from {
+                opacity: 0;
+                transform: translateY(16px)
             }
 
-            .fr {
-                gap: 6px;
-            }
-
-            .fi,
-            .fs {
-                padding: 9px 10px;
-                font-size: .82rem;
-            }
-
-            .add-form {
-                padding: 14px;
+            to {
+                opacity: 1;
+                transform: translateY(0)
             }
         }
 
-        /* CALENDAR */
+        /* Calendar toggle */
+        .cal-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 18px;
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: var(--rs);
+            cursor: pointer;
+            color: var(--t1);
+            font-family: 'Outfit', sans-serif;
+            font-size: .9rem;
+            font-weight: 600;
+            transition: .25s;
+            margin-bottom: 12px
+        }
+
+        .cal-btn:hover {
+            background: var(--card-h)
+        }
+
+        .cal-btn .arr {
+            margin-left: auto;
+            transition: transform .3s
+        }
+
+        .cal-btn.open .arr {
+            transform: rotate(180deg)
+        }
+
+        .cal-box {
+            display: none;
+            margin-bottom: 16px
+        }
+
+        .cal-box.open {
+            display: block
+        }
+
         .cal-card {
             background: var(--card);
-            border-radius: var(--r);
+            border-radius: var(--rs);
             border: 1px solid var(--brd);
-            overflow: hidden;
-            margin-bottom: 28px;
+            overflow: hidden
         }
 
         .cal-hdr {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 18px 20px 14px;
+            padding: 18px 20px 14px
         }
 
         .cal-mo {
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1.1rem
         }
 
         .cal-nav {
             display: flex;
-            gap: 6px;
+            gap: 6px
         }
 
         .cal-nav button {
@@ -212,20 +224,20 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: .2s;
+            transition: .2s
         }
 
         .cal-nav button:hover {
             background: var(--acc-d);
             color: var(--acc);
-            border-color: var(--acc);
+            border-color: var(--acc)
         }
 
         .cal-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             padding: 0 12px 16px;
-            gap: 2px;
+            gap: 2px
         }
 
         .cdn {
@@ -235,7 +247,7 @@
             text-align: center;
             padding: 8px 0;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1px
         }
 
         .cd {
@@ -249,26 +261,19 @@
             cursor: pointer;
             transition: .2s;
             position: relative;
-            color: var(--t2);
+            color: var(--t2)
         }
 
         .cd:hover {
             background: var(--acc-d);
-            color: var(--t1);
+            color: var(--t1)
         }
 
         .cd.today {
             background: var(--acc);
             color: var(--bg);
             font-weight: 700;
-            box-shadow: 0 2px 12px var(--acc-g);
-        }
-
-        .cd.sel {
-            background: var(--acc-d);
-            color: var(--acc);
-            font-weight: 700;
-            border: 1.5px solid var(--acc);
+            box-shadow: 0 2px 12px var(--acc-g)
         }
 
         .cd.hm::after {
@@ -278,216 +283,180 @@
             width: 4px;
             height: 4px;
             border-radius: 50%;
-            background: var(--acc);
+            background: var(--acc)
         }
 
         .cd.today.hm::after {
-            background: var(--bg);
+            background: var(--bg)
         }
 
         .cd.empty {
-            cursor: default;
+            cursor: default
         }
 
-        /* SCHEDULE */
-        .sch-hdr {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 14px;
-        }
-
-        .sch-dt {
-            font-weight: 700;
-            font-size: 1.05rem;
-        }
-
-        .mc {
-            font-size: .75rem;
-            color: var(--acc);
-            background: var(--acc-d);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-
-        .tb {
-            margin-bottom: 20px;
-        }
-
-        .tl {
+        /* Upcoming */
+        .up-dh {
             font-family: 'Space Mono', monospace;
-            font-size: .75rem;
+            font-size: .7rem;
             color: var(--tm);
-            margin-bottom: 8px;
-            padding-left: 4px;
+            margin: 14px 0 8px 4px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 8px
         }
 
-        .tl::after {
+        .up-dh::after {
             content: '';
             flex: 1;
             height: 1px;
-            background: var(--brd);
+            background: var(--brd)
         }
 
-        .mcard {
+        .up-card {
             background: var(--card);
             border: 1px solid var(--brd);
             border-radius: var(--rs);
-            padding: 14px 16px;
-            margin-bottom: 8px;
+            padding: 12px 14px;
+            margin-bottom: 6px;
             display: flex;
             align-items: center;
-            gap: 14px;
-            transition: .25s;
+            gap: 12px
         }
 
-        .mcard:hover {
-            background: var(--card-h);
-            transform: translateY(-1px);
+        .up-time {
+            font-family: 'Space Mono', monospace;
+            font-size: .72rem;
+            color: var(--acc);
+            font-weight: 700;
+            min-width: 46px;
+            text-align: center
         }
 
-        .cb {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+        .up-pl {
+            font-weight: 600;
+            font-size: .85rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1
+        }
+
+        .crt {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 1rem;
+            font-size: .85rem;
             flex-shrink: 0;
-            color: #fff;
+            color: #fff
         }
 
-        .cb small {
-            font-size: .5rem;
+        .crt small {
+            font-size: .4rem;
             font-weight: 600;
-            letter-spacing: 1px;
+            letter-spacing: .5px;
             text-transform: uppercase;
-            opacity: .85;
+            opacity: .85
         }
 
-        .cb1 {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+        .c1 {
+            background: linear-gradient(135deg, #f59e0b, #d97706)
         }
 
-        .cb2 {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        .c2 {
+            background: linear-gradient(135deg, #3b82f6, #2563eb)
         }
 
-        .cb3 {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
+        .c3 {
+            background: linear-gradient(135deg, #ef4444, #dc2626)
         }
 
-        .cb4 {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        .c4 {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed)
         }
 
-        .cb5 {
-            background: linear-gradient(135deg, #ec4899, #db2777);
+        .c5 {
+            background: linear-gradient(135deg, #ec4899, #db2777)
         }
 
-        .cb6 {
-            background: linear-gradient(135deg, #14b8a6, #0d9488);
+        .c6 {
+            background: linear-gradient(135deg, #14b8a6, #0d9488)
         }
 
-        .cb7 {
-            background: linear-gradient(135deg, #f97316, #ea580c);
+        .c7 {
+            background: linear-gradient(135deg, #f97316, #ea580c)
         }
 
-        .mi {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .mp {
-            font-weight: 600;
-            font-size: .9rem;
-            margin-bottom: 3px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .mm {
-            font-size: .75rem;
-            color: var(--tm);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* LIGA BADGES */
+        /* Liga badges */
         .lb {
             font-size: .65rem;
             font-weight: 700;
             padding: 2px 8px;
             border-radius: 6px;
             text-transform: uppercase;
-            letter-spacing: .5px;
+            letter-spacing: .5px
         }
 
         .l-sig {
             background: rgba(168, 85, 247, .2);
-            color: var(--sig);
+            color: var(--sig)
         }
 
         .l-oro {
             background: rgba(251, 191, 36, .2);
-            color: var(--oro);
+            color: var(--oro)
         }
 
         .l-pla {
             background: rgba(203, 213, 225, .2);
-            color: var(--pla);
+            color: var(--pla)
         }
 
         .l-bro {
             background: rgba(245, 158, 11, .2);
-            color: var(--bro);
+            color: var(--bro)
         }
 
         .l-mad {
             background: rgba(163, 118, 61, .2);
-            color: var(--mad);
+            color: var(--mad)
         }
 
         .l-muj {
             background: rgba(244, 114, 182, .2);
-            color: var(--muj);
+            color: var(--muj)
         }
 
-        /* EMPTY */
+        /* Empty */
         .es {
             text-align: center;
             padding: 50px 20px;
-            color: var(--tm);
+            color: var(--tm)
         }
 
         .es-i {
             font-size: 3rem;
             margin-bottom: 12px;
-            opacity: .4;
+            opacity: .4
         }
 
         .es-t {
             font-size: .9rem;
-            font-weight: 500;
+            font-weight: 500
         }
 
         .es-s {
             font-size: .78rem;
             margin-top: 4px;
-            opacity: .7;
+            opacity: .7
         }
 
-        /* CUADRO GRID */
-        .cat-tabs {
+        /* Cat tabs */
+        .ctabs {
             display: flex;
             gap: 6px;
             flex-wrap: nowrap;
@@ -495,14 +464,14 @@
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             padding-bottom: 4px;
-            justify-content: center;
+            justify-content: center
         }
 
-        .cat-tabs::-webkit-scrollbar {
-            display: none;
+        .ctabs::-webkit-scrollbar {
+            display: none
         }
 
-        .ctab {
+        .ct {
             padding: 6px 14px;
             border-radius: 20px;
             font-size: .72rem;
@@ -514,108 +483,105 @@
             transition: .25s;
             background: var(--card);
             color: var(--tm);
-            flex-shrink: 0;
+            flex-shrink: 0
         }
 
-        .ctab:hover {
-            border-color: rgba(255, 255, 255, .15);
+        .ct:hover {
+            border-color: rgba(255, 255, 255, .15)
         }
 
-        .ctab.a-sig {
+        .ct.a-sig {
             background: rgba(168, 85, 247, .2);
             color: var(--sig);
-            border-color: var(--sig);
+            border-color: var(--sig)
         }
 
-        .ctab.a-oro {
+        .ct.a-oro {
             background: rgba(251, 191, 36, .2);
             color: var(--oro);
-            border-color: var(--oro);
+            border-color: var(--oro)
         }
 
-        .ctab.a-pla {
+        .ct.a-pla {
             background: rgba(203, 213, 225, .2);
             color: var(--pla);
-            border-color: var(--pla);
+            border-color: var(--pla)
         }
 
-        .ctab.a-bro {
+        .ct.a-bro {
             background: rgba(245, 158, 11, .2);
             color: var(--bro);
-            border-color: var(--bro);
+            border-color: var(--bro)
         }
 
-        .ctab.a-mad {
+        .ct.a-mad {
             background: rgba(163, 118, 61, .2);
             color: var(--mad);
-            border-color: var(--mad);
+            border-color: var(--mad)
         }
 
-        .ctab.a-muj {
+        .ct.a-muj {
             background: rgba(244, 114, 182, .2);
             color: var(--muj);
-            border-color: var(--muj);
+            border-color: var(--muj)
         }
 
-        .grid-wrap {
+        /* Cuadro grid */
+        .gw {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             margin-bottom: 20px;
             border-radius: var(--rs);
             display: flex;
-            justify-content: center;
+            justify-content: center
         }
 
-        .grid-tbl {
+        .gt {
             border-collapse: collapse;
             font-size: .68rem;
-            margin: 0 auto;
+            margin: 0 auto
         }
 
-        .grid-tbl th,
-        .grid-tbl td {
+        .gt th,
+        .gt td {
             border: 1px solid var(--brd);
             padding: 6px 4px;
             text-align: center;
-            white-space: nowrap;
+            white-space: nowrap
         }
 
-        .grid-tbl th {
+        .gt th {
             background: var(--card);
             color: var(--t2);
             font-weight: 600;
-            position: sticky;
-            top: 0;
-            font-size: .6rem;
+            font-size: .6rem
         }
 
-        .grid-tbl td {
+        .gt td {
             background: var(--bg);
-            color: var(--t1);
-            transition: .2s;
+            color: var(--t1)
         }
 
-        .grid-tbl td.self {
+        .gt .self {
             background: var(--card);
-            color: var(--tm);
+            color: var(--tm)
         }
 
-        .grid-tbl td.win {
+        .gt .win {
             background: rgba(52, 211, 153, .15);
             color: var(--acc);
-            font-weight: 700;
+            font-weight: 700
         }
 
-        .grid-tbl td.loss {
+        .gt .loss {
             background: rgba(239, 68, 68, .1);
             color: #f87171;
-            font-weight: 600;
+            font-weight: 600
         }
 
-        .grid-tbl .row-name {
+        .gt .rn {
             text-align: left;
             font-weight: 600;
-            color: var(--t1);
             background: var(--card);
             min-width: 80px;
             max-width: 100px;
@@ -624,80 +590,56 @@
             z-index: 2;
             font-size: .65rem;
             overflow: hidden;
-            text-overflow: ellipsis;
+            text-overflow: ellipsis
         }
 
-        .grid-tbl .col-num {
+        .gt .cn {
             font-family: 'Space Mono', monospace;
             font-weight: 700;
             color: var(--tm);
             background: var(--card);
             width: 24px;
-            font-size: .65rem;
+            font-size: .65rem
         }
 
-        @media(max-width:400px) {
-            .grid-tbl {
-                font-size: .6rem;
-            }
-
-            .grid-tbl th,
-            .grid-tbl td {
-                padding: 5px 3px;
-            }
-
-            .grid-tbl .row-name {
-                min-width: 65px;
-                max-width: 80px;
-                font-size: .58rem;
-            }
-
-            .grid-tbl .col-num {
-                width: 20px;
-            }
-        }
-
-        /* PUNTOS TABLE */
-        .pts-wrap {
+        /* Puntos table */
+        .pw {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             border-radius: var(--rs);
             margin-bottom: 16px;
             display: flex;
-            justify-content: center;
+            justify-content: center
         }
 
-        .pts-tbl {
+        .pt {
             border-collapse: collapse;
             font-size: .7rem;
-            margin: 0 auto;
+            margin: 0 auto
         }
 
-        .pts-tbl th,
-        .pts-tbl td {
+        .pt th,
+        .pt td {
             border: 1px solid var(--brd);
             padding: 8px 5px;
             text-align: center;
-            white-space: nowrap;
+            white-space: nowrap
         }
 
-        .pts-tbl th {
+        .pt th {
             background: var(--card);
             color: var(--t2);
             font-weight: 600;
             font-size: .55rem;
             text-transform: uppercase;
-            letter-spacing: .3px;
-            position: sticky;
-            top: 0;
+            letter-spacing: .3px
         }
 
-        .pts-tbl td {
-            background: var(--bg);
-            transition: .2s;
+        .pt td {
+            background: var(--bg)
         }
 
-        .pts-tbl .pts-name {
+        .pt .pn {
             text-align: left;
             font-weight: 600;
             background: var(--card);
@@ -709,55 +651,55 @@
             overflow: hidden;
             text-overflow: ellipsis;
             font-size: .68rem;
+            cursor: pointer
         }
 
-        .pts-tbl .pts-pos {
+        .pt .pn:hover {
+            opacity: .8
+        }
+
+        .pt .pp {
             font-family: 'Space Mono', monospace;
             font-weight: 800;
             background: var(--card);
             color: var(--tm);
-            width: 24px;
+            width: 24px
         }
 
-        .pts-tbl .pts-pts {
+        .pt .pv {
             font-weight: 800;
-            font-size: .82rem;
+            font-size: .82rem
         }
 
-        .pts-pos-1 {
-            color: var(--acc) !important;
+        .p1c {
+            color: var(--acc) !important
         }
 
-        .pts-pos-2 {
-            color: var(--oro) !important;
+        .p2c {
+            color: var(--oro) !important
         }
 
-        .pts-pos-3 {
-            color: var(--bro) !important;
+        .p3c {
+            color: var(--bro) !important
         }
 
-        .pts-positive {
-            color: var(--acc);
+        .pos {
+            color: var(--acc)
         }
 
-        .pts-negative {
-            color: #f87171;
+        .neg {
+            color: #f87171
         }
 
-        .pts-zero {
-            color: var(--tm);
+        .zer {
+            color: var(--tm)
         }
 
-        .pts-pj {
-            color: var(--t2);
+        .sep {
+            border-left: 2px solid rgba(255, 255, 255, .1)
         }
 
-        .pts-separator {
-            border-left: 2px solid rgba(255, 255, 255, .1);
-        }
-
-        /* Rating badge inline */
-        .rating-badge {
+        .rb {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -768,234 +710,76 @@
             font-size: .6rem;
             font-weight: 800;
             margin-left: 6px;
-            vertical-align: middle;
-            flex-shrink: 0;
+            vertical-align: middle
         }
 
-        .pts-name-wrap {
-            display: flex;
-            align-items: center;
-            gap: 0;
-            cursor: pointer;
-            text-align: left;
+        /* Resultado */
+        .rc {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: var(--r);
+            padding: 16px 18px;
+            margin-bottom: 10px
         }
 
-        .pts-name-wrap:hover {
-            opacity: .85;
-        }
-
-        .pts-name-txt {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            flex: 1;
-            min-width: 0;
-        }
-
-        @media(max-width:400px) {
-            .pts-tbl {
-                font-size: .6rem;
-            }
-
-            .pts-tbl th,
-            .pts-tbl td {
-                padding: 6px 3px;
-            }
-
-            .pts-tbl th {
-                font-size: .5rem;
-            }
-
-            .pts-tbl .pts-name {
-                min-width: 65px;
-                max-width: 95px;
-                font-size: .58rem;
-            }
-
-            .pts-tbl .pts-pts {
-                font-size: .72rem;
-            }
-
-            .rating-badge {
-                width: 24px;
-                height: 17px;
-                font-size: .52rem;
-                margin-left: 4px;
-            }
-        }
-
-        /* FIFA CARD MODAL */
-        .card-bg {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, .7);
-            z-index: 350;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-        }
-
-        .card-bg.show {
-            display: flex;
-        }
-
-        .fifa-card {
-            width: 280px;
-            border-radius: 20px;
-            overflow: hidden;
-            position: relative;
-            animation: cardIn .4s cubic-bezier(.16, 1, .3, 1) both;
-        }
-
-        @keyframes cardIn {
-            from {
-                opacity: 0;
-                transform: scale(.8) translateY(30px);
-            }
-
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-
-        .fifa-card-top {
-            padding: 28px 20px 18px;
-            text-align: center;
-            position: relative;
-        }
-
-        .fifa-card-close {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, .2);
-            background: rgba(0, 0, 0, .3);
-            color: #fff;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: .85rem;
-            transition: .2s;
-            z-index: 2;
-        }
-
-        .fifa-card-close:hover {
-            background: rgba(239, 68, 68, .4);
-            border-color: #ef4444;
-        }
-
-        .fifa-card-rating {
+        .rd {
             font-family: 'Space Mono', monospace;
-            font-size: 3.5rem;
-            font-weight: 800;
-            line-height: 1;
-            margin-bottom: 2px;
-        }
-
-        .fifa-card-pos {
             font-size: .7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            opacity: .8;
-            margin-bottom: 8px;
+            color: var(--tm);
+            margin-bottom: 10px
         }
 
-        .fifa-card-name {
-            font-size: 1.2rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            margin-bottom: 2px;
-        }
-
-        .fifa-card-cat {
-            font-size: .65rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            opacity: .7;
-        }
-
-        .fifa-card-divider {
-            height: 1px;
-            background: rgba(255, 255, 255, .15);
-            margin: 0 20px;
-        }
-
-        .fifa-card-stats {
-            padding: 16px 20px 22px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .fifa-stat {
+        .rm {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 6px 10px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, .06);
+            gap: 10px;
+            margin-bottom: 8px;
+            flex-wrap: wrap
         }
 
-        .fifa-stat-label {
-            font-size: .6rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            opacity: .6;
+        .rm:last-child {
+            margin-bottom: 0
         }
 
-        .fifa-stat-val {
-            font-family: 'Space Mono', monospace;
-            font-weight: 800;
+        .rp {
+            flex: 1;
+            font-weight: 500;
             font-size: .85rem;
+            min-width: 0
         }
 
-        .fifa-stat-full {
-            grid-column: 1/-1;
+        .rsc {
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: .82rem;
+            color: var(--acc);
+            flex-shrink: 0
         }
 
-        .fifa-bar {
-            height: 4px;
-            border-radius: 2px;
-            background: rgba(255, 255, 255, .1);
-            margin-top: 6px;
-            overflow: hidden;
+        .rw {
+            color: var(--acc);
+            font-weight: 700
         }
 
-        .fifa-bar-fill {
-            height: 100%;
-            border-radius: 2px;
-            transition: width .6s ease;
-        }
-
-        /* FORMS */
-        .add-form {
+        /* Forms */
+        .af {
             background: var(--card);
             border: 1px solid var(--brd);
             border-radius: var(--r);
             padding: 18px;
-            margin-bottom: 20px;
+            margin-bottom: 20px
         }
 
-        .af-title {
+        .af-t {
             font-weight: 700;
             font-size: .95rem;
-            margin-bottom: 14px;
+            margin-bottom: 14px
         }
 
         .fr {
             display: flex;
             gap: 8px;
-            margin-bottom: 10px;
+            margin-bottom: 10px
         }
 
         .fi {
@@ -1008,15 +792,15 @@
             font-family: 'Outfit', sans-serif;
             font-size: .88rem;
             outline: 0;
-            transition: border-color .2s;
+            transition: border-color .2s
         }
 
         .fi:focus {
-            border-color: var(--acc);
+            border-color: var(--acc)
         }
 
         .fi::placeholder {
-            color: var(--tm);
+            color: var(--tm)
         }
 
         .fs {
@@ -1029,12 +813,11 @@
             font-size: .88rem;
             outline: 0;
             cursor: pointer;
-            flex: 1;
-            transition: border-color .2s;
+            flex: 1
         }
 
         .fs:focus {
-            border-color: var(--acc);
+            border-color: var(--acc)
         }
 
         .fb {
@@ -1049,22 +832,18 @@
             font-weight: 700;
             cursor: pointer;
             transition: .25s;
-            letter-spacing: .5px;
+            letter-spacing: .5px
         }
 
         .fb:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 16px var(--acc-g);
-        }
-
-        .fb:active {
-            transform: scale(.98);
+            box-shadow: 0 4px 16px var(--acc-g)
         }
 
         /* FAB */
         .fab {
             position: fixed;
-            bottom: calc(var(--nav-h) + 16px);
+            bottom: calc(var(--nav-h)+16px);
             right: 16px;
             width: 52px;
             height: 52px;
@@ -1080,20 +859,19 @@
             justify-content: center;
             box-shadow: 0 4px 20px var(--acc-g);
             z-index: 150;
-            transition: .3s;
+            transition: .3s
         }
 
         .fab:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 30px var(--acc-g);
+            transform: scale(1.1)
         }
 
         .fab.show {
-            display: flex;
+            display: flex
         }
 
-        /* MODAL */
-        .modal-bg {
+        /* Modal */
+        .mbg {
             position: fixed;
             inset: 0;
             background: rgba(0, 0, 0, .6);
@@ -1101,47 +879,47 @@
             display: none;
             align-items: flex-end;
             justify-content: center;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px)
         }
 
-        .modal-bg.show {
-            display: flex;
+        .mbg.show {
+            display: flex
         }
 
-        .modal {
-            background: var(--bg2);
+        .mdl {
+            background: #111827;
             border-radius: var(--r) var(--r) 0 0;
             width: 100%;
             max-width: 500px;
             max-height: 85vh;
             overflow-y: auto;
             padding: 24px 20px 30px;
-            animation: slideUp .3s ease;
+            animation: su .3s ease
         }
 
-        @keyframes slideUp {
+        @keyframes su {
             from {
-                transform: translateY(100%);
+                transform: translateY(100%)
             }
 
             to {
-                transform: translateY(0);
+                transform: translateY(0)
             }
         }
 
-        .modal-hdr {
+        .mh {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 20px;
+            margin-bottom: 20px
         }
 
-        .modal-title {
+        .mt {
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1.1rem
         }
 
-        .modal-close {
+        .mx {
             width: 34px;
             height: 34px;
             border-radius: 10px;
@@ -1152,25 +930,161 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: .2s;
-            font-size: 1rem;
+            font-size: 1rem
         }
 
-        .modal-close:hover {
+        .mx:hover {
             background: rgba(239, 68, 68, .15);
-            color: #ef4444;
-            border-color: #ef4444;
+            color: #ef4444
         }
 
-        /* MAS */
-        .mas-list {
+        /* FIFA Card */
+        .cbg {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .7);
+            z-index: 350;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(6px)
+        }
+
+        .cbg.show {
+            display: flex
+        }
+
+        .fc {
+            width: 280px;
+            border-radius: 20px;
+            overflow: hidden;
+            animation: ci .4s cubic-bezier(.16, 1, .3, 1) both
+        }
+
+        @keyframes ci {
+            from {
+                opacity: 0;
+                transform: scale(.8) translateY(30px)
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0)
+            }
+        }
+
+        .fc-top {
+            padding: 28px 20px 18px;
+            text-align: center;
+            position: relative
+        }
+
+        .fc-x {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, .2);
+            background: rgba(0, 0, 0, .3);
+            color: #fff;
+            cursor: pointer;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 8px;
+            align-items: center;
+            justify-content: center;
+            font-size: .85rem;
+            z-index: 2
         }
 
-        .mas-it {
+        .fc-r {
+            font-family: 'Space Mono', monospace;
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 2px
+        }
+
+        .fc-pos {
+            font-size: .7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: .8;
+            margin-bottom: 8px
+        }
+
+        .fc-nm {
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: -.5px;
+            margin-bottom: 2px
+        }
+
+        .fc-cat {
+            font-size: .65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            opacity: .7
+        }
+
+        .fc-div {
+            height: 1px;
+            background: rgba(255, 255, 255, .15);
+            margin: 0 20px
+        }
+
+        .fc-sts {
+            padding: 16px 20px 22px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px
+        }
+
+        .fst {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, .06)
+        }
+
+        .fst-l {
+            font-size: .6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            opacity: .6
+        }
+
+        .fst-v {
+            font-family: 'Space Mono', monospace;
+            font-weight: 800;
+            font-size: .85rem
+        }
+
+        .fst-f {
+            grid-column: 1/-1
+        }
+
+        .fbar {
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, .1);
+            margin-top: 6px;
+            overflow: hidden
+        }
+
+        .fbar-f {
+            height: 100%;
+            border-radius: 2px;
+            transition: width .6s ease
+        }
+
+        /* Más */
+        .mi {
             background: var(--card);
             border: 1px solid var(--brd);
             border-radius: var(--rs);
@@ -1180,14 +1094,15 @@
             gap: 14px;
             cursor: pointer;
             transition: .25s;
+            margin-bottom: 10px
         }
 
-        .mas-it:hover {
+        .mi:hover {
             background: var(--card-h);
-            transform: translateY(-1px);
+            transform: translateY(-1px)
         }
 
-        .mas-ic {
+        .mic {
             width: 44px;
             height: 44px;
             border-radius: 12px;
@@ -1195,47 +1110,37 @@
             align-items: center;
             justify-content: center;
             font-size: 1.2rem;
-            flex-shrink: 0;
+            flex-shrink: 0
         }
 
-        .mas-ic.part {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        .mic.pa {
+            background: linear-gradient(135deg, #3b82f6, #2563eb)
         }
 
-        .mas-ic.spo {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+        .mic.sp {
+            background: linear-gradient(135deg, #f59e0b, #d97706)
         }
 
-        .mas-ic.cont {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        .mic.co {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed)
         }
 
-        .mas-txt {
-            flex: 1;
-        }
-
-        .mas-tt {
+        .mit {
             font-weight: 600;
             font-size: .95rem;
-            margin-bottom: 2px;
+            margin-bottom: 2px
         }
 
-        .mas-ds {
+        .mid {
             font-size: .75rem;
-            color: var(--tm);
+            color: var(--tm)
         }
 
-        .mas-ar {
-            color: var(--tm);
-            flex-shrink: 0;
-        }
-
-        /* SUB */
-        .sub-hdr {
+        .sub-h {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 20px
         }
 
         .bk {
@@ -1250,21 +1155,21 @@
             justify-content: center;
             cursor: pointer;
             transition: .2s;
-            flex-shrink: 0;
+            flex-shrink: 0
         }
 
         .bk:hover {
             background: var(--acc-d);
             color: var(--acc);
-            border-color: var(--acc);
+            border-color: var(--acc)
         }
 
-        .sub-tt {
+        .sub-t {
             font-weight: 700;
-            font-size: 1.15rem;
+            font-size: 1.15rem
         }
 
-        .p-card {
+        .pc {
             background: var(--card);
             border: 1px solid var(--brd);
             border-radius: var(--rs);
@@ -1272,10 +1177,10 @@
             margin-bottom: 6px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 12px
         }
 
-        .p-av {
+        .pav {
             width: 36px;
             height: 36px;
             border-radius: 50%;
@@ -1286,16 +1191,16 @@
             justify-content: center;
             font-weight: 700;
             font-size: .8rem;
-            flex-shrink: 0;
+            flex-shrink: 0
         }
 
-        .p-nm {
+        .pnm {
             font-weight: 500;
             font-size: .9rem;
-            flex: 1;
+            flex: 1
         }
 
-        .p-del {
+        .pdl {
             width: 30px;
             height: 30px;
             border-radius: 8px;
@@ -1306,18 +1211,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: .2s;
             font-size: .8rem;
-            flex-shrink: 0;
+            flex-shrink: 0
         }
 
-        .p-del:hover {
+        .pdl:hover {
             background: rgba(239, 68, 68, .15);
             color: #ef4444;
-            border-color: #ef4444;
+            border-color: #ef4444
         }
 
-        .sp-card {
+        .spc {
             background: var(--card);
             border: 1px solid var(--brd);
             border-radius: var(--r);
@@ -1325,10 +1229,10 @@
             margin-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 16px
         }
 
-        .sp-logo {
+        .spl {
             width: 56px;
             height: 56px;
             border-radius: 14px;
@@ -1337,24 +1241,24 @@
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
-            flex-shrink: 0;
+            flex-shrink: 0
         }
 
-        .sp-nm {
+        .spn {
             font-weight: 600;
             font-size: .95rem;
-            margin-bottom: 2px;
+            margin-bottom: 2px
         }
 
-        .sp-tp {
+        .spt {
             font-size: .72rem;
             color: var(--acc);
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1px
         }
 
-        .ct-card {
+        .ctc {
             background: var(--card);
             border: 1px solid var(--brd);
             border-radius: var(--r);
@@ -1365,15 +1269,15 @@
             gap: 14px;
             text-decoration: none;
             color: var(--t1);
-            transition: .25s;
+            transition: .25s
         }
 
-        .ct-card:hover {
+        .ctc:hover {
             background: var(--card-h);
-            transform: translateY(-1px);
+            transform: translateY(-1px)
         }
 
-        .ct-ic {
+        .ctic {
             width: 44px;
             height: 44px;
             border-radius: 12px;
@@ -1381,81 +1285,22 @@
             align-items: center;
             justify-content: center;
             font-size: 1.2rem;
-            flex-shrink: 0;
+            flex-shrink: 0
         }
 
-        .ct-ic.ig {
-            background: linear-gradient(135deg, #e1306c, #833ab4);
+        .ctic.ig {
+            background: linear-gradient(135deg, #e1306c, #833ab4)
         }
 
-        .ct-ic.wp {
-            background: linear-gradient(135deg, #25d366, #128c7e);
+        .ctic.wp {
+            background: linear-gradient(135deg, #25d366, #128c7e)
         }
 
-        .ct-ic.em {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        .ctic.em {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8)
         }
 
-        .ct-lb {
-            font-weight: 600;
-            font-size: .9rem;
-            margin-bottom: 2px;
-        }
-
-        .ct-vl {
-            font-size: .78rem;
-            color: var(--tm);
-        }
-
-        /* RESULTADO LIST */
-        .res-card {
-            background: var(--card);
-            border: 1px solid var(--brd);
-            border-radius: var(--r);
-            padding: 16px 18px;
-            margin-bottom: 10px;
-        }
-
-        .res-dt {
-            font-family: 'Space Mono', monospace;
-            font-size: .7rem;
-            color: var(--tm);
-            margin-bottom: 10px;
-        }
-
-        .res-m {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
-            flex-wrap: wrap;
-        }
-
-        .res-m:last-child {
-            margin-bottom: 0;
-        }
-
-        .res-pl {
-            flex: 1;
-            font-weight: 500;
-            font-size: .85rem;
-            min-width: 0;
-        }
-
-        .res-sc {
-            font-family: 'Space Mono', monospace;
-            font-weight: 700;
-            font-size: .82rem;
-            color: var(--acc);
-            flex-shrink: 0;
-        }
-
-        .res-w {
-            color: var(--acc);
-            font-weight: 700;
-        }
-
-        /* NAV */
+        /* Nav */
         .bnav {
             position: fixed;
             bottom: 0;
@@ -1470,17 +1315,17 @@
             align-items: center;
             justify-content: center;
             z-index: 200;
-            padding-bottom: env(safe-area-inset-bottom, 0);
+            padding-bottom: env(safe-area-inset-bottom, 0)
         }
 
-        .nav-its {
+        .nits {
             display: flex;
             align-items: center;
             gap: 4px;
             max-width: 500px;
             width: 100%;
             justify-content: space-around;
-            padding: 0 6px;
+            padding: 0 6px
         }
 
         .ni {
@@ -1495,36 +1340,35 @@
             color: var(--tm);
             background: 0;
             border: 0;
-            font-family: 'Outfit', sans-serif;
-            text-decoration: none;
+            font-family: 'Outfit', sans-serif
         }
 
         .ni:hover {
-            color: var(--t2);
+            color: var(--t2)
         }
 
         .ni.active {
             color: var(--acc);
-            background: var(--acc-d);
+            background: var(--acc-d)
         }
 
         .ni svg {
             width: 22px;
-            height: 22px;
+            height: 22px
         }
 
         .nl {
             font-size: .55rem;
             font-weight: 600;
             letter-spacing: .5px;
-            text-transform: uppercase;
+            text-transform: uppercase
         }
 
-        .ni-home {
-            position: relative;
+        .nih {
+            position: relative
         }
 
-        .ni-home .niw {
+        .nih .niw {
             width: 48px;
             height: 48px;
             border-radius: 15px;
@@ -1534,21 +1378,20 @@
             justify-content: center;
             box-shadow: 0 4px 20px var(--acc-g);
             transition: .3s;
-            margin-top: -12px;
+            margin-top: -12px
         }
 
-        .ni-home:hover .niw {
-            transform: scale(1.08);
-            box-shadow: 0 6px 25px rgba(52, 211, 153, .5);
+        .nih:hover .niw {
+            transform: scale(1.08)
         }
 
-        .ni-home svg {
+        .nih svg {
             width: 24px;
             height: 24px;
-            color: var(--bg);
+            color: var(--bg)
         }
 
-        /* TOAST */
+        /* Toast */
         .toast {
             position: fixed;
             bottom: 90px;
@@ -1565,50 +1408,11 @@
             transition: opacity .3s;
             pointer-events: none;
             box-shadow: 0 4px 20px var(--acc-g);
-            white-space: nowrap;
+            white-space: nowrap
         }
 
         .toast.show {
-            opacity: 1;
-        }
-
-        @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(16px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: 0;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--brd);
-            border-radius: 4px;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        body>*:not(style) {
-            position: relative;
-            z-index: 1;
+            opacity: 1
         }
     </style>
 </head>
@@ -1619,8 +1423,10 @@
         <div class="hdr-in">
             <div class="brand">
                 <div class="brand-ic">🎾</div>
-                <div class="brand-tx"><span class="brand-nm">Tenis ATR</span><span class="brand-sb">Tour
-                        Corrientes</span></div>
+                <div>
+                    <div class="brand-nm">Tenis ATR</div>
+                    <div class="brand-sb">Tour Corrientes</div>
+                </div>
             </div>
             <span class="hdr-yr">2026</span>
         </div>
@@ -1629,102 +1435,88 @@
     <main class="main" id="app">
 
         <!-- INICIO -->
-        <div class="page active" id="page-inicio">
-            <div class="slbl">Calendario</div>
-            <div class="cal-card">
-                <div class="cal-hdr"><span class="cal-mo" id="calTitle"></span>
-                    <div class="cal-nav">
-                        <button onclick="chMo(-1)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="15 18 9 12 15 6" />
-                            </svg></button>
-                        <button onclick="chMo(1)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6" />
-                            </svg></button>
+        <div class="page active" id="pg-inicio">
+            <button class="cal-btn" id="calBtn" onclick="toggleCal()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                Calendario
+                <svg class="arr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.5">
+                    <polyline points="6 9 12 15 18 9" />
+                </svg>
+            </button>
+            <div class="cal-box" id="calBox">
+                <div class="cal-card">
+                    <div class="cal-hdr"><span class="cal-mo" id="calMo"></span>
+                        <div class="cal-nav">
+                            <button onclick="chMo(-1)">‹</button><button onclick="chMo(1)">›</button>
+                        </div>
                     </div>
+                    <div class="cal-grid" id="calG"></div>
                 </div>
-                <div class="cal-grid" id="calGrid"></div>
             </div>
-            <div>
-                <div class="sch-hdr">
-                    <div>
-                        <div class="slbl" style="margin-bottom:4px">Programación</div>
-                        <div class="sch-dt" id="schDt"></div>
-                    </div><span class="mc" id="schCnt"></span>
-                </div>
-                <div id="schList"></div>
-            </div>
+            <div class="slbl">Próximos Partidos</div>
+            <div id="upList"></div>
         </div>
 
         <!-- CUADROS -->
-        <div class="page" id="page-cuadros">
+        <div class="page" id="pg-cuadros">
             <div class="slbl">Cuadros por Categoría</div>
-            <div class="cat-tabs" id="catTabs"></div>
-            <div id="cuadroGrid"></div>
+            <div class="ctabs" id="cTabs"></div>
+            <div id="cGrid"></div>
         </div>
 
         <!-- PUNTOS -->
-        <div class="page" id="page-puntos">
+        <div class="page" id="pg-puntos">
             <div class="slbl">Tabla de Puntos</div>
-            <div class="cat-tabs" id="ptsCatTabs"></div>
-            <div id="ptsTable"></div>
+            <div class="ctabs" id="pTabs"></div>
+            <div id="pTbl"></div>
         </div>
 
         <!-- RESULTADOS -->
-        <div class="page" id="page-resultados">
+        <div class="page" id="pg-resultados">
             <div class="slbl">Últimos Resultados</div>
-            <div id="resList"></div>
+            <div id="rList"></div>
         </div>
 
         <!-- MÁS -->
-        <div class="page" id="page-mas">
+        <div class="page" id="pg-mas">
             <div class="slbl">Más</div>
-            <div class="mas-list" id="masMain">
-                <div class="mas-it" onclick="subPage('participantes')">
-                    <div class="mas-ic part">👤</div>
-                    <div class="mas-txt">
-                        <div class="mas-tt">Participantes</div>
-                        <div class="mas-ds">Cargar y ver jugadores del torneo</div>
-                    </div><svg class="mas-ar" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 18 15 12 9 6" />
-                    </svg>
+            <div id="masMain">
+                <div class="mi" onclick="subPg('part')">
+                    <div class="mic pa">👤</div>
+                    <div>
+                        <div class="mit">Participantes</div>
+                        <div class="mid">Cargar y ver jugadores</div>
+                    </div>
                 </div>
-                <div class="mas-it" onclick="subPage('sponsors')">
-                    <div class="mas-ic spo">⭐</div>
-                    <div class="mas-txt">
-                        <div class="mas-tt">Sponsors</div>
-                        <div class="mas-ds">Marcas que hacen posible el torneo</div>
-                    </div><svg class="mas-ar" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 18 15 12 9 6" />
-                    </svg>
+                <div class="mi" onclick="subPg('spo')">
+                    <div class="mic sp">⭐</div>
+                    <div>
+                        <div class="mit">Sponsors</div>
+                        <div class="mid">Marcas del torneo</div>
+                    </div>
                 </div>
-                <div class="mas-it" onclick="subPage('contacto')">
-                    <div class="mas-ic cont">💬</div>
-                    <div class="mas-txt">
-                        <div class="mas-tt">Contacto</div>
-                        <div class="mas-ds">Escribinos por cualquier consulta</div>
-                    </div><svg class="mas-ar" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 18 15 12 9 6" />
-                    </svg>
+                <div class="mi" onclick="subPg('cont')">
+                    <div class="mic co">💬</div>
+                    <div>
+                        <div class="mit">Contacto</div>
+                        <div class="mid">Escribinos</div>
+                    </div>
                 </div>
             </div>
-
-            <!-- SUB: Participantes (con formulario de carga) -->
-            <div id="sub-participantes" style="display:none">
-                <div class="sub-hdr"><button class="bk" onclick="backMas()"><svg width="18" height="18"
-                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="15 18 9 12 15 6" />
-                        </svg></button><span class="sub-tt">Participantes</span></div>
-                <div class="add-form">
-                    <div class="af-title">Agregar Participante</div>
-                    <div class="fr"><input type="text" class="fi" id="iNom" placeholder="Nombre" /><input type="text"
-                            class="fi" id="iApe" placeholder="Apellido" /></div>
-                    <div class="fr"><select class="fs" id="iCat">
+            <div id="sub-part" style="display:none">
+                <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span
+                        class="sub-t">Participantes</span></div>
+                <div class="af">
+                    <div class="af-t">Agregar Participante</div>
+                    <div class="fr"><input class="fi" id="iN" placeholder="Nombre" /><input class="fi" id="iA"
+                            placeholder="Apellido" /></div>
+                    <div class="fr"><select class="fs" id="iC">
                             <option value="">Categoría...</option>
                             <option value="signature">Signature</option>
                             <option value="oro">Oro</option>
@@ -1733,143 +1525,133 @@
                             <option value="madera">Madera</option>
                             <option value="mujeres">Mujeres</option>
                         </select></div>
-                    <button class="fb" onclick="addPart()">Agregar al Cuadro</button>
+                    <button class="fb" onclick="addP()">Agregar al Cuadro</button>
                 </div>
-                <div id="partList"></div>
+                <div id="pList"></div>
             </div>
-            <div id="sub-sponsors" style="display:none">
-                <div class="sub-hdr"><button class="bk" onclick="backMas()"><svg width="18" height="18"
-                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="15 18 9 12 15 6" />
-                        </svg></button><span class="sub-tt">Sponsors</span></div>
-                <div id="spoList"></div>
+            <div id="sub-spo" style="display:none">
+                <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Sponsors</span>
+                </div>
+                <div id="sList"></div>
             </div>
-            <div id="sub-contacto" style="display:none">
-                <div class="sub-hdr"><button class="bk" onclick="backMas()"><svg width="18" height="18"
-                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="15 18 9 12 15 6" />
-                        </svg></button><span class="sub-tt">Contacto</span></div>
-                <a class="ct-card" href="https://www.instagram.com/tenis_atr" target="_blank">
-                    <div class="ct-ic ig">📸</div>
+            <div id="sub-cont" style="display:none">
+                <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Contacto</span>
+                </div>
+                <a class="ctc" href="https://www.instagram.com/tenis_atr" target="_blank">
+                    <div class="ctic ig">📸</div>
                     <div>
-                        <div class="ct-lb">Instagram</div>
-                        <div class="ct-vl">@tenis_atr</div>
+                        <div style="font-weight:600">Instagram</div>
+                        <div style="font-size:.78rem;color:var(--tm)">@tenis_atr</div>
                     </div>
                 </a>
-                <a class="ct-card" href="https://wa.me/5493794000000" target="_blank">
-                    <div class="ct-ic wp">📱</div>
+                <a class="ctc" href="https://wa.me/5493794000000" target="_blank">
+                    <div class="ctic wp">📱</div>
                     <div>
-                        <div class="ct-lb">WhatsApp</div>
-                        <div class="ct-vl">+54 9 379 400-0000</div>
+                        <div style="font-weight:600">WhatsApp</div>
+                        <div style="font-size:.78rem;color:var(--tm)">+54 9 379 400-0000</div>
                     </div>
                 </a>
-                <a class="ct-card" href="/cdn-cgi/l/email-protection#5521303b3c26342127153238343c397b363a38">
-                    <div class="ct-ic em">✉️</div>
+                <a class="ctc" href="mailto:tenisatr@gmail.com">
+                    <div class="ctic em">✉️</div>
                     <div>
-                        <div class="ct-lb">Email</div>
-                        <div class="ct-vl"><span class="__cf_email__"
-                                data-cfemail="d8acbdb6b1abb9acaa98bfb5b9b1b4f6bbb7b5">[email&#160;protected]</span>
-                        </div>
+                        <div style="font-weight:600">Email</div>
+                        <div style="font-size:.78rem;color:var(--tm)">tenisatr@gmail.com</div>
                     </div>
                 </a>
             </div>
         </div>
     </main>
 
-    <!-- FAB (context-sensitive +) -->
-    <button class="fab" id="fab" onclick="fabAction()">+</button>
+    <!-- FAB -->
+    <button class="fab" id="fab" onclick="fabAct()">+</button>
 
-    <!-- MODAL: Add Result -->
-    <div class="modal-bg" id="modalRes">
-        <div class="modal">
-            <div class="modal-hdr"><span class="modal-title">Cargar Resultado</span><button class="modal-close"
-                    onclick="closeModal('modalRes')">✕</button></div>
-            <div class="fr"><select class="fs" id="resCat" onchange="resPickCat()">
+    <!-- Modal: Result -->
+    <div class="mbg" id="mRes" onclick="if(event.target===this)clMod('mRes')">
+        <div class="mdl">
+            <div class="mh"><span class="mt">Cargar Resultado</span><button class="mx"
+                    onclick="clMod('mRes')">✕</button></div>
+            <div class="fr"><select class="fs" id="rCat" onchange="rPickCat()">
                     <option value="">Categoría...</option>
                 </select></div>
-            <div class="fr"><select class="fs" id="resP1">
-                    <option value="">Jugador 1...</option>
+            <div class="fr"><select class="fs" id="rP1">
+                    <option value="">J1...</option>
                 </select><span style="color:var(--tm);align-self:center;font-weight:700">VS</span><select class="fs"
-                    id="resP2">
-                    <option value="">Jugador 2...</option>
+                    id="rP2">
+                    <option value="">J2...</option>
                 </select></div>
-            <div class="fr"><input type="text" class="fi" id="resScore" placeholder="Score (ej: 6-3 6-4)" /></div>
-            <div class="fr"><select class="fs" id="resWinner">
+            <div class="fr"><input class="fi" id="rSc" placeholder="Score (ej: 6-3 6-4)" /></div>
+            <div class="fr"><select class="fs" id="rW">
                     <option value="">Ganador...</option>
                     <option value="1">Jugador 1</option>
                     <option value="2">Jugador 2</option>
                 </select></div>
-            <div class="fr"><input type="date" class="fi" id="resDate" /></div>
-            <button class="fb" onclick="saveResult()">Guardar Resultado</button>
+            <div class="fr"><input type="date" class="fi" id="rDt" /></div>
+            <button class="fb" onclick="saveRes()">Guardar</button>
         </div>
     </div>
 
-    <!-- MODAL: Schedule Match -->
-    <div class="modal-bg" id="modalSch">
-        <div class="modal">
-            <div class="modal-hdr"><span class="modal-title">Programar Partido</span><button class="modal-close"
-                    onclick="closeModal('modalSch')">✕</button></div>
-            <div class="fr"><select class="fs" id="schCat" onchange="schPickCat()">
+    <!-- Modal: Schedule -->
+    <div class="mbg" id="mSch" onclick="if(event.target===this)clMod('mSch')">
+        <div class="mdl">
+            <div class="mh"><span class="mt">Programar Partido</span><button class="mx"
+                    onclick="clMod('mSch')">✕</button></div>
+            <div class="fr"><select class="fs" id="sCat" onchange="sPickCat()">
                     <option value="">Categoría...</option>
                 </select></div>
-            <div class="fr"><select class="fs" id="schP1">
-                    <option value="">Jugador 1...</option>
+            <div class="fr"><select class="fs" id="sP1">
+                    <option value="">J1...</option>
                 </select><span style="color:var(--tm);align-self:center;font-weight:700">VS</span><select class="fs"
-                    id="schP2">
-                    <option value="">Jugador 2...</option>
+                    id="sP2">
+                    <option value="">J2...</option>
                 </select></div>
-            <div class="fr"><input type="date" class="fi" id="schDate" /><input type="time" class="fi" id="schTime" />
-            </div>
-            <div class="fr"><select class="fs" id="schCourt">
+            <div class="fr"><input type="date" class="fi" id="sDt" /><input type="time" class="fi" id="sTm" /></div>
+            <div class="fr"><select class="fs" id="sCo">
                     <option value="">Cancha...</option>
-                    <option value="1">Cancha 1</option>
-                    <option value="2">Cancha 2</option>
-                    <option value="3">Cancha 3</option>
-                    <option value="4">Cancha 4</option>
-                    <option value="5">Cancha 5</option>
-                    <option value="6">Cancha 6</option>
-                    <option value="7">Cancha 7</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
                 </select></div>
             <button class="fb" onclick="saveSch()">Programar</button>
         </div>
     </div>
 
-    <!-- FIFA CARD -->
-    <div class="card-bg" id="cardBg" onclick="if(event.target===this)closeCard()">
-        <div class="fifa-card" id="fifaCard"></div>
+    <!-- FIFA Card -->
+    <div class="cbg" id="cardBg" onclick="if(event.target===this)clCard()">
+        <div class="fc" id="fcCard"></div>
     </div>
 
     <div class="toast" id="toast"></div>
 
     <nav class="bnav">
-        <div class="nav-its">
-            <button class="ni" data-p="cuadros" onclick="nav('cuadros')"><svg viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <div class="nits">
+            <button class="ni" onclick="nav('cuadros')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
                     <rect x="3" y="3" width="7" height="7" rx="1" />
                     <rect x="14" y="3" width="7" height="7" rx="1" />
                     <rect x="3" y="14" width="7" height="7" rx="1" />
                     <rect x="14" y="14" width="7" height="7" rx="1" />
                 </svg><span class="nl">Cuadros</span></button>
-            <button class="ni" data-p="puntos" onclick="nav('puntos')"><svg viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button class="ni" onclick="nav('puntos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
                     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
                 </svg><span class="nl">Puntos</span></button>
-            <button class="ni ni-home active" data-p="inicio" onclick="nav('inicio')">
-                <div class="niw"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                        stroke-linecap="round" stroke-linejoin="round">
+            <button class="ni nih active" onclick="nav('inicio')">
+                <div class="niw"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                         <polyline points="9 22 9 12 15 12 15 22" />
                     </svg></div><span class="nl" style="color:var(--acc)">Inicio</span>
             </button>
-            <button class="ni" data-p="resultados" onclick="nav('resultados')"><svg viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button class="ni" onclick="nav('resultados')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
                     <circle cx="12" cy="12" r="10" />
                     <polyline points="12 6 12 12 16 14" />
                 </svg><span class="nl">Resultados</span></button>
-            <button class="ni" data-p="mas" onclick="nav('mas')"><svg viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button class="ni" onclick="nav('mas')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
                     <circle cx="12" cy="12" r="1" />
                     <circle cx="19" cy="12" r="1" />
                     <circle cx="5" cy="12" r="1" />
@@ -1877,482 +1659,271 @@
         </div>
     </nav>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-        import { getDatabase, ref, set, onValue, push, remove, get } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
-
-        const firebaseConfig = {
+    <!-- Firebase Compat SDK (NO module) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <script>
+        // ═══ FIREBASE INIT ═══
+        firebase.initializeApp({
             apiKey: "AIzaSyDBHvD_zrY8n3g9nR17BxAgCf7jDmb00Ps",
             authDomain: "atr-2026z.firebaseapp.com",
             databaseURL: "https://atr-2026z-default-rtdb.firebaseio.com",
             projectId: "atr-2026z",
             storageBucket: "atr-2026z.firebasestorage.app",
             messagingSenderId: "451675633593",
-            appId: "1:451675633593:web:0d72e942a4d811fb0be868",
-            measurementId: "G-WJ7XGPEXZS"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-
-        const MN = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-        const DN = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-        const CATS = ['signature', 'oro', 'plata', 'bronce', 'madera', 'mujeres'];
-        const CL = { signature: 'Signature', oro: 'Oro', plata: 'Plata', bronce: 'Bronce', madera: 'Madera', mujeres: 'Mujeres' };
-        const CLS = { signature: 'sig', oro: 'oro', plata: 'pla', bronce: 'bro', madera: 'mad', mujeres: 'muj' };
-
-        // SHARED DATA - synced via Firebase
-        let parts = [];
-        let results = [];
-        let schedule = [];
-        let dataLoaded = false;
-
-        // Firebase helpers
-        function fbSave(path, data) { return set(ref(db, path), data); }
-        function saveParts() { fbSave('participantes', parts); }
-        function saveResults() { fbSave('resultados', results); }
-        function saveSchedule() { fbSave('programacion', schedule); }
-
-        // Listen for real-time changes
-        onValue(ref(db, 'participantes'), snap => {
-            parts = snap.val() || [];
-            if (dataLoaded) refreshAll();
+            appId: "1:451675633593:web:0d72e942a4d811fb0be868"
         });
-        onValue(ref(db, 'resultados'), snap => {
-            results = snap.val() || [];
-            if (dataLoaded) refreshAll();
-        });
-        onValue(ref(db, 'programacion'), snap => {
-            schedule = snap.val() || [];
-            if (dataLoaded) refreshAll();
-        });
+        var db = firebase.database();
 
-        function refreshAll() {
-            rCal(); rSch();
-            if (curPage === 'cuadros') { rCatTabs(); rGrid(); }
-            if (curPage === 'puntos') { rPtsCatTabs(); rPts(); }
-            if (curPage === 'resultados') rRes();
+        // ═══ CONSTANTS ═══
+        var MN = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        var DN = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        var CATS = ['signature', 'oro', 'plata', 'bronce', 'madera', 'mujeres'];
+        var CL = { signature: 'Signature', oro: 'Oro', plata: 'Plata', bronce: 'Bronce', madera: 'Madera', mujeres: 'Mujeres' };
+        var CS = { signature: 'sig', oro: 'oro', plata: 'pla', bronce: 'bro', madera: 'mad', mujeres: 'muj' };
+        var sponsors = [{ n: "Sponsor Principal", t: "Sponsor Oro", e: "🏆" }, { n: "Club de Tenis Corrientes", t: "Sede Oficial", e: "🏟️" }, { n: "Deportes ATR", t: "Sponsor Plata", e: "🎾" }, { n: "Hidratación Pro", t: "Sponsor Oficial", e: "💧" }];
+
+        // ═══ STATE ═══
+        var parts = [], results = [], schedule = [];
+        var loaded = 0, ready = false;
+        var today = new Date(), cMo = today.getMonth(), cYr = today.getFullYear(), curPg = 'inicio';
+        var selCat = null, ptsCat = null;
+        function fmt(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') }
+        var todayStr = fmt(today);
+
+        function toast(m) { var t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); setTimeout(function () { t.classList.remove('show') }, 2200) }
+
+        // ═══ FIREBASE SYNC ═══
+        function onLoad() { loaded++; if (loaded >= 3) { ready = true; initApp() } }
+        db.ref('participantes').once('value', function (s) { parts = s.val() || []; onLoad() });
+        db.ref('resultados').once('value', function (s) { results = s.val() || []; onLoad() });
+        db.ref('programacion').once('value', function (s) { schedule = s.val() || []; onLoad() });
+
+        db.ref('participantes').on('value', function (s) { parts = s.val() || []; if (ready) refresh() });
+        db.ref('resultados').on('value', function (s) { results = s.val() || []; if (ready) refresh() });
+        db.ref('programacion').on('value', function (s) { schedule = s.val() || []; if (ready) refresh() });
+
+        function refresh() { rCal(); rUp(); if (curPg === 'cuadros') { rCTabs(); rGrid() } if (curPg === 'puntos') { rPTabs(); rPts() } if (curPg === 'resultados') rRes() }
+
+        // ═══ NAV ═══
+        function nav(pg) {
+            curPg = pg;
+            document.querySelectorAll('.ni').forEach(function (n) { n.classList.remove('active'); var l = n.querySelector('.nl'); if (l) l.style.color = '' });
+            var btns = document.querySelectorAll('.ni');
+            var names = ['cuadros', 'puntos', 'inicio', 'resultados', 'mas'];
+            names.forEach(function (nm, i) { if (nm === pg && btns[i]) { btns[i].classList.add('active'); if (nm === 'inicio') btns[i].querySelector('.nl').style.color = 'var(--acc)' } });
+            document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active') });
+            var t = document.getElementById('pg-' + pg); if (t) t.classList.add('active');
+            if (pg === 'mas') backMas();
+            if (pg === 'cuadros') { rCTabs(); rGrid() }
+            if (pg === 'puntos') { rPTabs(); rPts() }
+            if (pg === 'resultados') rRes();
+            updFab(); window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Wait for initial data then init
-        let loadCount = 0;
-        function checkLoaded() {
-            loadCount++;
-            if (loadCount >= 3) { dataLoaded = true; initApp(); }
-        }
-        get(ref(db, 'participantes')).then(s => { parts = s.val() || []; checkLoaded(); }).catch(() => checkLoaded());
-        get(ref(db, 'resultados')).then(s => { results = s.val() || []; checkLoaded(); }).catch(() => checkLoaded());
-        get(ref(db, 'programacion')).then(s => { schedule = s.val() || []; checkLoaded(); }).catch(() => checkLoaded());
+        // ═══ FAB ═══
+        function updFab() { var f = document.getElementById('fab'); f.classList.toggle('show', curPg === 'inicio' || curPg === 'resultados') }
+        function fabAct() { if (curPg === 'resultados') openResMod(); if (curPg === 'inicio') openSchMod() }
 
-        const sponsors = [{ name: "Sponsor Principal", type: "Sponsor Oro", emoji: "🏆" }, { name: "Club de Tenis Corrientes", type: "Sede Oficial", emoji: "🏟️" }, { name: "Deportes ATR", type: "Sponsor Plata", emoji: "🎾" }, { name: "Hidratación Pro", type: "Sponsor Oficial", emoji: "💧" }];
-
-        const today = new Date(); let cMo = today.getMonth(), cYr = today.getFullYear(), selDt = fmt(today), selCat = null, curPage = 'inicio';
-        function fmt(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
-        function toast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); }
-
-        // CALENDAR
+        // ═══ CALENDAR ═══
+        function toggleCal() { var b = document.getElementById('calBtn'), x = document.getElementById('calBox'); b.classList.toggle('open'); x.classList.toggle('open'); if (x.classList.contains('open')) rCal() }
+        function chMo(d) { cMo += d; if (cMo > 11) { cMo = 0; cYr++ } if (cMo < 0) { cMo = 11; cYr-- } rCal() }
         function rCal() {
-            document.getElementById('calTitle').textContent = `${MN[cMo]} ${cYr}`;
-            const g = document.getElementById('calGrid'); g.innerHTML = '';
-            DN.forEach(d => { const e = document.createElement('div'); e.className = 'cdn'; e.textContent = d; g.appendChild(e); });
-            const f = new Date(cYr, cMo, 1).getDay(), dim = new Date(cYr, cMo + 1, 0).getDate(), ts = fmt(today);
-            for (let i = 0; i < f; i++) { const e = document.createElement('div'); e.className = 'cd empty'; g.appendChild(e); }
-            // Build schedule dates
-            const schDates = {}; schedule.forEach(s => { schDates[s.date] = true; });
-            for (let d = 1; d <= dim; d++) {
-                const ds = `${cYr}-${String(cMo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                const e = document.createElement('div'); e.className = 'cd';
-                if (ds === ts) e.classList.add('today'); if (ds === selDt) e.classList.add('sel'); if (schDates[ds]) e.classList.add('hm');
-                e.textContent = d; e.onclick = () => { selDt = ds; rCal(); rSch(); }; g.appendChild(e);
+            document.getElementById('calMo').textContent = MN[cMo] + ' ' + cYr;
+            var g = document.getElementById('calG'); g.innerHTML = '';
+            DN.forEach(function (d) { g.innerHTML += '<div class="cdn">' + d + '</div>' });
+            var f = new Date(cYr, cMo, 1).getDay(), dim = new Date(cYr, cMo + 1, 0).getDate();
+            var schD = {}; schedule.forEach(function (s) { schD[s.date] = true });
+            for (var i = 0; i < f; i++)g.innerHTML += '<div class="cd empty"></div>';
+            for (var d = 1; d <= dim; d++) {
+                var ds = cYr + '-' + String(cMo + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+                var cls = 'cd'; if (ds === todayStr) cls += ' today'; if (schD[ds]) cls += ' hm';
+                g.innerHTML += '<div class="' + cls + '">' + d + '</div>';
             }
         }
-        function chMo(d) { cMo += d; if (cMo > 11) { cMo = 0; cYr++; } if (cMo < 0) { cMo = 11; cYr--; } rCal(); }
 
-        // SCHEDULE
-        function rSch() {
-            const dp = selDt.split('-'), dObj = new Date(dp[0], dp[1] - 1, dp[2]);
-            const dn = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][dObj.getDay()];
-            document.getElementById('schDt').textContent = `${dn} ${dp[2]} de ${MN[dObj.getMonth()]}`;
-            const matches = schedule.filter(s => s.date === selDt).sort((a, b) => a.time.localeCompare(b.time));
-            document.getElementById('schCnt').textContent = matches.length ? `${matches.length} partido${matches.length > 1 ? 's' : ''}` : 'Sin partidos';
-            const list = document.getElementById('schList'); list.innerHTML = '';
-            if (!matches.length) { list.innerHTML = '<div class="es"><div class="es-i">🎾</div><div class="es-t">No hay partidos programados</div><div class="es-s">Usá el + para programar</div></div>'; return; }
-            const bt = {}; matches.forEach(m => { if (!bt[m.time]) bt[m.time] = []; bt[m.time].push(m); });
-            Object.keys(bt).sort().forEach(time => {
-                const b = document.createElement('div'); b.className = 'tb'; b.innerHTML = `<div class="tl">${time} hs</div>`;
-                bt[time].forEach(m => { const c = document.createElement('div'); c.className = 'mcard'; c.innerHTML = `<div class="cb cb${m.court}"><span>${m.court}</span><small>cancha</small></div><div class="mi"><div class="mp">${m.p1} vs ${m.p2}</div><div class="mm"><span class="lb l-${CLS[m.cat]}">${CL[m.cat]}</span></div></div>`; b.appendChild(c); });
-                list.appendChild(b);
+        // ═══ UPCOMING ═══
+        function rUp() {
+            var el = document.getElementById('upList'); if (!el) return; el.innerHTML = '';
+            var up = schedule.filter(function (s) { return s.date >= todayStr }).sort(function (a, b) { return (a.date + a.time).localeCompare(b.date + b.time) });
+            if (!up.length) { el.innerHTML = '<div class="es"><div class="es-i">🎾</div><div class="es-t">No hay partidos programados</div><div class="es-s">Usá el + para programar</div></div>'; return }
+            var cd = '';
+            up.forEach(function (m) {
+                if (m.date !== cd) {
+                    cd = m.date; var dp = cd.split('-'), dO = new Date(dp[0], dp[1] - 1, dp[2]);
+                    var dn = DN[dO.getDay()], isT = cd === todayStr;
+                    el.innerHTML += '<div class="up-dh">' + (isT ? 'Hoy — ' : '') + dn + ' ' + dp[2] + ' de ' + MN[dO.getMonth()] + '</div>';
+                }
+                el.innerHTML += '<div class="up-card"><div class="up-time">' + m.time + '</div><div class="crt c' + m.court + '"><span>' + m.court + '</span><small>cancha</small></div><div style="flex:1;min-width:0"><div class="up-pl">' + m.p1 + ' vs ' + m.p2 + '</div><div><span class="lb l-' + CS[m.cat] + '">' + CL[m.cat] + '</span></div></div></div>';
             });
         }
 
-        // CUADROS - grid NxN
-        function rCatTabs() {
-            const t = document.getElementById('catTabs'); t.innerHTML = '';
-            CATS.forEach(cat => {
-                const n = parts.filter(p => p.cat === cat).length;
-                if (!n) return;
-                const d = document.createElement('div'); d.className = 'ctab' + (selCat === cat ? ` a-${CLS[cat]}` : '');
-                d.textContent = `${CL[cat]} (${n})`; d.onclick = () => { selCat = cat; rCatTabs(); rGrid(); }; t.appendChild(d);
+        // ═══ CUADROS ═══
+        function rCTabs() {
+            var t = document.getElementById('cTabs'); t.innerHTML = '';
+            CATS.forEach(function (cat) {
+                var n = parts.filter(function (p) { return p.cat === cat }).length; if (!n) return;
+                t.innerHTML += '<div class="ct' + (selCat === cat ? ' a-' + CS[cat] : '') + '" onclick="selCat=\'' + cat + '\';rCTabs();rGrid()">' + CL[cat] + ' (' + n + ')</div>';
             });
         }
         function rGrid() {
-            const el = document.getElementById('cuadroGrid');
-            if (!selCat) { el.innerHTML = '<div class="es"><div class="es-i">👆</div><div class="es-t">Elegí una categoría</div></div>'; return; }
-            const pl = parts.filter(p => p.cat === selCat).sort((a, b) => (a.apellido + a.nombre).localeCompare(b.apellido + b.nombre));
-            if (!pl.length) { el.innerHTML = '<div class="es"><div class="es-i">📋</div><div class="es-t">Sin participantes</div><div class="es-s">Agregá desde Más → Participantes</div></div>'; return; }
-            const n = pl.length;
-            // Build results lookup
-            const rMap = {};
-            results.filter(r => r.cat === selCat).forEach(r => {
-                rMap[r.p1id + '_' + r.p2id] = r;
-                rMap[r.p2id + '_' + r.p1id] = { ...r, flipped: true };
+            var el = document.getElementById('cGrid');
+            if (!selCat) { el.innerHTML = '<div class="es"><div class="es-i">👆</div><div class="es-t">Elegí una categoría</div></div>'; return }
+            var pl = parts.filter(function (p) { return p.cat === selCat }).sort(function (a, b) { return (a.apellido + a.nombre).localeCompare(b.apellido + b.nombre) });
+            if (!pl.length) { el.innerHTML = '<div class="es"><div class="es-i">📋</div><div class="es-t">Sin participantes</div><div class="es-s">Agregá desde Más → Participantes</div></div>'; return }
+            var rM = {}; results.filter(function (r) { return r.cat === selCat }).forEach(function (r) { rM[r.p1id + '_' + r.p2id] = r; rM[r.p2id + '_' + r.p1id] = { p1id: r.p2id, p2id: r.p1id, score: r.score, winner: r.winner, flip: true } });
+            var h = '<div class="gw"><table class="gt"><thead><tr><th></th><th class="cn">#</th>';
+            pl.forEach(function (_, i) { h += '<th class="cn">' + (i + 1) + '</th>' });
+            h += '</tr></thead><tbody>';
+            pl.forEach(function (p, i) {
+                h += '<tr><td class="rn">' + p.apellido + ' ' + p.nombre + '</td><td class="cn">' + (i + 1) + '</td>';
+                pl.forEach(function (q, j) {
+                    if (i === j) { h += '<td class="self">—</td>'; return }
+                    var k = p.id + '_' + q.id, r = rM[k];
+                    if (r) { var w = r.flip ? r.winner === 2 : r.winner === 1; h += '<td class="' + (w ? 'win' : 'loss') + '">' + r.score + '</td>' }
+                    else h += '<td></td>';
+                }); h += '</tr>';
             });
-
-            let html = '<div class="grid-wrap"><table class="grid-tbl"><thead><tr><th></th><th class="col-num">#</th>';
-            pl.forEach((_, i) => { html += `<th class="col-num">${i + 1}</th>`; });
-            html += '</tr></thead><tbody>';
-            pl.forEach((p, i) => {
-                html += `<tr><td class="row-name">${p.apellido} ${p.nombre}</td><td class="col-num">${i + 1}</td>`;
-                pl.forEach((q, j) => {
-                    if (i === j) { html += '<td class="self">—</td>'; return; }
-                    const key = p.id + '_' + q.id;
-                    const r = rMap[key];
-                    if (r) {
-                        let isWin;
-                        if (r.flipped) { isWin = r.winner === 2; } else { isWin = r.winner === 1; }
-                        html += `<td class="${isWin ? 'win' : 'loss'}">${r.score}</td>`;
-                    } else {
-                        html += '<td></td>';
-                    }
-                });
-                html += '</tr>';
-            });
-            html += '</tbody></table></div>';
-            el.innerHTML = html;
+            h += '</tbody></table></div>'; el.innerHTML = h;
         }
 
-        // RESULTADOS
-        function rRes() {
-            const list = document.getElementById('resList'); list.innerHTML = '';
-            const sorted = [...results].sort((a, b) => b.fecha.localeCompare(a.fecha));
-            if (!sorted.length) { list.innerHTML = '<div class="es"><div class="es-i">🕐</div><div class="es-t">Sin resultados aún</div><div class="es-s">Usá el + para cargar</div></div>'; return; }
-            // Group by date
-            const byDate = {}; sorted.forEach(r => { if (!byDate[r.fecha]) byDate[r.fecha] = []; byDate[r.fecha].push(r); });
-            Object.keys(byDate).sort().reverse().forEach(fecha => {
-                const dp = fecha.split('-'), dObj = new Date(dp[0], dp[1] - 1, dp[2]);
-                const dn = DN[dObj.getDay()];
-                const card = document.createElement('div'); card.className = 'res-card';
-                let h = `<div class="res-dt">${dn} ${dp[2]} de ${MN[dObj.getMonth()]} ${dp[0]}</div>`;
-                byDate[fecha].forEach(m => {
-                    h += `<div class="res-m"><span class="lb l-${CLS[m.cat]}" style="flex-shrink:0">${CL[m.cat]}</span><span class="res-pl"><span class="${m.winner === 1 ? 'res-w' : ''}">${m.p1}</span> vs <span class="${m.winner === 2 ? 'res-w' : ''}">${m.p2}</span></span><span class="res-sc">${m.score}</span></div>`;
-                });
-                card.innerHTML = h; list.appendChild(card);
+        // ═══ PUNTOS ═══
+        function rPTabs() {
+            var t = document.getElementById('pTabs'); t.innerHTML = '';
+            CATS.forEach(function (cat) {
+                var n = parts.filter(function (p) { return p.cat === cat }).length; if (!n) return;
+                t.innerHTML += '<div class="ct' + (ptsCat === cat ? ' a-' + CS[cat] : '') + '" onclick="ptsCat=\'' + cat + '\';rPTabs();rPts()">' + CL[cat] + ' (' + n + ')</div>';
             });
         }
-
-        // MÁS
-        function subPage(s) {
-            document.getElementById('masMain').style.display = 'none';
-            document.querySelectorAll('[id^="sub-"]').forEach(e => e.style.display = 'none');
-            const t = document.getElementById('sub-' + s); if (t) { t.style.display = 'block'; t.style.animation = 'fadeUp .3s ease both'; }
-            if (s === 'participantes') rParts(); if (s === 'sponsors') rSpo();
+        function parseScore(sc) {
+            var sets = sc.trim().split(/\s+/), s1 = 0, s2 = 0, g1 = 0, g2 = 0;
+            sets.forEach(function (s) { var p = s.split('-'); if (p.length === 2) { var a = parseInt(p[0]) || 0, b = parseInt(p[1]) || 0; g1 += a; g2 += b; if (a > b) s1++; else if (b > a) s2++ } });
+            return { s1: s1, s2: s2, g1: g1, g2: g2 };
         }
-        function backMas() { document.querySelectorAll('[id^="sub-"]').forEach(e => e.style.display = 'none'); document.getElementById('masMain').style.display = 'flex'; }
-
-        function rParts() {
-            const list = document.getElementById('partList'); list.innerHTML = '';
-            const s = [...parts].sort((a, b) => (a.cat + a.apellido + a.nombre).localeCompare(b.cat + b.apellido + b.nombre));
-            if (!s.length) { list.innerHTML = '<div class="es"><div class="es-i">👤</div><div class="es-t">Sin participantes</div></div>'; return; }
-            let curCat = '';
-            s.forEach(p => {
-                if (p.cat !== curCat) { curCat = p.cat; list.innerHTML += `<div class="slbl" style="margin-top:16px">${CL[p.cat]}</div>`; }
-                list.innerHTML += `<div class="p-card"><div class="p-av">${(p.nombre[0] || '') + (p.apellido[0] || '')}</div><span class="p-nm">${p.apellido}, ${p.nombre}</span><button class="p-del" onclick="delPart('${p.id}')" title="Eliminar">✕</button></div>`;
-            });
-        }
-        function addPart() {
-            const n = document.getElementById('iNom').value.trim(), a = document.getElementById('iApe').value.trim(), c = document.getElementById('iCat').value;
-            if (!n || !a || !c) { toast('Completá todos los campos'); return; }
-            parts.push({ id: Math.random().toString(36).slice(2, 10), nombre: n, apellido: a, cat: c }); saveParts();
-            document.getElementById('iNom').value = ''; document.getElementById('iApe').value = ''; document.getElementById('iCat').value = '';
-            rParts(); toast(`${n} ${a} → ${CL[c]}`);
-        }
-        function delPart(id) { parts = parts.filter(p => p.id !== id); saveParts(); rParts(); toast('Eliminado'); }
-
-        function rSpo() {
-            const list = document.getElementById('spoList'); list.innerHTML = '';
-            sponsors.forEach(s => { list.innerHTML += `<div class="sp-card"><div class="sp-logo">${s.emoji}</div><div><div class="sp-nm">${s.name}</div><div class="sp-tp">${s.type}</div></div></div>`; });
-        }
-
-        // FAB
-        function updateFab() {
-            const fab = document.getElementById('fab');
-            if (curPage === 'inicio' || curPage === 'resultados') { fab.classList.add('show'); } else { fab.classList.remove('show'); }
-        }
-        function fabAction() {
-            if (curPage === 'resultados') openResModal();
-            if (curPage === 'inicio') openSchModal();
-        }
-
-        // MODAL: Result
-        function openResModal() {
-            const m = document.getElementById('modalRes'); m.classList.add('show');
-            const sel = document.getElementById('resCat'); sel.innerHTML = '<option value="">Categoría...</option>';
-            CATS.forEach(c => { if (parts.some(p => p.cat === c)) sel.innerHTML += `<option value="${c}">${CL[c]}</option>`; });
-            document.getElementById('resP1').innerHTML = '<option value="">Jugador 1...</option>';
-            document.getElementById('resP2').innerHTML = '<option value="">Jugador 2...</option>';
-            document.getElementById('resScore').value = ''; document.getElementById('resWinner').value = '';
-            document.getElementById('resDate').value = fmt(today);
-        }
-        function resPickCat() {
-            const cat = document.getElementById('resCat').value;
-            const pl = parts.filter(p => p.cat === cat).sort((a, b) => (a.apellido).localeCompare(b.apellido));
-            const opts = '<option value="">Jugador...</option>' + pl.map(p => `<option value="${p.id}">${p.apellido} ${p.nombre}</option>`).join('');
-            document.getElementById('resP1').innerHTML = opts; document.getElementById('resP2').innerHTML = opts;
-        }
-        function saveResult() {
-            const cat = document.getElementById('resCat').value, p1id = document.getElementById('resP1').value, p2id = document.getElementById('resP2').value;
-            const score = document.getElementById('resScore').value.trim(), winner = parseInt(document.getElementById('resWinner').value), fecha = document.getElementById('resDate').value;
-            if (!cat || !p1id || !p2id || !score || !winner || !fecha || p1id === p2id) { toast('Completá todos los campos'); return; }
-            const p1 = parts.find(p => p.id === p1id), p2 = parts.find(p => p.id === p2id);
-            results.push({ fecha, cat, p1id, p2id, p1: `${p1.apellido} ${p1.nombre}`, p2: `${p2.apellido} ${p2.nombre}`, score, winner });
-            saveResults(); closeModal('modalRes'); rRes(); toast('Resultado guardado');
-        }
-
-        // MODAL: Schedule
-        function openSchModal() {
-            const m = document.getElementById('modalSch'); m.classList.add('show');
-            const sel = document.getElementById('schCat'); sel.innerHTML = '<option value="">Categoría...</option>';
-            CATS.forEach(c => { if (parts.some(p => p.cat === c)) sel.innerHTML += `<option value="${c}">${CL[c]}</option>`; });
-            document.getElementById('schP1').innerHTML = '<option value="">Jugador 1...</option>';
-            document.getElementById('schP2').innerHTML = '<option value="">Jugador 2...</option>';
-            document.getElementById('schDate').value = selDt; document.getElementById('schTime').value = ''; document.getElementById('schCourt').value = '';
-        }
-        function schPickCat() {
-            const cat = document.getElementById('schCat').value;
-            const pl = parts.filter(p => p.cat === cat).sort((a, b) => (a.apellido).localeCompare(b.apellido));
-            const opts = '<option value="">Jugador...</option>' + pl.map(p => `<option value="${p.id}">${p.apellido} ${p.nombre}</option>`).join('');
-            document.getElementById('schP1').innerHTML = opts; document.getElementById('schP2').innerHTML = opts;
-        }
-        function saveSch() {
-            const cat = document.getElementById('schCat').value, p1id = document.getElementById('schP1').value, p2id = document.getElementById('schP2').value;
-            const date = document.getElementById('schDate').value, time = document.getElementById('schTime').value, court = document.getElementById('schCourt').value;
-            if (!cat || !p1id || !p2id || !date || !time || !court || p1id === p2id) { toast('Completá todos los campos'); return; }
-            const p1 = parts.find(p => p.id === p1id), p2 = parts.find(p => p.id === p2id);
-            schedule.push({ date, time, court: parseInt(court), cat, p1id, p2id, p1: `${p1.apellido} ${p1.nombre}`, p2: `${p2.apellido} ${p2.nombre}` });
-            saveSchedule(); closeModal('modalSch'); rCal(); rSch(); toast('Partido programado');
-        }
-
-        function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-
-        // PUNTOS
-        let ptsCat = null;
-        function rPtsCatTabs() {
-            const t = document.getElementById('ptsCatTabs'); t.innerHTML = '';
-            CATS.forEach(cat => {
-                const n = parts.filter(p => p.cat === cat).length;
-                if (!n) return;
-                const d = document.createElement('div'); d.className = 'ctab' + (ptsCat === cat ? ` a-${CLS[cat]}` : '');
-                d.textContent = `${CL[cat]} (${n})`; d.onclick = () => { ptsCat = cat; rPtsCatTabs(); rPts(); }; t.appendChild(d);
-            });
-        }
-
-        function parseScore(score) {
-            // Parse "6-3 6-4" or "7-5 4-6 6-2" into sets and games
-            const sets = score.trim().split(/\s+/);
-            let s1 = 0, s2 = 0, g1 = 0, g2 = 0;
-            sets.forEach(s => {
-                const p = s.split('-');
-                if (p.length === 2) {
-                    const a = parseInt(p[0]) || 0, b = parseInt(p[1]) || 0;
-                    g1 += a; g2 += b;
-                    if (a > b) s1++; else if (b > a) s2++;
-                }
-            });
-            return { s1, s2, g1, g2 };
-        }
-
         function rPts() {
-            const el = document.getElementById('ptsTable');
-            if (!ptsCat) { el.innerHTML = '<div class="es"><div class="es-i">👆</div><div class="es-t">Elegí una categoría</div></div>'; return; }
-            const pl = parts.filter(p => p.cat === ptsCat);
-            if (!pl.length) { el.innerHTML = '<div class="es"><div class="es-i">📋</div><div class="es-t">Sin participantes</div></div>'; return; }
-
-            // Calculate stats per player
-            const stats = {};
-            pl.forEach(p => { stats[p.id] = { id: p.id, name: `${p.apellido} ${p.nombre}`, cat: p.cat, pj: 0, pg: 0, pp: 0, pts: 0, sg: 0, sp: 0, sdif: 0, gg: 0, gp: 0, gdif: 0 }; });
-
-            results.filter(r => r.cat === ptsCat).forEach(r => {
-                const sc = parseScore(r.score);
-                const wid = r.winner === 1 ? r.p1id : r.p2id;
-                const lid = r.winner === 1 ? r.p2id : r.p1id;
-                const wSets = r.winner === 1 ? sc.s1 : sc.s2, lSets = r.winner === 1 ? sc.s2 : sc.s1;
-                const wGames = r.winner === 1 ? sc.g1 : sc.g2, lGames = r.winner === 1 ? sc.g2 : sc.g1;
-
-                if (stats[wid]) {
-                    stats[wid].pj++; stats[wid].pg++; stats[wid].pts += 1;
-                    stats[wid].sg += wSets; stats[wid].sp += lSets;
-                    stats[wid].gg += wGames; stats[wid].gp += lGames;
-                }
-                if (stats[lid]) {
-                    stats[lid].pj++; stats[lid].pp++; stats[lid].pts -= 1;
-                    stats[lid].sg += lSets; stats[lid].sp += wSets;
-                    stats[lid].gg += lGames; stats[lid].gp += wGames;
-                }
+            var el = document.getElementById('pTbl');
+            if (!ptsCat) { el.innerHTML = '<div class="es"><div class="es-i">👆</div><div class="es-t">Elegí una categoría</div></div>'; return }
+            var pl = parts.filter(function (p) { return p.cat === ptsCat });
+            if (!pl.length) { el.innerHTML = '<div class="es"><div class="es-i">📋</div><div class="es-t">Sin participantes</div></div>'; return }
+            var st = {}; pl.forEach(function (p) { st[p.id] = { id: p.id, nm: p.apellido + ' ' + p.nombre, cat: p.cat, pj: 0, pg: 0, pp: 0, pts: 0, sg: 0, sp: 0, gg: 0, gp: 0 } });
+            results.filter(function (r) { return r.cat === ptsCat }).forEach(function (r) {
+                var sc = parseScore(r.score), wid = r.winner === 1 ? r.p1id : r.p2id, lid = r.winner === 1 ? r.p2id : r.p1id;
+                var wS = r.winner === 1 ? sc.s1 : sc.s2, lS = r.winner === 1 ? sc.s2 : sc.s1, wG = r.winner === 1 ? sc.g1 : sc.g2, lG = r.winner === 1 ? sc.g2 : sc.g1;
+                if (st[wid]) { st[wid].pj++; st[wid].pg++; st[wid].pts++; st[wid].sg += wS; st[wid].sp += lS; st[wid].gg += wG; st[wid].gp += lG }
+                if (st[lid]) { st[lid].pj++; st[lid].pp++; st[lid].pts--; st[lid].sg += lS; st[lid].sp += wS; st[lid].gg += lG; st[lid].gp += wG }
             });
-
-            Object.values(stats).forEach(s => { s.sdif = s.sg - s.sp; s.gdif = s.gg - s.gp; });
-            const sorted = Object.values(stats).sort((a, b) => b.pts - a.pts || b.sdif - a.sdif || b.gdif - a.gdif);
-
-            // Calculate rating (1-100) for each player
-            sorted.forEach((s, i) => {
+            var arr = Object.values(st); arr.forEach(function (s) { s.sd = s.sg - s.sp; s.gd = s.gg - s.gp });
+            arr.sort(function (a, b) { return b.pts - a.pts || b.sd - a.sd || b.gd - a.gd });
+            // Rating
+            arr.forEach(function (s, i) {
                 s.pos = i + 1;
-                if (s.pj === 0) { s.rating = 50; } // no games = neutral 50
-                else {
-                    // Win rate contributes 60%, set diff 20%, game diff 20%
-                    const winRate = s.pg / s.pj;
-                    const maxDiff = Math.max(...sorted.map(x => Math.abs(x.sdif)), 1);
-                    const maxGDiff = Math.max(...sorted.map(x => Math.abs(x.gdif)), 1);
-                    const setScore = (s.sdif / maxDiff + 1) / 2; // normalize 0-1
-                    const gameScore = (s.gdif / maxGDiff + 1) / 2;
-                    const raw = winRate * 0.6 + setScore * 0.2 + gameScore * 0.2;
-                    s.rating = Math.round(Math.max(1, Math.min(100, raw * 100)));
+                if (s.pj === 0) { s.rat = 50 } else {
+                    var wr = s.pg / s.pj, mx = Math.max.apply(null, arr.map(function (x) { return Math.abs(x.sd) }).concat([1]));
+                    var mg = Math.max.apply(null, arr.map(function (x) { return Math.abs(x.gd) }).concat([1]));
+                    s.rat = Math.round(Math.max(1, Math.min(100, (wr * .6 + (s.sd / mx + 1) / 2 * .2 + (s.gd / mg + 1) / 2 * .2) * 100)));
                 }
             });
-
-            // Store for card access
-            window._ptsData = sorted;
-
-            function cls(v) { return v > 0 ? 'pts-positive' : v < 0 ? 'pts-negative' : 'pts-zero'; }
-            function sign(v) { return v > 0 ? '+' + v : v.toString(); }
-
-            // Position colors: 1=green(acc), 2=gold, 3=bronze/orange, rest by rating
-            function posColor(pos, rating) {
-                if (pos === 1) return 'var(--acc)';
-                if (pos === 2) return 'var(--oro)';
-                if (pos === 3) return 'var(--bro)';
-                if (rating >= 50) return 'var(--acc)';
-                return '#f87171';
-            }
-            function ratingBg(pos, rating) {
-                if (pos === 1) return 'rgba(52,211,153,.2)';
-                if (pos === 2) return 'rgba(251,191,36,.2)';
-                if (pos === 3) return 'rgba(245,158,11,.2)';
-                if (rating >= 50) return 'rgba(52,211,153,.15)';
-                return 'rgba(239,68,68,.15)';
-            }
-
-            let html = '<div class="pts-wrap"><table class="pts-tbl"><thead><tr>';
-            html += '<th>#</th><th>Jugador</th><th>PJ</th><th>PG</th><th>PP</th><th>Pts</th>';
-            html += '<th class="pts-separator">SG</th><th>SP</th><th>Dif</th>';
-            html += '<th class="pts-separator">GG</th><th>GP</th><th>Dif</th>';
-            html += '</tr></thead><tbody>';
-
-            sorted.forEach((s, i) => {
-                const posC = i === 0 ? 'pts-pos-1' : i === 1 ? 'pts-pos-2' : i === 2 ? 'pts-pos-3' : '';
-                const pc = posColor(s.pos, s.rating);
-                const rb = ratingBg(s.pos, s.rating);
-                html += `<tr>`;
-                html += `<td class="pts-pos ${posC}">${s.pos}</td>`;
-                html += `<td class="pts-name"><div class="pts-name-wrap" onclick="openCard(${i})"><span class="pts-name-txt">${s.name}</span><span class="rating-badge" style="background:${rb};color:${pc}">${s.rating}</span></div></td>`;
-                html += `<td class="pts-pj">${s.pj}</td>`;
-                html += `<td class="pts-positive">${s.pg}</td>`;
-                html += `<td class="pts-negative">${s.pp}</td>`;
-                html += `<td class="pts-pts ${cls(s.pts)}">${sign(s.pts)}</td>`;
-                html += `<td class="pts-separator">${s.sg}</td><td>${s.sp}</td><td class="${cls(s.sdif)}">${sign(s.sdif)}</td>`;
-                html += `<td class="pts-separator">${s.gg}</td><td>${s.gp}</td><td class="${cls(s.gdif)}">${sign(s.gdif)}</td>`;
-                html += `</tr>`;
+            window._pd = arr;
+            function vc(v) { return v > 0 ? 'pos' : v < 0 ? 'neg' : 'zer' }
+            function vs(v) { return v > 0 ? '+' + v : '' + v }
+            function pc(p, r) { if (p === 1) return 'var(--acc)'; if (p === 2) return 'var(--oro)'; if (p === 3) return 'var(--bro)'; return r >= 50 ? 'var(--acc)' : '#f87171' }
+            function rb(p, r) { if (p === 1) return 'rgba(52,211,153,.2)'; if (p === 2) return 'rgba(251,191,36,.2)'; if (p === 3) return 'rgba(245,158,11,.2)'; return r >= 50 ? 'rgba(52,211,153,.15)' : 'rgba(239,68,68,.15)' }
+            var h = '<div class="pw"><table class="pt"><thead><tr><th>#</th><th>Jugador</th><th>PJ</th><th>PG</th><th>PP</th><th>Pts</th><th class="sep">SG</th><th>SP</th><th>Dif</th><th class="sep">GG</th><th>GP</th><th>Dif</th></tr></thead><tbody>';
+            arr.forEach(function (s, i) {
+                var pC = i === 0 ? 'p1c' : i === 1 ? 'p2c' : i === 2 ? 'p3c' : '';
+                h += '<tr><td class="pp ' + pC + '">' + s.pos + '</td>';
+                h += '<td class="pn" onclick="openCard(' + i + ')"><span>' + s.nm + '</span><span class="rb" style="background:' + rb(s.pos, s.rat) + ';color:' + pc(s.pos, s.rat) + '">' + s.rat + '</span></td>';
+                h += '<td>' + s.pj + '</td><td class="pos">' + s.pg + '</td><td class="neg">' + s.pp + '</td><td class="pv ' + vc(s.pts) + '">' + vs(s.pts) + '</td>';
+                h += '<td class="sep">' + s.sg + '</td><td>' + s.sp + '</td><td class="' + vc(s.sd) + '">' + vs(s.sd) + '</td>';
+                h += '<td class="sep">' + s.gg + '</td><td>' + s.gp + '</td><td class="' + vc(s.gd) + '">' + vs(s.gd) + '</td></tr>';
             });
-
-            html += '</tbody></table></div>';
-            el.innerHTML = html;
+            h += '</tbody></table></div>'; el.innerHTML = h;
         }
 
-        // FIFA CARD
-        function cardGradient(pos, rating) {
-            if (pos === 1) return 'linear-gradient(145deg,#064e3b,#065f46,#047857)'; // green
-            if (pos === 2) return 'linear-gradient(145deg,#78350f,#92400e,#a16207)'; // gold
-            if (pos === 3) return 'linear-gradient(145deg,#7c2d12,#9a3412,#c2410c)'; // orange/bronze
-            if (rating >= 70) return 'linear-gradient(145deg,#1e3a5f,#1e40af,#2563eb)'; // blue
-            if (rating >= 50) return 'linear-gradient(145deg,#1a2236,#1e293b,#334155)'; // neutral dark
-            return 'linear-gradient(145deg,#450a0a,#7f1d1d,#991b1b)'; // red
-        }
-        function cardAccent(pos, rating) {
-            if (pos === 1) return 'var(--acc)';
-            if (pos === 2) return 'var(--oro)';
-            if (pos === 3) return 'var(--bro)';
-            if (rating >= 70) return '#60a5fa';
-            if (rating >= 50) return 'var(--t2)';
-            return '#f87171';
-        }
-
-        function openCard(idx) {
-            const s = window._ptsData[idx]; if (!s) return;
-            const bg = document.getElementById('cardBg');
-            const card = document.getElementById('fifaCard');
-            const grad = cardGradient(s.pos, s.rating);
-            const accent = cardAccent(s.pos, s.rating);
-            const posLabel = s.pos === 1 ? '1ER PUESTO' : s.pos === 2 ? '2DO PUESTO' : s.pos === 3 ? '3ER PUESTO' : `${s.pos}° PUESTO`;
-
-            const winPct = s.pj > 0 ? Math.round((s.pg / s.pj) * 100) : 0;
-            const setPct = s.pj > 0 ? Math.round((s.sg / Math.max(s.sg + s.sp, 1)) * 100) : 0;
-            const gamePct = s.pj > 0 ? Math.round((s.gg / Math.max(s.gg + s.gp, 1)) * 100) : 0;
-
-            card.innerHTML = `
-    <div class="fifa-card-top" style="background:${grad};color:#fff;">
-      <button class="fifa-card-close" onclick="closeCard()">✕</button>
-      <div class="fifa-card-rating" style="color:${accent}">${s.rating}</div>
-      <div class="fifa-card-pos" style="color:${accent}">${posLabel}</div>
-      <div class="fifa-card-name">${s.name}</div>
-      <div class="fifa-card-cat">${CL[s.cat]}</div>
-    </div>
-    <div class="fifa-card-divider"></div>
-    <div class="fifa-card-stats" style="background:${grad};color:#fff;">
-      <div class="fifa-stat"><span class="fifa-stat-label">PJ</span><span class="fifa-stat-val">${s.pj}</span></div>
-      <div class="fifa-stat"><span class="fifa-stat-label">Pts</span><span class="fifa-stat-val" style="color:${s.pts >= 0 ? accent : '#f87171'}">${s.pts > 0 ? '+' : ''}${s.pts}</span></div>
-      <div class="fifa-stat"><span class="fifa-stat-label">PG</span><span class="fifa-stat-val" style="color:var(--acc)">${s.pg}</span></div>
-      <div class="fifa-stat"><span class="fifa-stat-label">PP</span><span class="fifa-stat-val" style="color:#f87171">${s.pp}</span></div>
-      <div class="fifa-stat fifa-stat-full">
-        <span class="fifa-stat-label">Victorias</span><span class="fifa-stat-val">${winPct}%</span>
-      </div>
-      <div class="fifa-stat fifa-stat-full" style="flex-direction:column;align-items:stretch;">
-        <div style="display:flex;justify-content:space-between"><span class="fifa-stat-label">Sets ${s.sg}G / ${s.sp}P</span><span class="fifa-stat-val" style="color:${s.sdif >= 0 ? accent : '#f87171'}">${s.sdif > 0 ? '+' : ''}${s.sdif}</span></div>
-        <div class="fifa-bar"><div class="fifa-bar-fill" style="width:${setPct}%;background:${accent}"></div></div>
-      </div>
-      <div class="fifa-stat fifa-stat-full" style="flex-direction:column;align-items:stretch;">
-        <div style="display:flex;justify-content:space-between"><span class="fifa-stat-label">Games ${s.gg}G / ${s.gp}P</span><span class="fifa-stat-val" style="color:${s.gdif >= 0 ? accent : '#f87171'}">${s.gdif > 0 ? '+' : ''}${s.gdif}</span></div>
-        <div class="fifa-bar"><div class="fifa-bar-fill" style="width:${gamePct}%;background:${accent}"></div></div>
-      </div>
-    </div>
-  `;
+        // ═══ FIFA CARD ═══
+        function openCard(i) {
+            var s = window._pd[i]; if (!s) return;
+            var bg = document.getElementById('cardBg'), c = document.getElementById('fcCard');
+            function gr(p, r) { if (p === 1) return 'linear-gradient(145deg,#064e3b,#047857)'; if (p === 2) return 'linear-gradient(145deg,#78350f,#a16207)'; if (p === 3) return 'linear-gradient(145deg,#7c2d12,#c2410c)'; return r >= 50 ? 'linear-gradient(145deg,#1e3a5f,#2563eb)' : 'linear-gradient(145deg,#450a0a,#991b1b)' }
+            function ac(p, r) { if (p === 1) return 'var(--acc)'; if (p === 2) return 'var(--oro)'; if (p === 3) return 'var(--bro)'; return r >= 50 ? '#60a5fa' : '#f87171' }
+            var g = gr(s.pos, s.rat), a = ac(s.pos, s.rat);
+            var pl = s.pos === 1 ? '1ER PUESTO' : s.pos === 2 ? '2DO PUESTO' : s.pos === 3 ? '3ER PUESTO' : s.pos + '° PUESTO';
+            var wp = s.pj > 0 ? Math.round(s.pg / s.pj * 100) : 0, sp = s.pj > 0 ? Math.round(s.sg / Math.max(s.sg + s.sp, 1) * 100) : 0, gp = s.pj > 0 ? Math.round(s.gg / Math.max(s.gg + s.gp, 1) * 100) : 0;
+            c.innerHTML = '<div class="fc-top" style="background:' + g + ';color:#fff"><button class="fc-x" onclick="clCard()">✕</button><div class="fc-r" style="color:' + a + '">' + s.rat + '</div><div class="fc-pos" style="color:' + a + '">' + pl + '</div><div class="fc-nm">' + s.nm + '</div><div class="fc-cat">' + CL[s.cat] + '</div></div><div class="fc-div"></div><div class="fc-sts" style="background:' + g + ';color:#fff"><div class="fst"><span class="fst-l">PJ</span><span class="fst-v">' + s.pj + '</span></div><div class="fst"><span class="fst-l">Pts</span><span class="fst-v" style="color:' + (s.pts >= 0 ? a : '#f87171') + '">' + (s.pts > 0 ? '+' : '') + s.pts + '</span></div><div class="fst"><span class="fst-l">PG</span><span class="fst-v" style="color:var(--acc)">' + s.pg + '</span></div><div class="fst"><span class="fst-l">PP</span><span class="fst-v" style="color:#f87171">' + s.pp + '</span></div><div class="fst fst-f"><span class="fst-l">Victorias</span><span class="fst-v">' + wp + '%</span></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Sets ' + s.sg + 'G / ' + s.sp + 'P</span><span class="fst-v" style="color:' + (s.sd >= 0 ? a : '#f87171') + '">' + (s.sd > 0 ? '+' : '') + s.sd + '</span></div><div class="fbar"><div class="fbar-f" style="width:' + sp + '%;background:' + a + '"></div></div></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Games ' + s.gg + 'G / ' + s.gp + 'P</span><span class="fst-v" style="color:' + (s.gd >= 0 ? a : '#f87171') + '">' + (s.gd > 0 ? '+' : '') + s.gd + '</span></div><div class="fbar"><div class="fbar-f" style="width:' + gp + '%;background:' + a + '"></div></div></div></div>';
             bg.classList.add('show');
         }
-        function closeCard() { document.getElementById('cardBg').classList.remove('show'); }
+        function clCard() { document.getElementById('cardBg').classList.remove('show') }
 
-        // NAV
-        function nav(page) {
-            curPage = page;
-            document.querySelectorAll('.ni').forEach(i => { i.classList.remove('active'); const l = i.querySelector('.nl'); if (l) l.style.color = ''; });
-            const a = document.querySelector(`[data-p="${page}"]`); if (a) { a.classList.add('active'); if (page === 'inicio') a.querySelector('.nl').style.color = 'var(--acc)'; }
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            const t = document.getElementById('page-' + page); if (t) t.classList.add('active');
-            if (page === 'mas') backMas();
-            if (page === 'cuadros') { rCatTabs(); rGrid(); }
-            if (page === 'resultados') rRes();
-            if (page === 'puntos') { rPtsCatTabs(); rPts(); }
-            updateFab(); window.scrollTo({ top: 0, behavior: 'smooth' });
+        // ═══ RESULTADOS ═══
+        function rRes() {
+            var el = document.getElementById('rList'); el.innerHTML = '';
+            var sr = results.slice().sort(function (a, b) { return b.fecha.localeCompare(a.fecha) });
+            if (!sr.length) { el.innerHTML = '<div class="es"><div class="es-i">🕐</div><div class="es-t">Sin resultados aún</div><div class="es-s">Usá el + para cargar</div></div>'; return }
+            var byD = {}; sr.forEach(function (r) { if (!byD[r.fecha]) byD[r.fecha] = []; byD[r.fecha].push(r) });
+            Object.keys(byD).sort().reverse().forEach(function (f) {
+                var dp = f.split('-'), dO = new Date(dp[0], dp[1] - 1, dp[2]), dn = DN[dO.getDay()];
+                var h = '<div class="rc"><div class="rd">' + dn + ' ' + dp[2] + ' de ' + MN[dO.getMonth()] + ' ' + dp[0] + '</div>';
+                byD[f].forEach(function (m) { h += '<div class="rm"><span class="lb l-' + CS[m.cat] + '" style="flex-shrink:0">' + CL[m.cat] + '</span><span class="rp"><span class="' + (m.winner === 1 ? 'rw' : '') + '">' + m.p1 + '</span> vs <span class="' + (m.winner === 2 ? 'rw' : '') + '">' + m.p2 + '</span></span><span class="rsc">' + m.score + '</span></div>' });
+                h += '</div>'; el.innerHTML += h;
+            });
         }
 
-        // INIT - called after Firebase data is loaded
+        // ═══ MODALS ═══
+        function clMod(id) { document.getElementById(id).classList.remove('show') }
+        function fillCatSel(sel) { sel.innerHTML = '<option value="">Categoría...</option>'; CATS.forEach(function (c) { if (parts.some(function (p) { return p.cat === c })) sel.innerHTML += '<option value="' + c + '">' + CL[c] + '</option>' }) }
+        function fillPlSel(cat, s1, s2) {
+            var pl = parts.filter(function (p) { return p.cat === cat }).sort(function (a, b) { return a.apellido.localeCompare(b.apellido) });
+            var o = '<option value="">Jugador...</option>'; pl.forEach(function (p) { o += '<option value="' + p.id + '">' + p.apellido + ' ' + p.nombre + '</option>' });
+            s1.innerHTML = o; s2.innerHTML = o;
+        }
+        function openResMod() { document.getElementById('mRes').classList.add('show'); fillCatSel(document.getElementById('rCat')); document.getElementById('rP1').innerHTML = '<option value="">J1...</option>'; document.getElementById('rP2').innerHTML = '<option value="">J2...</option>'; document.getElementById('rSc').value = ''; document.getElementById('rW').value = ''; document.getElementById('rDt').value = todayStr }
+        function rPickCat() { fillPlSel(document.getElementById('rCat').value, document.getElementById('rP1'), document.getElementById('rP2')) }
+        function saveRes() {
+            var cat = document.getElementById('rCat').value, p1id = document.getElementById('rP1').value, p2id = document.getElementById('rP2').value;
+            var score = document.getElementById('rSc').value.trim(), winner = parseInt(document.getElementById('rW').value), fecha = document.getElementById('rDt').value;
+            if (!cat || !p1id || !p2id || !score || !winner || !fecha || p1id === p2id) { toast('Completá todos los campos'); return }
+            var p1 = parts.find(function (p) { return p.id === p1id }), p2 = parts.find(function (p) { return p.id === p2id });
+            results.push({ fecha: fecha, cat: cat, p1id: p1id, p2id: p2id, p1: p1.apellido + ' ' + p1.nombre, p2: p2.apellido + ' ' + p2.nombre, score: score, winner: winner });
+            db.ref('resultados').set(results); clMod('mRes'); rRes(); toast('Resultado guardado');
+        }
+        function openSchMod() { document.getElementById('mSch').classList.add('show'); fillCatSel(document.getElementById('sCat')); document.getElementById('sP1').innerHTML = '<option value="">J1...</option>'; document.getElementById('sP2').innerHTML = '<option value="">J2...</option>'; document.getElementById('sDt').value = todayStr; document.getElementById('sTm').value = ''; document.getElementById('sCo').value = '' }
+        function sPickCat() { fillPlSel(document.getElementById('sCat').value, document.getElementById('sP1'), document.getElementById('sP2')) }
+        function saveSch() {
+            var cat = document.getElementById('sCat').value, p1id = document.getElementById('sP1').value, p2id = document.getElementById('sP2').value;
+            var date = document.getElementById('sDt').value, time = document.getElementById('sTm').value, court = document.getElementById('sCo').value;
+            if (!cat || !p1id || !p2id || !date || !time || !court || p1id === p2id) { toast('Completá todos los campos'); return }
+            var p1 = parts.find(function (p) { return p.id === p1id }), p2 = parts.find(function (p) { return p.id === p2id });
+            schedule.push({ date: date, time: time, court: parseInt(court), cat: cat, p1id: p1id, p2id: p2id, p1: p1.apellido + ' ' + p1.nombre, p2: p2.apellido + ' ' + p2.nombre });
+            db.ref('programacion').set(schedule); clMod('mSch'); rCal(); rUp(); toast('Partido programado');
+        }
+
+        // ═══ MÁS ═══
+        function subPg(s) { document.getElementById('masMain').style.display = 'none'; document.querySelectorAll('[id^="sub-"]').forEach(function (e) { e.style.display = 'none' }); var t = document.getElementById('sub-' + s); if (t) t.style.display = 'block'; if (s === 'part') rPList(); if (s === 'spo') rSpo() }
+        function backMas() { document.querySelectorAll('[id^="sub-"]').forEach(function (e) { e.style.display = 'none' }); document.getElementById('masMain').style.display = 'block' }
+        function rPList() {
+            var el = document.getElementById('pList'); el.innerHTML = '';
+            var s = parts.slice().sort(function (a, b) { return (a.cat + a.apellido).localeCompare(b.cat + b.apellido) });
+            if (!s.length) { el.innerHTML = '<div class="es"><div class="es-i">👤</div><div class="es-t">Sin participantes</div></div>'; return }
+            var cc = ''; s.forEach(function (p) {
+                if (p.cat !== cc) { cc = p.cat; el.innerHTML += '<div class="slbl" style="margin-top:16px">' + CL[p.cat] + '</div>' }
+                el.innerHTML += '<div class="pc"><div class="pav">' + (p.nombre[0] || '') + (p.apellido[0] || '') + '</div><span class="pnm">' + p.apellido + ', ' + p.nombre + '</span><button class="pdl" onclick="delP(\'' + p.id + '\')">✕</button></div>';
+            });
+        }
+        function addP() {
+            var n = document.getElementById('iN').value.trim(), a = document.getElementById('iA').value.trim(), c = document.getElementById('iC').value;
+            if (!n || !a || !c) { toast('Completá todos los campos'); return }
+            parts.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), nombre: n, apellido: a, cat: c });
+            db.ref('participantes').set(parts); document.getElementById('iN').value = ''; document.getElementById('iA').value = ''; document.getElementById('iC').value = '';
+            rPList(); toast(n + ' ' + a + ' → ' + CL[c]);
+        }
+        function delP(id) { parts = parts.filter(function (p) { return p.id !== id }); db.ref('participantes').set(parts); rPList(); toast('Eliminado') }
+        function rSpo() { var el = document.getElementById('sList'); el.innerHTML = ''; sponsors.forEach(function (s) { el.innerHTML += '<div class="spc"><div class="spl">' + s.e + '</div><div><div class="spn">' + s.n + '</div><div class="spt">' + s.t + '</div></div></div>' }) }
+
+        // ═══ INIT ═══
         function initApp() {
-            rCal(); rSch(); rCatTabs(); updateFab();
+            rCal(); rUp(); rCTabs(); updFab();
             document.getElementById('app').style.opacity = '1';
         }
-
-        // Make functions available globally for onclick handlers
-        window.chMo = chMo; window.nav = nav; window.fabAction = fabAction; window.closeModal = closeModal;
-        window.openCard = openCard; window.closeCard = closeCard; window.subPage = subPage; window.backMas = backMas;
-        window.addPart = addPart; window.delPart = delPart; window.resPickCat = resPickCat; window.saveResult = saveResult;
-        window.schPickCat = schPickCat; window.saveSch = saveSch;
     </script>
 </body>
 
