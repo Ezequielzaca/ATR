@@ -44,7 +44,7 @@
             color: var(--t1);
             min-height: 100dvh;
             overflow-x: hidden;
-            padding-bottom: calc(var(--nav-h)+20px)
+            padding-bottom: calc(var(--nav-h)+40px)
         }
 
         .hdr {
@@ -114,7 +114,8 @@
             max-width: 500px;
             margin: 0 auto;
             padding: 20px 16px;
-            transition: opacity .3s
+            transition: opacity .3s;
+            overflow-y: auto
         }
 
         .slbl {
@@ -133,7 +134,8 @@
 
         .page.active {
             display: block;
-            animation: fu .4s ease both
+            animation: fu .4s ease both;
+            padding-bottom: 20px
         }
 
         @keyframes fu {
@@ -1414,6 +1416,78 @@
         .toast.show {
             opacity: 1
         }
+
+        /* Admin */
+        .adm-card {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: var(--rs);
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .adm-info {
+            flex: 1;
+            min-width: 0;
+            font-size: .82rem;
+            font-weight: 500
+        }
+
+        .adm-info small {
+            display: block;
+            font-size: .68rem;
+            color: var(--tm);
+            font-weight: 400
+        }
+
+        .adm-del {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid rgba(239, 68, 68, .3);
+            background: rgba(239, 68, 68, .1);
+            color: #f87171;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .8rem;
+            flex-shrink: 0;
+            transition: .2s
+        }
+
+        .adm-del:hover {
+            background: rgba(239, 68, 68, .25);
+            border-color: #ef4444
+        }
+
+        .adm-edit {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid rgba(52, 211, 153, .3);
+            background: rgba(52, 211, 153, .1);
+            color: var(--acc);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .8rem;
+            flex-shrink: 0;
+            transition: .2s
+        }
+
+        .adm-edit:hover {
+            background: rgba(52, 211, 153, .25);
+            border-color: var(--acc)
+        }
+
+        .adm-hide {
+            display: none !important
+        }
     </style>
 </head>
 
@@ -1508,6 +1582,13 @@
                         <div class="mid">Escribinos</div>
                     </div>
                 </div>
+                <div class="mi" id="admBtn" onclick="subPg('admin')">
+                    <div class="mic" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">🔐</div>
+                    <div>
+                        <div class="mit" id="admBtnTxt">Iniciar Sesión Administrador</div>
+                        <div class="mid" id="admBtnSub">Gestionar torneo</div>
+                    </div>
+                </div>
             </div>
             <div id="sub-part" style="display:none">
                 <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span
@@ -1551,13 +1632,47 @@
                         <div style="font-size:.78rem;color:var(--tm)">+54 9 379 400-0000</div>
                     </div>
                 </a>
-                <a class="ctc" href="mailto:tenisatr@gmail.com">
+                <a class="ctc" href="/cdn-cgi/l/email-protection#067263686f7567727446616b676f6a2865696b">
                     <div class="ctic em">✉️</div>
                     <div>
                         <div style="font-weight:600">Email</div>
-                        <div style="font-size:.78rem;color:var(--tm)">tenisatr@gmail.com</div>
+                        <div style="font-size:.78rem;color:var(--tm)"><span class="__cf_email__"
+                                data-cfemail="3440515a5d47554046745359555d581a575b59">[email&#160;protected]</span>
+                        </div>
                     </div>
                 </a>
+            </div>
+            <!-- Admin -->
+            <div id="sub-admin" style="display:none">
+                <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t"
+                        id="admTitle">Iniciar Sesión</span></div>
+                <!-- Login form (shown when not admin) -->
+                <div id="admLogin">
+                    <div class="af">
+                        <div class="af-t">🔐 Acceso Administrador</div>
+                        <div class="fr"><input class="fi" id="admUser" placeholder="Usuario" autocomplete="off" /></div>
+                        <div class="fr"><input class="fi" id="admPass" placeholder="Contraseña" type="password" /></div>
+                        <button class="fb" onclick="doLogin()">Iniciar Sesión</button>
+                        <div id="admErr"
+                            style="color:#f87171;font-size:.8rem;text-align:center;margin-top:10px;display:none">Usuario
+                            o contraseña incorrectos</div>
+                    </div>
+                </div>
+                <!-- Admin panel (shown when admin) -->
+                <div id="admPanel" style="display:none">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                        <span style="font-weight:700;color:var(--acc)">Panel Administrador</span>
+                        <button
+                            style="padding:6px 14px;border-radius:8px;border:1px solid #ef4444;background:rgba(239,68,68,.1);color:#f87171;font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer"
+                            onclick="doLogout()">Cerrar Sesión</button>
+                    </div>
+                    <div class="slbl">Gestionar Partidos Programados</div>
+                    <div id="admSch"></div>
+                    <div class="slbl" style="margin-top:20px">Gestionar Resultados</div>
+                    <div id="admRes"></div>
+                    <div class="slbl" style="margin-top:20px">Gestionar Participantes</div>
+                    <div id="admPart"></div>
+                </div>
             </div>
         </div>
     </main>
@@ -1660,6 +1775,7 @@
     </nav>
 
     <!-- Firebase Compat SDK (NO module) -->
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
     <script>
@@ -1722,7 +1838,7 @@
         }
 
         // ═══ FAB ═══
-        function updFab() { var f = document.getElementById('fab'); f.classList.toggle('show', curPg === 'inicio' || curPg === 'resultados') }
+        function updFab() { document.getElementById('fab').classList.toggle('show', (curPg === 'inicio' || curPg === 'resultados') && isAdmin) }
         function fabAct() { if (curPg === 'resultados') openResMod(); if (curPg === 'inicio') openSchMod() }
 
         // ═══ CALENDAR ═══
@@ -1919,9 +2035,71 @@
         function delP(id) { parts = parts.filter(function (p) { return p.id !== id }); db.ref('participantes').set(parts); rPList(); toast('Eliminado') }
         function rSpo() { var el = document.getElementById('sList'); el.innerHTML = ''; sponsors.forEach(function (s) { el.innerHTML += '<div class="spc"><div class="spl">' + s.e + '</div><div><div class="spn">' + s.n + '</div><div class="spt">' + s.t + '</div></div></div>' }) }
 
+        // ═══ ADMIN ═══
+        var isAdmin = sessionStorage.getItem('atr_admin') === '1';
+        function updAdmUI() {
+            var btn = document.getElementById('admBtnTxt'), sub = document.getElementById('admBtnSub');
+            if (isAdmin) { btn.textContent = 'Panel Administrador'; sub.textContent = 'Sesión activa' }
+            else { btn.textContent = 'Iniciar Sesión Administrador'; sub.textContent = 'Gestionar torneo' }
+            document.querySelectorAll('.pdl').forEach(function (b) { b.style.display = isAdmin ? 'flex' : 'none' });
+            var addForm = document.querySelector('#sub-part .af');
+            if (addForm) addForm.style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('fab').classList.toggle('show', (curPg === 'inicio' || curPg === 'resultados') && isAdmin);
+        }
+        function doLogin() {
+            var u = document.getElementById('admUser').value.trim(), p = document.getElementById('admPass').value;
+            if (u === 'ATR2026ADM' && p === 'EzequielGenio2026') {
+                isAdmin = true; sessionStorage.setItem('atr_admin', '1');
+                document.getElementById('admLogin').style.display = 'none';
+                document.getElementById('admPanel').style.display = 'block';
+                document.getElementById('admTitle').textContent = 'Panel Administrador';
+                document.getElementById('admErr').style.display = 'none';
+                rAdmPanel(); updAdmUI(); toast('Sesión iniciada');
+            } else { document.getElementById('admErr').style.display = 'block' }
+        }
+        function doLogout() {
+            isAdmin = false; sessionStorage.removeItem('atr_admin');
+            document.getElementById('admLogin').style.display = 'block';
+            document.getElementById('admPanel').style.display = 'none';
+            document.getElementById('admTitle').textContent = 'Iniciar Sesión';
+            document.getElementById('admUser').value = ''; document.getElementById('admPass').value = '';
+            updAdmUI(); toast('Sesión cerrada');
+        }
+        function rAdmPanel() {
+            var el = document.getElementById('admSch'); el.innerHTML = '';
+            if (!schedule.length) el.innerHTML = '<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin partidos</div>';
+            else schedule.forEach(function (m, i) { el.innerHTML += '<div class="adm-card"><div class="adm-info">' + m.p1 + ' vs ' + m.p2 + '<small>' + m.date + ' ' + m.time + ' - Cancha ' + m.court + ' - ' + CL[m.cat] + '</small></div><button class="adm-del" onclick="admDelSch(' + i + ')">✕</button></div>' });
+            var el2 = document.getElementById('admRes'); el2.innerHTML = '';
+            if (!results.length) el2.innerHTML = '<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin resultados</div>';
+            else results.forEach(function (r, i) { el2.innerHTML += '<div class="adm-card"><div class="adm-info">' + r.p1 + ' vs ' + r.p2 + ' → ' + r.score + '<small>' + r.fecha + ' - ' + CL[r.cat] + ' - Ganó: ' + (r.winner === 1 ? r.p1 : r.p2) + '</small></div><button class="adm-del" onclick="admDelRes(' + i + ')">✕</button></div>' });
+            var el3 = document.getElementById('admPart'); el3.innerHTML = '';
+            var sorted = parts.slice().sort(function (a, b) { return (a.cat + a.apellido).localeCompare(b.cat + b.apellido) });
+            if (!sorted.length) el3.innerHTML = '<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin participantes</div>';
+            else { var cc = ''; sorted.forEach(function (p) { if (p.cat !== cc) { cc = p.cat; el3.innerHTML += '<div class="slbl" style="margin-top:12px;margin-bottom:6px">' + CL[p.cat] + '</div>' } el3.innerHTML += '<div class="adm-card"><div class="adm-info">' + p.apellido + ', ' + p.nombre + '</div><button class="adm-del" onclick="admDelPart(\'' + p.id + '\')">✕</button></div>' }) }
+        }
+        function admDelSch(i) { if (!confirm('Eliminar partido?')) return; schedule.splice(i, 1); db.ref('programacion').set(schedule); rAdmPanel(); rCal(); rUp(); toast('Eliminado') }
+        function admDelRes(i) { if (!confirm('Eliminar resultado?')) return; results.splice(i, 1); db.ref('resultados').set(results); rAdmPanel(); toast('Eliminado') }
+        function admDelPart(id) { if (!confirm('Eliminar participante?')) return; parts = parts.filter(function (p) { return p.id !== id }); db.ref('participantes').set(parts); rAdmPanel(); toast('Eliminado') }
+
+        // Override subPg to handle admin
+        var _origSubPg = subPg;
+        subPg = function (s) {
+            document.getElementById('masMain').style.display = 'none';
+            document.querySelectorAll('[id^="sub-"]').forEach(function (e) { e.style.display = 'none' });
+            var t = document.getElementById('sub-' + s); if (t) t.style.display = 'block';
+            if (s === 'part') { rPList(); updAdmUI() }
+            if (s === 'spo') rSpo();
+            if (s === 'admin') {
+                if (isAdmin) { document.getElementById('admLogin').style.display = 'none'; document.getElementById('admPanel').style.display = 'block'; document.getElementById('admTitle').textContent = 'Panel Administrador'; rAdmPanel() }
+                else { document.getElementById('admLogin').style.display = 'block'; document.getElementById('admPanel').style.display = 'none'; document.getElementById('admTitle').textContent = 'Iniciar Sesión' }
+            }
+        }
+
+        // Override updFab is already defined above with admin check
+
         // ═══ INIT ═══
         function initApp() {
-            rCal(); rUp(); rCTabs(); updFab();
+            rCal(); rUp(); rCTabs(); updFab(); updAdmUI();
             document.getElementById('app').style.opacity = '1';
         }
     </script>
