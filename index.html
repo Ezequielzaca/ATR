@@ -1606,6 +1606,13 @@
                             <option value="madera">Madera</option>
                             <option value="mujeres">Mujeres</option>
                         </select></div>
+                    <div class="fr"><select class="fs" id="iG">
+                            <option value="">Grupo...</option>
+                            <option value="A">Grupo A</option>
+                            <option value="B">Grupo B</option>
+                            <option value="C">Grupo C</option>
+                            <option value="D">Grupo D</option>
+                        </select></div>
                     <button class="fb" onclick="addP()">Agregar al Cuadro</button>
                 </div>
                 <div id="pList"></div>
@@ -1879,28 +1886,43 @@
             var t = document.getElementById('cTabs'); t.innerHTML = '';
             CATS.forEach(function (cat) {
                 var n = parts.filter(function (p) { return p.cat === cat }).length; if (!n) return;
-                t.innerHTML += '<div class="ct' + (selCat === cat ? ' a-' + CS[cat] : '') + '" onclick="selCat=\'' + cat + '\';rCTabs();rGrid()">' + CL[cat] + ' (' + n + ')</div>';
+                t.innerHTML += '<div class="ct' + (selCat === cat ? ' a-' + CS[cat] : '') + '" onclick="togCat(\'' + cat + '\')">' + CL[cat] + ' (' + n + ')</div>';
             });
         }
+        function togCat(cat) { selCat = selCat === cat ? null : cat; rCTabs(); rGrid() }
         function rGrid() {
             var el = document.getElementById('cGrid');
-            if (!selCat) { el.innerHTML = '<div class="es"><div class="es-i">👆</div><div class="es-t">Elegí una categoría</div></div>'; return }
-            var pl = parts.filter(function (p) { return p.cat === selCat }).sort(function (a, b) { return (a.apellido + a.nombre).localeCompare(b.apellido + b.nombre) });
-            if (!pl.length) { el.innerHTML = '<div class="es"><div class="es-i">📋</div><div class="es-t">Sin participantes</div><div class="es-s">Agregá desde Más → Participantes</div></div>'; return }
+            if (!selCat) { el.innerHTML = ''; return }
+            var groups = ['A', 'B', 'C', 'D'];
+            var pl = parts.filter(function (p) { return p.cat === selCat });
+            if (!pl.length) { el.innerHTML = '<div class="es"><div class="es-i">📋</div><div class="es-t">Sin participantes en ' + CL[selCat] + '</div></div>'; return }
             var rM = {}; results.filter(function (r) { return r.cat === selCat }).forEach(function (r) { rM[r.p1id + '_' + r.p2id] = r; rM[r.p2id + '_' + r.p1id] = { p1id: r.p2id, p2id: r.p1id, score: r.score, winner: r.winner, flip: true } });
-            var h = '<div class="gw"><table class="gt"><thead><tr><th></th><th class="cn">#</th>';
-            pl.forEach(function (_, i) { h += '<th class="cn">' + (i + 1) + '</th>' });
-            h += '</tr></thead><tbody>';
-            pl.forEach(function (p, i) {
-                h += '<tr><td class="rn">' + p.apellido + ' ' + p.nombre + '</td><td class="cn">' + (i + 1) + '</td>';
-                pl.forEach(function (q, j) {
-                    if (i === j) { h += '<td class="self">—</td>'; return }
-                    var k = p.id + '_' + q.id, r = rM[k];
-                    if (r) { var w = r.flip ? r.winner === 2 : r.winner === 1; h += '<td class="' + (w ? 'win' : 'loss') + '">' + r.score + '</td>' }
-                    else h += '<td></td>';
-                }); h += '</tr>';
+            var html = '';
+            groups.forEach(function (g) {
+                var gpl = pl.filter(function (p) { return p.grupo === g }).sort(function (a, b) { return (a.apellido + a.nombre).localeCompare(b.apellido + b.nombre) });
+                if (!gpl.length) return;
+                html += '<div class="slbl" style="margin-top:16px;margin-bottom:8px">Grupo ' + g + ' — ' + CL[selCat] + '</div>';
+                html += '<div class="gw"><table class="gt"><thead><tr><th></th><th class="cn">#</th>';
+                gpl.forEach(function (_, i) { html += '<th class="cn">' + (i + 1) + '</th>' });
+                html += '</tr></thead><tbody>';
+                gpl.forEach(function (p, i) {
+                    html += '<tr><td class="rn">' + p.apellido + ' ' + p.nombre + '</td><td class="cn">' + (i + 1) + '</td>';
+                    gpl.forEach(function (q, j) {
+                        if (i === j) { html += '<td class="self">—</td>'; return }
+                        var k = p.id + '_' + q.id, r = rM[k];
+                        if (r) { var w = r.flip ? r.winner === 2 : r.winner === 1; html += '<td class="' + (w ? 'win' : 'loss') + '">' + r.score + '</td>' }
+                        else html += '<td></td>';
+                    }); html += '</tr>';
+                });
+                html += '</tbody></table></div>';
             });
-            h += '</tbody></table></div>'; el.innerHTML = h;
+            // Players without group
+            var noG = pl.filter(function (p) { return !p.grupo || groups.indexOf(p.grupo) === -1 });
+            if (noG.length) {
+                html += '<div class="slbl" style="margin-top:16px;margin-bottom:8px;color:#f87171">Sin grupo asignado</div>';
+                noG.forEach(function (p) { html += '<div class="pc"><div class="pav">' + (p.nombre[0] || '') + (p.apellido[0] || '') + '</div><span class="pnm">' + p.apellido + ', ' + p.nombre + '</span></div>' });
+            }
+            el.innerHTML = html;
         }
 
         // ═══ PUNTOS ═══
@@ -1908,9 +1930,10 @@
             var t = document.getElementById('pTabs'); t.innerHTML = '';
             CATS.forEach(function (cat) {
                 var n = parts.filter(function (p) { return p.cat === cat }).length; if (!n) return;
-                t.innerHTML += '<div class="ct' + (ptsCat === cat ? ' a-' + CS[cat] : '') + '" onclick="ptsCat=\'' + cat + '\';rPTabs();rPts()">' + CL[cat] + ' (' + n + ')</div>';
+                t.innerHTML += '<div class="ct' + (ptsCat === cat ? ' a-' + CS[cat] : '') + '" onclick="togPCat(\'' + cat + '\')">' + CL[cat] + ' (' + n + ')</div>';
             });
         }
+        function togPCat(cat) { ptsCat = ptsCat === cat ? null : cat; rPTabs(); rPts() }
         function parseScore(sc) {
             var sets = sc.trim().split(/\s+/), s1 = 0, s2 = 0, g1 = 0, g2 = 0;
             sets.forEach(function (s) { var p = s.split('-'); if (p.length === 2) { var a = parseInt(p[0]) || 0, b = parseInt(p[1]) || 0; g1 += a; g2 += b; if (a > b) s1++; else if (b > a) s2++ } });
@@ -1918,7 +1941,7 @@
         }
         function rPts() {
             var el = document.getElementById('pTbl');
-            if (!ptsCat) { el.innerHTML = '<div class="es"><div class="es-i">👆</div><div class="es-t">Elegí una categoría</div></div>'; return }
+            if (!ptsCat) { el.innerHTML = ''; return }
             var pl = parts.filter(function (p) { return p.cat === ptsCat });
             if (!pl.length) { el.innerHTML = '<div class="es"><div class="es-i">📋</div><div class="es-t">Sin participantes</div></div>'; return }
             var st = {}; pl.forEach(function (p) { st[p.id] = { id: p.id, nm: p.apellido + ' ' + p.nombre, cat: p.cat, pj: 0, pg: 0, pp: 0, pts: 0, sg: 0, sp: 0, gg: 0, gp: 0 } });
@@ -2022,15 +2045,15 @@
             if (!s.length) { el.innerHTML = '<div class="es"><div class="es-i">👤</div><div class="es-t">Sin participantes</div></div>'; return }
             var cc = ''; s.forEach(function (p) {
                 if (p.cat !== cc) { cc = p.cat; el.innerHTML += '<div class="slbl" style="margin-top:16px">' + CL[p.cat] + '</div>' }
-                el.innerHTML += '<div class="pc"><div class="pav">' + (p.nombre[0] || '') + (p.apellido[0] || '') + '</div><span class="pnm">' + p.apellido + ', ' + p.nombre + '</span><button class="pdl" onclick="delP(\'' + p.id + '\')">✕</button></div>';
+                el.innerHTML += '<div class="pc"><div class="pav">' + (p.nombre[0] || '') + (p.apellido[0] || '') + '</div><span class="pnm">' + p.apellido + ', ' + p.nombre + '</span><span class="lb l-' + CS[p.cat] + '" style="font-size:.55rem;margin-right:4px">' + (p.grupo ? 'G' + p.grupo : '?') + '</span>' + (isAdmin ? '<button class="pdl" onclick="delP(\'' + p.id + '\')">✕</button>' : '') + '</div>';
             });
         }
         function addP() {
-            var n = document.getElementById('iN').value.trim(), a = document.getElementById('iA').value.trim(), c = document.getElementById('iC').value;
-            if (!n || !a || !c) { toast('Completá todos los campos'); return }
-            parts.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), nombre: n, apellido: a, cat: c });
-            db.ref('participantes').set(parts); document.getElementById('iN').value = ''; document.getElementById('iA').value = ''; document.getElementById('iC').value = '';
-            rPList(); toast(n + ' ' + a + ' → ' + CL[c]);
+            var n = document.getElementById('iN').value.trim(), a = document.getElementById('iA').value.trim(), c = document.getElementById('iC').value, g = document.getElementById('iG').value;
+            if (!n || !a || !c || !g) { toast('Completá todos los campos'); return }
+            parts.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), nombre: n, apellido: a, cat: c, grupo: g });
+            db.ref('participantes').set(parts); document.getElementById('iN').value = ''; document.getElementById('iA').value = ''; document.getElementById('iC').value = ''; document.getElementById('iG').value = '';
+            rPList(); toast(n + ' ' + a + ' → ' + CL[c] + ' Grupo ' + g);
         }
         function delP(id) { parts = parts.filter(function (p) { return p.id !== id }); db.ref('participantes').set(parts); rPList(); toast('Eliminado') }
         function rSpo() { var el = document.getElementById('sList'); el.innerHTML = ''; sponsors.forEach(function (s) { el.innerHTML += '<div class="spc"><div class="spl">' + s.e + '</div><div><div class="spn">' + s.n + '</div><div class="spt">' + s.t + '</div></div></div>' }) }
