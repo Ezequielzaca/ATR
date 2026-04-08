@@ -131,6 +131,8 @@
             margin: 0 auto;
             padding: 20px 16px;
             overflow-x: hidden;
+            opacity: 0;
+            transition: opacity .4s ease;
         }
 
         .slbl {
@@ -1875,32 +1877,72 @@
         </div>
     </nav>
 
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue, push, remove, get } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDgzE1ky3HGojYgyGoAWn9yU8Frq09qS_g",
+            authDomain: "atr-tour.firebaseapp.com",
+            projectId: "atr-tour",
+            storageBucket: "atr-tour.appspot.com",
+            messagingSenderId: "375401872988",
+            appId: "1:375401872988:web:0a36bae78497a0c5e73099",
+            measurementId: "G-QG9B0WW0L8",
+            databaseURL: "https://atr-tour-default-rtdb.firebaseio.com"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
         const MN = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
         const DN = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
         const CATS = ['signature', 'oro', 'plata', 'bronce', 'madera', 'mujeres'];
         const CL = { signature: 'Signature', oro: 'Oro', plata: 'Plata', bronce: 'Bronce', madera: 'Madera', mujeres: 'Mujeres' };
         const CLS = { signature: 'sig', oro: 'oro', plata: 'pla', bronce: 'bro', madera: 'mad', mujeres: 'muj' };
 
-        // PERSISTENT DATA
-        let parts = JSON.parse(localStorage.getItem('atr_p') || '[]');
-        let results = JSON.parse(localStorage.getItem('atr_r') || '[]');
-        let schedule = JSON.parse(localStorage.getItem('atr_s') || '[]');
-        function save() { localStorage.setItem('atr_p', JSON.stringify(parts)); localStorage.setItem('atr_r', JSON.stringify(results)); localStorage.setItem('atr_s', JSON.stringify(schedule)); }
+        // SHARED DATA - synced via Firebase
+        let parts = [];
+        let results = [];
+        let schedule = [];
+        let dataLoaded = false;
 
-        // Seed sample data if empty
-        if (!parts.length) {
-            const sample = [
-                { nombre: 'García', apellido: 'Martín', cat: 'signature' }, { nombre: 'López', apellido: 'Ricardo', cat: 'signature' },
-                { nombre: 'Fernández', apellido: 'Juan', cat: 'signature' }, { nombre: 'Martínez', apellido: 'Diego', cat: 'signature' },
-                { nombre: 'Rodríguez', apellido: 'Pablo', cat: 'signature' }, { nombre: 'Sánchez', apellido: 'Lucas', cat: 'signature' },
-            ];
-            sample.forEach(s => { s.id = Math.random().toString(36).slice(2, 10); parts.push(s); });
-            // Sample result
-            results.push({ fecha: '2026-04-06', cat: 'signature', p1id: parts[0].id, p2id: parts[5].id, p1: `${parts[0].apellido} ${parts[0].nombre}`, p2: `${parts[5].apellido} ${parts[5].nombre}`, score: '6-3 6-4', winner: 1 });
-            save();
+        // Firebase helpers
+        function fbSave(path, data) { return set(ref(db, path), data); }
+        function saveParts() { fbSave('participantes', parts); }
+        function saveResults() { fbSave('resultados', results); }
+        function saveSchedule() { fbSave('programacion', schedule); }
+
+        // Listen for real-time changes
+        onValue(ref(db, 'participantes'), snap => {
+            parts = snap.val() || [];
+            if (dataLoaded) refreshAll();
+        });
+        onValue(ref(db, 'resultados'), snap => {
+            results = snap.val() || [];
+            if (dataLoaded) refreshAll();
+        });
+        onValue(ref(db, 'programacion'), snap => {
+            schedule = snap.val() || [];
+            if (dataLoaded) refreshAll();
+        });
+
+        function refreshAll() {
+            rCal(); rSch();
+            if (curPage === 'cuadros') { rCatTabs(); rGrid(); }
+            if (curPage === 'puntos') { rPtsCatTabs(); rPts(); }
+            if (curPage === 'resultados') rRes();
         }
+
+        // Wait for initial data then init
+        let loadCount = 0;
+        function checkLoaded() {
+            loadCount++;
+            if (loadCount >= 3) { dataLoaded = true; initApp(); }
+        }
+        get(ref(db, 'participantes')).then(s => { parts = s.val() || []; checkLoaded(); }).catch(() => checkLoaded());
+        get(ref(db, 'resultados')).then(s => { results = s.val() || []; checkLoaded(); }).catch(() => checkLoaded());
+        get(ref(db, 'programacion')).then(s => { schedule = s.val() || []; checkLoaded(); }).catch(() => checkLoaded());
 
         const sponsors = [{ name: "Sponsor Principal", type: "Sponsor Oro", emoji: "🏆" }, { name: "Club de Tenis Corrientes", type: "Sede Oficial", emoji: "🏟️" }, { name: "Deportes ATR", type: "Sponsor Plata", emoji: "🎾" }, { name: "Hidratación Pro", type: "Sponsor Oficial", emoji: "💧" }];
 
@@ -2030,11 +2072,11 @@
         function addPart() {
             const n = document.getElementById('iNom').value.trim(), a = document.getElementById('iApe').value.trim(), c = document.getElementById('iCat').value;
             if (!n || !a || !c) { toast('Completá todos los campos'); return; }
-            parts.push({ id: Math.random().toString(36).slice(2, 10), nombre: n, apellido: a, cat: c }); save();
+            parts.push({ id: Math.random().toString(36).slice(2, 10), nombre: n, apellido: a, cat: c }); saveParts();
             document.getElementById('iNom').value = ''; document.getElementById('iApe').value = ''; document.getElementById('iCat').value = '';
             rParts(); toast(`${n} ${a} → ${CL[c]}`);
         }
-        function delPart(id) { parts = parts.filter(p => p.id !== id); save(); rParts(); toast('Eliminado'); }
+        function delPart(id) { parts = parts.filter(p => p.id !== id); saveParts(); rParts(); toast('Eliminado'); }
 
         function rSpo() {
             const list = document.getElementById('spoList'); list.innerHTML = '';
@@ -2073,7 +2115,7 @@
             if (!cat || !p1id || !p2id || !score || !winner || !fecha || p1id === p2id) { toast('Completá todos los campos'); return; }
             const p1 = parts.find(p => p.id === p1id), p2 = parts.find(p => p.id === p2id);
             results.push({ fecha, cat, p1id, p2id, p1: `${p1.apellido} ${p1.nombre}`, p2: `${p2.apellido} ${p2.nombre}`, score, winner });
-            save(); closeModal('modalRes'); rRes(); toast('Resultado guardado');
+            saveResults(); closeModal('modalRes'); rRes(); toast('Resultado guardado');
         }
 
         // MODAL: Schedule
@@ -2097,7 +2139,7 @@
             if (!cat || !p1id || !p2id || !date || !time || !court || p1id === p2id) { toast('Completá todos los campos'); return; }
             const p1 = parts.find(p => p.id === p1id), p2 = parts.find(p => p.id === p2id);
             schedule.push({ date, time, court: parseInt(court), cat, p1id, p2id, p1: `${p1.apellido} ${p1.nombre}`, p2: `${p2.apellido} ${p2.nombre}` });
-            save(); closeModal('modalSch'); rCal(); rSch(); toast('Partido programado');
+            saveSchedule(); closeModal('modalSch'); rCal(); rSch(); toast('Partido programado');
         }
 
         function closeModal(id) { document.getElementById(id).classList.remove('show'); }
@@ -2300,11 +2342,17 @@
             updateFab(); window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Also update saveResult to refresh puntos if visible
-        const _origSaveResult = saveResult;
+        // INIT - called after Firebase data is loaded
+        function initApp() {
+            rCal(); rSch(); rCatTabs(); updateFab();
+            document.getElementById('app').style.opacity = '1';
+        }
 
-        // INIT
-        rCal(); rSch(); rCatTabs(); updateFab();
+        // Make functions available globally for onclick handlers
+        window.chMo = chMo; window.nav = nav; window.fabAction = fabAction; window.closeModal = closeModal;
+        window.openCard = openCard; window.closeCard = closeCard; window.subPage = subPage; window.backMas = backMas;
+        window.addPart = addPart; window.delPart = delPart; window.resPickCat = resPickCat; window.saveResult = saveResult;
+        window.schPickCat = schPickCat; window.saveSch = saveSch;
     </script>
 </body>
 
