@@ -260,7 +260,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Participantes</span></div>
     <div class="af">
       <div class="af-t">Agregar Participante</div>
-      <div class="fr"><input class="fi" id="iN" placeholder="Nombre"/><input class="fi" id="iA" placeholder="Apellido"/></div>
+      <div class="fr"><input class="fi" id="iN" placeholder="Nombre"/><input class="fi" id="iA" placeholder="Apellido"/><button onclick="quickAddP()" style="width:42px;height:42px;border-radius:10px;border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;flex-shrink:0" title="Agregar rápido">+</button></div>
       <div class="fr"><select class="fs" id="iC"><option value="">Categoría...</option><option value="signature">Signature</option><option value="oro">Oro</option><option value="plata">Plata</option><option value="bronce">Bronce</option><option value="madera">Madera</option><option value="mujeres">Mujeres</option></select></div>
       <div class="fr"><select class="fs" id="iG"><option value="">Grupo...</option><option value="A">Grupo A</option><option value="B">Grupo B</option><option value="C">Grupo C</option><option value="D">Grupo D</option></select></div>
       <button class="fb" onclick="addP()">Agregar al Cuadro</button>
@@ -344,6 +344,15 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
   <div class="fr"><select class="fs" id="eW"><option value="">Ganador...</option><option value="1">Jugador 1</option><option value="2">Jugador 2</option></select></div>
   <div class="fr"><input type="date" class="fi" id="eDt"/></div>
   <button class="fb" onclick="saveEdit()">Guardar Cambios</button>
+</div></div>
+
+<!-- Modal: Edit Participant -->
+<div class="mbg" id="mEditP" onclick="if(event.target===this)clMod('mEditP')"><div class="mdl">
+  <div class="mh"><span class="mt">Editar Participante</span><button class="mx" onclick="clMod('mEditP')">✕</button></div>
+  <div class="fr"><input class="fi" id="epN" placeholder="Nombre"/><input class="fi" id="epA" placeholder="Apellido"/></div>
+  <div class="fr"><select class="fs" id="epC"><option value="">Categoría...</option><option value="signature">Signature</option><option value="oro">Oro</option><option value="plata">Plata</option><option value="bronce">Bronce</option><option value="madera">Madera</option><option value="mujeres">Mujeres</option></select></div>
+  <div class="fr"><select class="fs" id="epG"><option value="">Grupo...</option><option value="A">Grupo A</option><option value="B">Grupo B</option><option value="C">Grupo C</option><option value="D">Grupo D</option></select></div>
+  <button class="fb" onclick="saveEditP()">Guardar Cambios</button>
 </div></div>
 
 <nav class="bnav"><div class="nits">
@@ -712,17 +721,51 @@ function rPList(){
   if(!s.length){el.innerHTML='<div class="es"><div class="es-i">👤</div><div class="es-t">Sin participantes</div></div>';return}
   var cc='';s.forEach(function(p){
     if(p.cat!==cc){cc=p.cat;el.innerHTML+='<div class="slbl" style="margin-top:16px">'+CL[p.cat]+'</div>'}
-    el.innerHTML+='<div class="pc"><div class="pav">'+(p.nombre[0]||'')+(p.apellido[0]||'')+'</div><span class="pnm">'+p.apellido+', '+p.nombre+'</span><span class="lb l-'+CS[p.cat]+'" style="font-size:.55rem;margin-right:4px">'+(p.grupo?'G'+p.grupo:'?')+'</span>'+(isAdmin?'<button class="pdl" onclick="delP(\''+p.id+'\')">✕</button>':'')+'</div>';
+    var btns='';
+    if(isAdmin){
+      btns='<button class="adm-edit" onclick="editPart(\''+p.id+'\')" title="Editar" style="width:28px;height:28px;font-size:.7rem">✎</button>';
+      btns+='<button class="pdl" onclick="delP(\''+p.id+'\')">✕</button>';
+    }
+    el.innerHTML+='<div class="pc"><div class="pav">'+(p.nombre[0]||'')+(p.apellido[0]||'')+'</div><span class="pnm">'+p.apellido+', '+p.nombre+'</span><span class="lb l-'+CS[p.cat]+'" style="font-size:.55rem;margin-right:4px">'+(p.grupo?'G'+p.grupo:'?')+'</span>'+btns+'</div>';
   });
 }
 function addP(){
   var n=document.getElementById('iN').value.trim(),a=document.getElementById('iA').value.trim(),c=document.getElementById('iC').value,g=document.getElementById('iG').value;
   if(!n||!a||!c||!g){toast('Completá todos los campos');return}
   parts.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),nombre:n,apellido:a,cat:c,grupo:g});
-  db.ref('participantes').set(parts);document.getElementById('iN').value='';document.getElementById('iA').value='';document.getElementById('iC').value='';document.getElementById('iG').value='';
+  db.ref('participantes').set(parts);
+  document.getElementById('iN').value='';document.getElementById('iA').value='';document.getElementById('iC').value='';document.getElementById('iG').value='';
   rPList();toast(n+' '+a+' → '+CL[c]+' Grupo '+g);
 }
-function delP(id){parts=parts.filter(function(p){return p.id!==id});db.ref('participantes').set(parts);rPList();toast('Eliminado')}
+function quickAddP(){
+  var n=document.getElementById('iN').value.trim(),a=document.getElementById('iA').value.trim(),c=document.getElementById('iC').value,g=document.getElementById('iG').value;
+  if(!n||!a||!c||!g){toast('Completá todos los campos');return}
+  parts.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),nombre:n,apellido:a,cat:c,grupo:g});
+  db.ref('participantes').set(parts);
+  document.getElementById('iN').value='';document.getElementById('iA').value='';
+  // Mantiene categoría y grupo para carga rápida
+  document.getElementById('iN').focus();
+  rPList();toast(n+' '+a+' → '+CL[c]+' G'+g);
+}
+var editPId='';
+function editPart(id){
+  var p=parts.find(function(x){return x.id===id});if(!p)return;
+  editPId=id;
+  document.getElementById('epN').value=p.nombre;
+  document.getElementById('epA').value=p.apellido;
+  document.getElementById('epC').value=p.cat;
+  document.getElementById('epG').value=p.grupo||'';
+  document.getElementById('mEditP').classList.add('show');
+}
+function saveEditP(){
+  if(!editPId)return;
+  var n=document.getElementById('epN').value.trim(),a=document.getElementById('epA').value.trim(),c=document.getElementById('epC').value,g=document.getElementById('epG').value;
+  if(!n||!a||!c||!g){toast('Completá todos los campos');return}
+  var p=parts.find(function(x){return x.id===editPId});
+  if(p){p.nombre=n;p.apellido=a;p.cat=c;p.grupo=g}
+  db.ref('participantes').set(parts);clMod('mEditP');rPList();toast('Participante actualizado');editPId='';
+}
+function delP(id){if(!confirm('Eliminar participante?'))return;parts=parts.filter(function(p){return p.id!==id});db.ref('participantes').set(parts);rPList();toast('Eliminado')}
 function rSpo(){var el=document.getElementById('sList');el.innerHTML='';sponsors.forEach(function(s){el.innerHTML+='<div class="spc"><div class="spl">'+s.e+'</div><div><div class="spn">'+s.n+'</div><div class="spt">'+s.t+'</div></div></div>'})}
 
 // ═══ ADMIN ═══
