@@ -1563,11 +1563,11 @@
     <div class="page" id="pg-mas">
       <div class="slbl">Más</div>
       <div id="masMain">
-        <div class="mi" onclick="subPg('entrada')">
-          <div class="mic" style="background:linear-gradient(135deg,#10b981,#059669)">🎟️</div>
+        <div class="mi" id="admBtn" onclick="subPg('admin')">
+          <div class="mic" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">🔐</div>
           <div>
-            <div class="mit">Entrada</div>
-            <div class="mid">Registrate y obtené tu QR</div>
+            <div class="mit" id="admBtnTxt">Iniciar Sesión Administrador</div>
+            <div class="mid" id="admBtnSub">Gestionar torneo</div>
           </div>
         </div>
         <div class="mi" onclick="subPg('part')">
@@ -1575,6 +1575,13 @@
           <div>
             <div class="mit">Participantes</div>
             <div class="mid">Cargar y ver jugadores</div>
+          </div>
+        </div>
+        <div class="mi" onclick="subPg('pagos')">
+          <div class="mic" style="background:linear-gradient(135deg,#f59e0b,#d97706)">💰</div>
+          <div>
+            <div class="mit">Pagos</div>
+            <div class="mid">Estado de pagos de participantes</div>
           </div>
         </div>
         <div class="mi" onclick="subPg('spo')">
@@ -1591,11 +1598,11 @@
             <div class="mid">Escribinos</div>
           </div>
         </div>
-        <div class="mi" id="admBtn" onclick="subPg('admin')">
-          <div class="mic" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">🔐</div>
+        <div class="mi" id="entradaBtn" style="display:none" onclick="subPg('entrada')">
+          <div class="mic" style="background:linear-gradient(135deg,#10b981,#059669)">🎟️</div>
           <div>
-            <div class="mit" id="admBtnTxt">Iniciar Sesión Administrador</div>
-            <div class="mid" id="admBtnSub">Gestionar torneo</div>
+            <div class="mit">Entrada</div>
+            <div class="mid">Registros y QR</div>
           </div>
         </div>
       </div>
@@ -1671,6 +1678,11 @@
       <div id="sub-spo" style="display:none">
         <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Sponsors</span></div>
         <div id="sList"></div>
+      </div>
+      <div id="sub-pagos" style="display:none">
+        <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Pagos</span></div>
+        <div class="ctabs" id="pagoFilter" style="margin-bottom:12px"></div>
+        <div id="pagoList"></div>
       </div>
       <div id="sub-cont" style="display:none">
         <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Contacto</span></div>
@@ -2289,13 +2301,16 @@
       if (isAdmin) { btn.textContent = 'Panel Administrador'; sub.textContent = 'Sesión activa' }
       else { btn.textContent = 'Iniciar Sesión Administrador'; sub.textContent = 'Gestionar torneo' }
       document.querySelectorAll('.pdl').forEach(function (b) { b.style.display = isAdmin ? 'flex' : 'none' });
+      document.querySelectorAll('.adm-edit').forEach(function (b) { b.style.display = isAdmin ? 'flex' : 'none' });
       var addForm = document.querySelector('#sub-part .af');
       if (addForm) addForm.style.display = isAdmin ? 'block' : 'none';
+      var entBtn = document.getElementById('entradaBtn');
+      if (entBtn) entBtn.style.display = isAdmin ? 'flex' : 'none';
       document.getElementById('fab').classList.toggle('show', (curPg === 'inicio' || curPg === 'resultados') && isAdmin);
     }
     function doLogin() {
       var u = document.getElementById('admUser').value.trim(), p = document.getElementById('admPass').value;
-      if (u === 'ATR2026ADM' && p === 'EzequielGenio2026') {
+      if (u === 'ATR2026' && p === '2026atrctes') {
         isAdmin = true; sessionStorage.setItem('atr_admin', '1');
         document.getElementById('admLogin').style.display = 'none';
         document.getElementById('admPanel').style.display = 'block';
@@ -2356,10 +2371,65 @@
       var t = document.getElementById('sub-' + s); if (t) t.style.display = 'block';
       if (s === 'part') { rPList(); updAdmUI() }
       if (s === 'spo') rSpo();
+      if (s === 'pagos') rPagos();
       if (s === 'admin') {
         if (isAdmin) { document.getElementById('admLogin').style.display = 'none'; document.getElementById('admPanel').style.display = 'block'; document.getElementById('admTitle').textContent = 'Panel Administrador'; rAdmPanel() }
         else { document.getElementById('admLogin').style.display = 'block'; document.getElementById('admPanel').style.display = 'none'; document.getElementById('admTitle').textContent = 'Iniciar Sesión' }
       }
+    }
+
+    // ═══ PAGOS ═══
+    var pagos = {};// {playerId: true/false}
+    db.ref('pagos').on('value', function (s) { pagos = s.val() || {} });
+
+    var pagoView = 'todos';// 'todos','si','no'
+    function rPagos() {
+      // Filter tabs
+      var ft = document.getElementById('pagoFilter'); ft.innerHTML = '';
+      ['Todos', 'Pagaron', 'No pagaron'].forEach(function (label, i) {
+        var val = ['todos', 'si', 'no'][i];
+        var d = document.createElement('div'); d.className = 'ct';
+        if (pagoView === val) { d.style.background = 'var(--acc-d)'; d.style.color = 'var(--acc)'; d.style.borderColor = 'var(--acc)' }
+        d.textContent = label;
+        d.onclick = function () { pagoView = val; rPagos() };
+        ft.appendChild(d);
+      });
+
+      var el = document.getElementById('pagoList'); el.innerHTML = '';
+      var sorted = parts.slice().sort(function (a, b) { return (a.cat + a.apellido).localeCompare(b.cat + b.apellido) });
+
+      // Filter
+      if (pagoView === 'si') sorted = sorted.filter(function (p) { return pagos[p.id] === true });
+      if (pagoView === 'no') sorted = sorted.filter(function (p) { return !pagos[p.id] });
+
+      if (!sorted.length) { el.innerHTML = '<div class="es"><div class="es-i">💰</div><div class="es-t">Sin participantes en esta lista</div></div>'; return }
+
+      // Summary
+      var totalPag = parts.filter(function (p) { return pagos[p.id] === true }).length;
+      var totalNoPag = parts.length - totalPag;
+      el.innerHTML += '<div style="display:flex;gap:10px;margin-bottom:16px"><div style="flex:1;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);border-radius:var(--rs);padding:12px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:var(--acc)">' + totalPag + '</div><div style="font-size:.65rem;color:var(--acc);font-weight:600;text-transform:uppercase;letter-spacing:1px">Pagaron</div></div><div style="flex:1;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:var(--rs);padding:12px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:#f87171">' + totalNoPag + '</div><div style="font-size:.65rem;color:#f87171;font-weight:600;text-transform:uppercase;letter-spacing:1px">No pagaron</div></div></div>';
+
+      var cc = '';
+      sorted.forEach(function (p) {
+        if (p.cat !== cc) { cc = p.cat; el.innerHTML += '<div class="slbl" style="margin-top:14px">' + CL[p.cat] + '</div>' }
+        var paid = pagos[p.id] === true;
+        var siStyle = paid ? 'background:var(--acc);color:#fff;border-color:var(--acc)' : 'background:transparent;color:var(--tm);border-color:var(--brd)';
+        var noStyle = !paid ? 'background:#ef4444;color:#fff;border-color:#ef4444' : 'background:transparent;color:var(--tm);border-color:var(--brd)';
+        var btns = '';
+        if (isAdmin) {
+          btns = '<button onclick="setPago(\'' + p.id + '\',true)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid;cursor:pointer;font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;' + siStyle + '">✓</button>';
+          btns += '<button onclick="setPago(\'' + p.id + '\',false)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid;cursor:pointer;font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;' + noStyle + '">✗</button>';
+        } else {
+          btns = '<div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;' + (paid ? 'background:var(--acc);color:#fff' : 'background:rgba(239,68,68,.15);color:#f87171') + '">' + (paid ? '✓' : '✗') + '</div>';
+        }
+        el.innerHTML += '<div class="pc"><div class="pav">' + (p.nombre[0] || '') + (p.apellido[0] || '') + '</div><span class="pnm" style="flex:1">' + p.apellido + ', ' + p.nombre + '</span><span class="lb l-' + CS[p.cat] + '" style="font-size:.5rem;margin-right:4px">' + (p.grupo ? 'G' + p.grupo : '') + '</span><div style="display:flex;gap:4px">' + btns + '</div></div>';
+      });
+    }
+    function setPago(id, val) {
+      pagos[id] = val;
+      db.ref('pagos').set(pagos);
+      rPagos();
+      toast(val ? 'Marcado como pagado' : 'Marcado como no pagado');
     }
 
     // Override updFab is already defined above with admin check
