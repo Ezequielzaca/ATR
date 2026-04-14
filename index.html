@@ -1577,7 +1577,7 @@
             <div class="mid">Cargar y ver jugadores</div>
           </div>
         </div>
-        <div class="mi" onclick="subPg('pagos')">
+        <div class="mi" id="pagosBtn" style="display:none" onclick="subPg('pagos')">
           <div class="mic" style="background:linear-gradient(135deg,#f59e0b,#d97706)">💰</div>
           <div>
             <div class="mit">Pagos</div>
@@ -2306,6 +2306,8 @@
       if (addForm) addForm.style.display = isAdmin ? 'block' : 'none';
       var entBtn = document.getElementById('entradaBtn');
       if (entBtn) entBtn.style.display = isAdmin ? 'flex' : 'none';
+      var pagBtn = document.getElementById('pagosBtn');
+      if (pagBtn) pagBtn.style.display = isAdmin ? 'flex' : 'none';
       document.getElementById('fab').classList.toggle('show', (curPg === 'inicio' || curPg === 'resultados') && isAdmin);
     }
     function doLogin() {
