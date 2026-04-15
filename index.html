@@ -1081,11 +1081,23 @@ function rPagos(){
     el.innerHTML+='<div class="pc"><div class="pav">'+(p.nombre[0]||'')+(p.apellido[0]||'')+'</div><span class="pnm" style="flex:1">'+p.apellido+', '+p.nombre+'</span><span class="lb l-'+CS[p.cat]+'" style="font-size:.5rem;margin-right:4px">'+(p.grupo?'G'+p.grupo:'')+'</span><div style="display:flex;gap:4px">'+btns+'</div></div>';
   });
 }
+var INSCRIPCION=60000;
 function setPago(id,val){
   pagos[id]=val;
   db.ref('pagos').set(pagos);
+  var p=parts.find(function(x){return x.id===id});
+  var nombre=p?p.apellido+' '+p.nombre:'Jugador';
+  if(val){
+    // Add income
+    balIngresos.push({desc:'Inscripción: '+nombre,monto:INSCRIPCION,fecha:todayStr,tipo:'inscripcion',pid:id});
+    db.ref('balIngresos').set(balIngresos);
+  }else{
+    // Remove matching income
+    balIngresos=balIngresos.filter(function(x){return!(x.pid===id&&x.tipo==='inscripcion')});
+    db.ref('balIngresos').set(balIngresos);
+  }
   rPagos();
-  toast(val?'Marcado como pagado':'Marcado como no pagado');
+  toast(val?nombre+' — Pagó $'+INSCRIPCION.toLocaleString():nombre+' — Pago eliminado');
 }
 
 // Override updFab is already defined above with admin check
