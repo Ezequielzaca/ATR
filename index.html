@@ -310,6 +310,8 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
         <div class="af-t">Agregar Sponsor</div>
         <div class="fr"><input class="fi" id="spoN" placeholder="Nombre del sponsor"/></div>
         <div class="fr"><input class="fi" id="spoT" placeholder="Tipo (ej: Sponsor Oro)"/><input class="fi" id="spoM" placeholder="Monto $" type="number" style="max-width:100px"/></div>
+        <div class="fr"><input class="fi" id="spoTel" placeholder="Teléfono (opcional)"/></div>
+        <div class="fr"><input class="fi" id="spoIg" placeholder="Instagram o Web (opcional)"/></div>
         <button class="fb" onclick="addSpo()">Agregar Sponsor</button>
       </div>
     </div>
@@ -844,18 +846,29 @@ function rSpo(){
   sponsors.forEach(function(s,i){
     var btns='';
     if(isAdmin){
-      btns='<div style="display:flex;gap:4px;margin-left:auto;flex-shrink:0"><button class="adm-edit" onclick="editSpo('+i+')" style="width:28px;height:28px;font-size:.7rem">✎</button><button class="adm-del" onclick="delSpo('+i+')" style="width:28px;height:28px;font-size:.7rem">✕</button></div>';
+      btns='<div style="display:flex;gap:4px;flex-shrink:0"><button class="adm-edit" onclick="editSpo('+i+')" style="width:28px;height:28px;font-size:.7rem">✎</button><button class="adm-del" onclick="delSpo('+i+')" style="width:28px;height:28px;font-size:.7rem">✕</button></div>';
     }
-    el.innerHTML+='<div class="spc"><div class="spl">'+(s.e||'⭐')+'</div><div style="flex:1"><div class="spn">'+s.n+'</div><div class="spt">'+s.t+(s.m?' — $'+Number(s.m).toLocaleString():'')+'</div></div>'+btns+'</div>';
+    var montoTxt=isAdmin&&s.m?' — $'+Number(s.m).toLocaleString():'';
+    var contacto='';
+    if(s.tel)contacto+='<a href="tel:'+s.tel+'" style="color:var(--acc);text-decoration:none;font-size:.7rem;margin-right:10px">📞 '+s.tel+'</a>';
+    if(s.ig){
+      var link=s.ig;
+      if(link.indexOf('http')!==0&&link.indexOf('@')===0)link='https://instagram.com/'+link.replace('@','');
+      else if(link.indexOf('http')!==0)link='https://'+link;
+      var label=s.ig.length>25?s.ig.substring(0,25)+'…':s.ig;
+      contacto+='<a href="'+link+'" target="_blank" style="color:var(--acc);text-decoration:none;font-size:.7rem">🔗 '+label+'</a>';
+    }
+    el.innerHTML+='<div class="spc" style="flex-wrap:wrap"><div class="spl">'+(s.e||'⭐')+'</div><div style="flex:1;min-width:0"><div class="spn">'+s.n+'</div><div class="spt">'+s.t+montoTxt+'</div>'+(contacto?'<div style="margin-top:6px">'+contacto+'</div>':'')+'</div>'+btns+'</div>';
   });
 }
 function addSpo(){
   var n=document.getElementById('spoN').value.trim(),t=document.getElementById('spoT').value.trim(),m=document.getElementById('spoM').value;
+  var tel=document.getElementById('spoTel').value.trim(),ig=document.getElementById('spoIg').value.trim();
   if(!n||!t){toast('Completá nombre y tipo');return}
-  sponsors.push({n:n,t:t,e:'⭐',m:parseFloat(m)||0});
+  sponsors.push({n:n,t:t,e:'⭐',m:parseFloat(m)||0,tel:tel||'',ig:ig||''});
   db.ref('sponsors').set(sponsors);
   document.getElementById('spoN').value='';document.getElementById('spoT').value='';document.getElementById('spoM').value='';
-  // Also add as ingreso if monto > 0
+  document.getElementById('spoTel').value='';document.getElementById('spoIg').value='';
   if(parseFloat(m)>0){
     balIngresos.push({desc:'Sponsor: '+n,monto:parseFloat(m),fecha:todayStr,tipo:'sponsor'});
     db.ref('balIngresos').set(balIngresos);
@@ -864,11 +877,13 @@ function addSpo(){
 }
 var editSpoIdx=-1;
 function editSpo(i){
-  var s=sponsors[i];if(!s)return;editSpoIdx=i;
+  var s=sponsors[i];if(!s)return;
   var nn=prompt('Nombre:',s.n);if(nn===null)return;
   var tt=prompt('Tipo:',s.t);if(tt===null)return;
   var mm=prompt('Monto $:',s.m||0);if(mm===null)return;
-  sponsors[i].n=nn;sponsors[i].t=tt;sponsors[i].m=parseFloat(mm)||0;
+  var tel=prompt('Teléfono:',s.tel||'');if(tel===null)return;
+  var ig=prompt('Instagram o Web:',s.ig||'');if(ig===null)return;
+  sponsors[i].n=nn;sponsors[i].t=tt;sponsors[i].m=parseFloat(mm)||0;sponsors[i].tel=tel;sponsors[i].ig=ig;
   db.ref('sponsors').set(sponsors);rSpo();toast('Sponsor actualizado');
 }
 function delSpo(i){if(!confirm('Eliminar sponsor?'))return;sponsors.splice(i,1);db.ref('sponsors').set(sponsors);rSpo();toast('Eliminado')}
