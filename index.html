@@ -7,11 +7,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
-:root{--bg:#f5f0e6;--card:#ffffff;--card-h:#ede8de;--acc:#722F37;--acc-d:rgba(114,47,55,.12);--acc-g:rgba(114,47,55,.25);--t1:#2d1f1f;--t2:#6b5c5c;--tm:#9a8a8a;--brd:rgba(114,47,55,.1);--r:16px;--rs:10px;--nav-h:72px;--sig:#a855f7;--oro:#d4a017;--pla:#8a8a8a;--bro:#c47a20;--mad:#7a5a30;--muj:#d44a7a}
+:root{--bg:#f5f0e6;--card:#ffffff;--card-h:#ede8de;--acc:#722F37;--acc-d:rgba(114,47,55,.12);--acc-g:rgba(114,47,55,.25);--t1:#2d1f1f;--t2:#6b5c5c;--tm:#9a8a8a;--brd:rgba(114,47,55,.1);--r:16px;--rs:10px;--nav-h:72px;--sig:#a855f7;--oro:#d4a017;--pla:#8a8a8a;--bro:#c47a20;--mad:#7a5a30;--muj:#d44a7a;--hdr-bg:rgba(245,240,230,.92);--nav-bg:rgba(245,240,230,.95);--mdl-bg:#f5f0e6;--input-bg:#fff;--tbl-hdr:#ede8de;--win-bg:rgba(22,163,74,.12);--win-c:#16a34a;--loss-bg:rgba(220,38,38,.08);--loss-c:#dc2626}
+body.dark{--bg:#0d0d0d;--card:#1a1a1a;--card-h:#252525;--acc:#c4575f;--acc-d:rgba(196,87,95,.15);--acc-g:rgba(196,87,95,.25);--t1:#e8e0e0;--t2:#9a8a8a;--tm:#6b5c5c;--brd:rgba(255,255,255,.08);--hdr-bg:rgba(13,13,13,.92);--nav-bg:rgba(13,13,13,.95);--mdl-bg:#1a1a1a;--input-bg:#111;--tbl-hdr:#1a1a1a;--win-bg:rgba(22,163,74,.15);--win-c:#4ade80;--loss-bg:rgba(220,38,38,.12);--loss-c:#f87171}
+/* Theme toggle */
+.theme-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--brd);background:var(--card);color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:.2s;flex-shrink:0}
+.theme-btn:hover{border-color:var(--acc);color:var(--acc)}
+body.dark .brand-nm{background:linear-gradient(135deg,#c4575f,#e8a0a6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+body.dark .brand-ic{background:linear-gradient(135deg,#c4575f,#943d47)}
+body.dark .fb{background:linear-gradient(135deg,#c4575f,#943d47)}
+body.dark .nih .niw{background:linear-gradient(135deg,#c4575f,#943d47)}
+body.dark .fab{background:linear-gradient(135deg,#c4575f,#943d47)}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-height:100dvh;overflow-x:hidden;padding-bottom:calc(var(--nav-h)+80px)}
-.hdr{position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:rgba(245,240,230,.92);border-bottom:1px solid var(--brd);padding:16px 20px}
-.hdr-in{max-width:500px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.hdr{position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);background:var(--hdr-bg);border-bottom:1px solid var(--brd);padding:16px 20px}
+.hdr-in{max-width:500px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .brand{display:flex;align-items:center;gap:12px}
 .brand-ic{width:42px;height:42px;background:linear-gradient(135deg,#722F37,#5a1f27);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 15px var(--acc-g)}
 .brand-nm{font-weight:800;font-size:1.15rem;background:linear-gradient(135deg,#722F37,#943d47);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
@@ -76,26 +85,26 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 .gw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:20px;border-radius:var(--rs);display:flex;justify-content:center}
 .gt{border-collapse:collapse;font-size:.68rem;margin:0 auto}
 .gt th,.gt td{border:1px solid var(--brd);padding:6px 4px;text-align:center;white-space:nowrap}
-.gt th{background:#ede8de;color:var(--t2);font-weight:600;font-size:.6rem}
+.gt th{background:var(--tbl-hdr);color:var(--t2);font-weight:600;font-size:.6rem}
 .gt td{background:var(--card);color:var(--t1)}
-.gt .self{background:#ede8de;color:var(--tm)}
-.gt .win{background:rgba(22,163,74,.12);color:#16a34a;font-weight:700}
-.gt .loss{background:rgba(220,38,38,.08);color:#dc2626;font-weight:600}
-.gt .rn{text-align:left;font-weight:600;background:#ede8de;min-width:80px;max-width:100px;position:sticky;left:0;z-index:2;font-size:.65rem;overflow:hidden;text-overflow:ellipsis}
-.gt .cn{font-family:'Space Mono',monospace;font-weight:700;color:var(--tm);background:#ede8de;width:24px;font-size:.65rem}
+.gt .self{background:var(--tbl-hdr);color:var(--tm)}
+.gt .win{background:var(--win-bg);color:var(--win-c);font-weight:700}
+.gt .loss{background:var(--loss-bg);color:var(--loss-c);font-weight:600}
+.gt .rn{text-align:left;font-weight:600;background:var(--tbl-hdr);min-width:80px;max-width:100px;position:sticky;left:0;z-index:2;font-size:.65rem;overflow:hidden;text-overflow:ellipsis}
+.gt .cn{font-family:'Space Mono',monospace;font-weight:700;color:var(--tm);background:var(--tbl-hdr);width:24px;font-size:.65rem}
 
 /* Puntos table */
 .pw{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--rs);margin-bottom:16px;display:flex;justify-content:center}
 .pt{border-collapse:collapse;font-size:.7rem;margin:0 auto}
 .pt th,.pt td{border:1px solid var(--brd);padding:8px 5px;text-align:center;white-space:nowrap}
-.pt th{background:#ede8de;color:var(--t2);font-weight:600;font-size:.55rem;text-transform:uppercase;letter-spacing:.3px}
+.pt th{background:var(--tbl-hdr);color:var(--t2);font-weight:600;font-size:.55rem;text-transform:uppercase;letter-spacing:.3px}
 .pt td{background:var(--card)}
-.pt .pn{text-align:left;font-weight:600;background:#ede8de;position:sticky;left:0;z-index:2;min-width:80px;max-width:110px;overflow:hidden;text-overflow:ellipsis;font-size:.68rem;cursor:pointer}
+.pt .pn{text-align:left;font-weight:600;background:var(--tbl-hdr);position:sticky;left:0;z-index:2;min-width:80px;max-width:110px;overflow:hidden;text-overflow:ellipsis;font-size:.68rem;cursor:pointer}
 .pt .pn:hover{opacity:.8}
-.pt .pp{font-family:'Space Mono',monospace;font-weight:800;background:#ede8de;color:var(--tm);width:24px}
+.pt .pp{font-family:'Space Mono',monospace;font-weight:800;background:var(--tbl-hdr);color:var(--tm);width:24px}
 .pt .pv{font-weight:800;font-size:.82rem}
-.p1c{color:#16a34a!important}.p2c{color:var(--oro)!important}.p3c{color:var(--bro)!important}
-.pos{color:#16a34a}.neg{color:#dc2626}.zer{color:var(--tm)}
+.p1c{color:var(--win-c)!important}.p2c{color:var(--oro)!important}.p3c{color:var(--bro)!important}
+.pos{color:var(--win-c)}.neg{color:var(--loss-c)}.zer{color:var(--tm)}
 .sep{border-left:2px solid rgba(255,255,255,.1)}
 .rb{display:inline-flex;align-items:center;justify-content:center;width:28px;height:20px;border-radius:5px;font-family:'Space Mono',monospace;font-size:.6rem;font-weight:800;margin-left:6px;vertical-align:middle}
 
@@ -111,9 +120,9 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 .af{background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:18px;margin-bottom:20px}
 .af-t{font-weight:700;font-size:.95rem;margin-bottom:14px}
 .fr{display:flex;gap:8px;margin-bottom:10px}
-.fi{flex:1;padding:10px 14px;border-radius:var(--rs);border:1px solid var(--brd);background:#fff;color:var(--t1);font-family:'Outfit',sans-serif;font-size:.88rem;outline:0;transition:border-color .2s}
+.fi{flex:1;padding:10px 14px;border-radius:var(--rs);border:1px solid var(--brd);background:var(--input-bg);color:var(--t1);font-family:'Outfit',sans-serif;font-size:.88rem;outline:0;transition:border-color .2s}
 .fi:focus{border-color:var(--acc)}.fi::placeholder{color:var(--tm)}
-.fs{padding:10px 14px;border-radius:var(--rs);border:1px solid var(--brd);background:#fff;color:var(--t1);font-family:'Outfit',sans-serif;font-size:.88rem;outline:0;cursor:pointer;flex:1}
+.fs{padding:10px 14px;border-radius:var(--rs);border:1px solid var(--brd);background:var(--input-bg);color:var(--t1);font-family:'Outfit',sans-serif;font-size:.88rem;outline:0;cursor:pointer;flex:1}
 .fs:focus{border-color:var(--acc)}
 .fb{width:100%;padding:12px;border-radius:var(--rs);border:0;background:linear-gradient(135deg,#722F37,#5a1f27);color:#fff;font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:.25s;letter-spacing:.5px}
 .fb:hover{transform:translateY(-1px);box-shadow:0 4px 16px var(--acc-g)}
@@ -124,7 +133,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 
 /* Modal */
 .mbg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}.mbg.show{display:flex}
-.mdl{background:#f5f0e6;border-radius:var(--r) var(--r) 0 0;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;padding:24px 20px 30px;animation:su .3s ease}
+.mdl{background:var(--mdl-bg);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;padding:24px 20px 30px;animation:su .3s ease}
 @keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .mt{font-weight:700;font-size:1.1rem}
@@ -174,7 +183,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 .ctic.ig{background:linear-gradient(135deg,#e1306c,#833ab4)}.ctic.wp{background:linear-gradient(135deg,#25d366,#128c7e)}.ctic.em{background:linear-gradient(135deg,#3b82f6,#1d4ed8)}
 
 /* Nav */
-.bnav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:rgba(245,240,230,.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--brd);display:flex;align-items:center;justify-content:center;z-index:200;padding-bottom:env(safe-area-inset-bottom,0)}
+.bnav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--nav-bg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--brd);display:flex;align-items:center;justify-content:center;z-index:200;padding-bottom:env(safe-area-inset-bottom,0)}
 .nits{display:flex;align-items:center;gap:4px;max-width:500px;width:100%;justify-content:space-around;padding:0 6px}
 .ni{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;border-radius:14px;cursor:pointer;transition:.25s;color:var(--tm);background:0;border:0;font-family:'Outfit',sans-serif}
 .ni:hover{color:var(--t2)}.ni.active{color:var(--acc);background:var(--acc-d)}
@@ -203,6 +212,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 <header class="hdr"><div class="hdr-in">
 <div class="brand"><div class="brand-ic">🎾</div><div><div class="brand-nm">Tenis ATR</div><div class="brand-sb">Tour Corrientes</div></div></div>
 <span class="hdr-yr">2026</span>
+<button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
 </div></header>
 
 <main class="main" id="app">
@@ -252,58 +262,59 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 <div class="page" id="pg-mas">
   <div class="slbl">Más</div>
   <div id="masMain">
-    <div class="mi" onclick="subPg('cuenta')"><div class="mic" style="background:linear-gradient(135deg,#722F37,#5a1f27)">👤</div><div><div class="mit" id="cuentaBtnTxt">Mi Cuenta</div><div class="mid" id="cuentaBtnSub">Registrate o iniciá sesión</div></div></div>
-    <div class="mi" id="admBtn" onclick="subPg('admin')"><div class="mic" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">🔐</div><div><div class="mit" id="admBtnTxt">Iniciar Sesión Administrador</div><div class="mid" id="admBtnSub">Gestionar torneo</div></div></div>
-    <div class="mi" onclick="subPg('part')"><div class="mic pa">👤</div><div><div class="mit">Participantes</div><div class="mid">Cargar y ver jugadores</div></div></div>
-    <div class="mi" id="pagosBtn" style="display:none" onclick="subPg('pagos')"><div class="mic" style="background:linear-gradient(135deg,#f59e0b,#d97706)">💰</div><div><div class="mit">Pagos</div><div class="mid">Estado de pagos de participantes</div></div></div>
-    <div class="mi" id="balanceBtn" style="display:none" onclick="subPg('balance')"><div class="mic" style="background:linear-gradient(135deg,#6366f1,#4f46e5)">📊</div><div><div class="mit">Balance</div><div class="mid">Ingresos, gastos y resumen</div></div></div>
+    <div class="mi" onclick="subPg('login')"><div class="mic" style="background:linear-gradient(135deg,#722F37,#5a1f27)">🔐</div><div><div class="mit" id="loginBtnTxt">Iniciar Sesión</div><div class="mid" id="loginBtnSub">Jugadores y administrador</div></div></div>
+    <div class="mi" onclick="subPg('part')"><div class="mic pa">👤</div><div><div class="mit">Participantes</div><div class="mid">Ver jugadores del torneo</div></div></div>
     <div class="mi" onclick="subPg('spo')"><div class="mic sp">⭐</div><div><div class="mit">Sponsors</div><div class="mid">Marcas del torneo</div></div></div>
     <div class="mi" onclick="subPg('cont')"><div class="mic co">💬</div><div><div class="mit">Contacto</div><div class="mid">Escribinos</div></div></div>
-    <div class="mi" id="entradaBtn" style="display:none" onclick="subPg('entrada')"><div class="mic" style="background:linear-gradient(135deg,#722F37,#5a1f27)">🎟️</div><div><div class="mit">Entrada</div><div class="mid">QR y verificación</div></div></div>
+    <div class="mi" id="pagosBtn" style="display:none" onclick="subPg('pagos')"><div class="mic" style="background:linear-gradient(135deg,#f59e0b,#d97706)">💰</div><div><div class="mit">Pagos</div><div class="mid">Estado de pagos</div></div></div>
+    <div class="mi" id="balanceBtn" style="display:none" onclick="subPg('balance')"><div class="mic" style="background:linear-gradient(135deg,#6366f1,#4f46e5)">📊</div><div><div class="mit">Balance</div><div class="mid">Ingresos y gastos</div></div></div>
+    <div class="mi" id="entradaBtn" style="display:none" onclick="subPg('entrada')"><div class="mic" style="background:linear-gradient(135deg,#722F37,#5a1f27)">🎟️</div><div><div class="mit">Entradas</div><div class="mid">QR y verificación</div></div></div>
     <div class="mi" id="usersBtn" style="display:none" onclick="subPg('users')"><div class="mic" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">🗂️</div><div><div class="mit">Usuarios</div><div class="mid">Cuentas de jugadores</div></div></div>
   </div>
-  <!-- Mi Cuenta -->
-  <div id="sub-cuenta" style="display:none">
-    <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t" id="cuentaTitle">Mi Cuenta</span></div>
+  <!-- LOGIN / REGISTER / PROFILE -->
+  <div id="sub-login" style="display:none">
+    <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t" id="loginTitle">Iniciar Sesión</span></div>
     <!-- Not logged in -->
-    <div id="cuentaAuth">
+    <div id="authForms">
       <div class="af" style="margin-bottom:12px">
+        <div class="af-t">Iniciar Sesión</div>
+        <div class="fr"><input class="fi" id="logEmail" placeholder="Email o usuario" type="email"/></div>
+        <div class="fr"><input class="fi" id="logPass" placeholder="Contraseña" type="password"/></div>
+        <button class="fb" onclick="doUnifiedLogin()">Entrar</button>
+        <div id="logErr" style="color:#dc2626;font-size:.8rem;text-align:center;margin-top:10px;display:none"></div>
+      </div>
+      <div style="text-align:center;color:var(--tm);font-size:.8rem;margin:16px 0">¿Sos jugador y no tenés cuenta?</div>
+      <div class="af">
         <div class="af-t">Crear Cuenta de Jugador</div>
-        <div class="fr"><select class="fs" id="regCat" onchange="regFillPlayers()"><option value="">Categoría...</option></select></div>
-        <div class="fr"><select class="fs" id="regPid"><option value="">Seleccioná tu nombre...</option></select></div>
-        <div class="fr"><input class="fi" id="regEmail" placeholder="Email" type="email"/></div>
-        <div class="fr"><input class="fi" id="regPass" placeholder="Contraseña" type="password"/></div>
+        <div class="fr"><select class="fs" id="regCat" onchange="regFillPlayers()"><option value="">Tu categoría...</option></select></div>
+        <div class="fr"><select class="fs" id="regPid"><option value="">Tu nombre en la lista...</option></select></div>
+        <div class="fr"><input class="fi" id="regEmail" placeholder="Tu email" type="email"/></div>
+        <div class="fr"><input class="fi" id="regPass" placeholder="Elegí una contraseña" type="password"/></div>
         <button class="fb" onclick="regUser()">Crear Cuenta</button>
         <div id="regErr" style="color:#dc2626;font-size:.8rem;text-align:center;margin-top:10px;display:none"></div>
       </div>
-      <div class="af">
-        <div class="af-t">Ya tengo cuenta</div>
-        <div class="fr"><input class="fi" id="logEmail" placeholder="Email" type="email"/></div>
-        <div class="fr"><input class="fi" id="logPass" placeholder="Contraseña" type="password"/></div>
-        <button class="fb" onclick="loginUser()">Iniciar Sesión</button>
-        <div id="logErr" style="color:#dc2626;font-size:.8rem;text-align:center;margin-top:10px;display:none"></div>
-      </div>
     </div>
-    <!-- Logged in -->
-    <div id="cuentaLogged" style="display:none">
+    <!-- Logged in profile -->
+    <div id="profilePanel" style="display:none">
       <div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--r);overflow:hidden;text-align:center;margin-bottom:16px">
         <div style="padding:24px 20px 16px;background:linear-gradient(135deg,#722F37,#943d47)">
           <div style="font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.7);margin-bottom:4px">Tenis ATR 2026</div>
-          <div id="cuentaNombre" style="font-size:1.3rem;font-weight:800;color:#fff"></div>
-          <div id="cuentaCat" style="margin-top:6px"></div>
+          <div id="profNombre" style="font-size:1.3rem;font-weight:800;color:#fff"></div>
+          <div id="profCat" style="margin-top:6px"></div>
+          <div id="profRole" style="margin-top:4px;font-size:.65rem;color:rgba(255,255,255,.6)"></div>
         </div>
-        <!-- QR -->
-        <div style="padding:24px;background:var(--card)">
+        <!-- QR for players -->
+        <div id="profQRSection" style="padding:24px;background:var(--card)">
           <div style="font-size:.7rem;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Tu Entrada QR</div>
-          <div id="cuentaQR" style="display:inline-block;padding:12px;background:#fff;border-radius:12px"></div>
-          <div id="cuentaQRStatus" style="margin-top:10px"></div>
+          <div id="profQR" style="display:inline-block;padding:12px;background:#fff;border-radius:12px"></div>
+          <div id="profQRStatus" style="margin-top:10px"></div>
         </div>
       </div>
       <button class="fb" onclick="nav('resultados')" style="margin-bottom:8px">Cargar mis Resultados</button>
-      <button onclick="logoutUser()" style="width:100%;padding:10px;border-radius:var(--rs);border:1px solid var(--brd);background:var(--card);color:var(--tm);font-family:'Outfit',sans-serif;font-size:.8rem;cursor:pointer">Cerrar Sesión</button>
+      <button onclick="doLogoutAll()" style="width:100%;padding:10px;border-radius:var(--rs);border:1px solid var(--brd);background:var(--card);color:var(--tm);font-family:'Outfit',sans-serif;font-size:.8rem;cursor:pointer">Cerrar Sesión</button>
     </div>
   </div>
-  <!-- Entrada (admin: scan/check QR) -->
+  <!-- Entrada (admin) -->
   <div id="sub-entrada" style="display:none">
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Entradas</span></div>
     <div class="slbl">Estado de Entradas</div>
@@ -468,6 +479,14 @@ firebase.initializeApp({
   appId:"1:451675633593:web:0d72e942a4d811fb0be868"
 });
 var db=firebase.database();
+
+// ═══ THEME ═══
+(function(){var t=localStorage.getItem('atr_theme');if(t==='dark'){document.body.classList.add('dark');var b=document.getElementById('themeBtn');if(b)b.textContent='☀️'}})();
+function toggleTheme(){
+  var dark=document.body.classList.toggle('dark');
+  localStorage.setItem('atr_theme',dark?'dark':'light');
+  document.getElementById('themeBtn').textContent=dark?'☀️':'🌙';
+}
 
 // ═══ CONSTANTS ═══
 var MN=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
