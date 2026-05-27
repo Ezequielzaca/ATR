@@ -270,6 +270,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div class="mi" id="balanceBtn" style="display:none" onclick="subPg('balance')"><div class="mic" style="background:linear-gradient(135deg,#6366f1,#4f46e5)">📊</div><div><div class="mit">Balance</div><div class="mid">Ingresos y gastos</div></div></div>
     <div class="mi" id="entradaBtn" style="display:none" onclick="subPg('entrada')"><div class="mic" style="background:linear-gradient(135deg,#722F37,#5a1f27)">🎟️</div><div><div class="mit">Entradas</div><div class="mid">QR y verificación</div></div></div>
     <div class="mi" id="usersBtn" style="display:none" onclick="subPg('users')"><div class="mic" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">🗂️</div><div><div class="mit">Usuarios</div><div class="mid">Cuentas de jugadores</div></div></div>
+    <div class="mi" id="admMenuBtn" style="display:none" onclick="subPg('admin')"><div class="mic" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">⚙️</div><div><div class="mit">Panel Admin</div><div class="mid">Gestionar torneo</div></div></div>
   </div>
   <!-- LOGIN / REGISTER / PROFILE -->
   <div id="sub-login" style="display:none">
@@ -280,7 +281,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
         <div class="af-t">Iniciar Sesión</div>
         <div class="fr"><input class="fi" id="logEmail" placeholder="Email o usuario" type="email"/></div>
         <div class="fr"><input class="fi" id="logPass" placeholder="Contraseña" type="password"/></div>
-        <button class="fb" onclick="doUnifiedLogin()">Entrar</button>
+        <button class="fb" onclick="loginUser()">Entrar</button>
         <div id="logErr" style="color:#dc2626;font-size:.8rem;text-align:center;margin-top:10px;display:none"></div>
       </div>
       <div style="text-align:center;color:var(--tm);font-size:.8rem;margin:16px 0">¿Sos jugador y no tenés cuenta?</div>
@@ -293,6 +294,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
         <button class="fb" onclick="regUser()">Crear Cuenta</button>
         <div id="regErr" style="color:#dc2626;font-size:.8rem;text-align:center;margin-top:10px;display:none"></div>
       </div>
+      <div style="text-align:center;margin-top:20px"><button onclick="subPg('admin')" style="background:none;border:none;color:var(--tm);font-family:'Outfit',sans-serif;font-size:.78rem;cursor:pointer;text-decoration:underline">Acceso Administrador</button></div>
     </div>
     <!-- Logged in profile -->
     <div id="profilePanel" style="display:none">
@@ -311,7 +313,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
         </div>
       </div>
       <button class="fb" onclick="nav('resultados')" style="margin-bottom:8px">Cargar mis Resultados</button>
-      <button onclick="doLogoutAll()" style="width:100%;padding:10px;border-radius:var(--rs);border:1px solid var(--brd);background:var(--card);color:var(--tm);font-family:'Outfit',sans-serif;font-size:.8rem;cursor:pointer">Cerrar Sesión</button>
+      <button onclick="logoutUser()" style="width:100%;padding:10px;border-radius:var(--rs);border:1px solid var(--brd);background:var(--card);color:var(--tm);font-family:'Outfit',sans-serif;font-size:.8rem;cursor:pointer">Cerrar Sesión</button>
     </div>
   </div>
   <!-- Entrada (admin) -->
@@ -1058,28 +1060,29 @@ function loginUser(){
 }
 function logoutUser(){
   curUser=null;sessionStorage.removeItem('atr_user');
-  document.getElementById('cuentaAuth').style.display='block';
-  document.getElementById('cuentaLogged').style.display='none';
-  document.getElementById('cuentaTitle').textContent='Mi Cuenta';
+  document.getElementById('authForms').style.display='block';
+  document.getElementById('profilePanel').style.display='none';
+  document.getElementById('loginTitle').textContent='Iniciar Sesión';
   updAdmUI();toast('Sesión cerrada');
 }
 function showCuentaLogged(){
-  document.getElementById('cuentaAuth').style.display='none';
-  document.getElementById('cuentaLogged').style.display='block';
-  document.getElementById('cuentaTitle').textContent='Mi Cuenta';
-  document.getElementById('cuentaNombre').textContent=curUser.nombre;
-  document.getElementById('cuentaCat').innerHTML='<span class="lb l-'+CS[curUser.cat]+'" style="font-size:.7rem">'+CL[curUser.cat]+(curUser.grupo?' — Grupo '+curUser.grupo:'')+'</span>';
+  document.getElementById('authForms').style.display='none';
+  document.getElementById('profilePanel').style.display='block';
+  document.getElementById('loginTitle').textContent='Mi Cuenta';
+  document.getElementById('profNombre').textContent=curUser.nombre;
+  var catEl=document.getElementById('profCat');
+  if(catEl)catEl.innerHTML='<span class="lb l-'+CS[curUser.cat]+'" style="font-size:.7rem">'+CL[curUser.cat]+(curUser.grupo?' — Grupo '+curUser.grupo:'')+'</span>';
+  var roleEl=document.getElementById('profRole');
+  if(roleEl)roleEl.textContent='Jugador';
   // QR
-  var qrEl=document.getElementById('cuentaQR');qrEl.innerHTML='';
+  var qrEl=document.getElementById('profQR');qrEl.innerHTML='';
   var qrData='ATR2026-'+curUser.uid+'-'+curUser.pid;
-  try{new QRCode(qrEl,{text:qrData,width:180,height:180,colorDark:'#722F37',colorLight:'#ffffff'})}catch(e){qrEl.textContent='Error generando QR'}
-  // Status
-  var stEl=document.getElementById('cuentaQRStatus');
-  // Refresh from Firebase
+  try{new QRCode(qrEl,{text:qrData,width:180,height:180,colorDark:'#722F37',colorLight:'#ffffff'})}catch(e){qrEl.textContent='Error QR'}
+  var stEl=document.getElementById('profQRStatus');
   var freshUser=usuarios.find(function(u){return u.uid===curUser.uid});
   var used=freshUser?freshUser.qrUsed:curUser.qrUsed;
   if(used){
-    stEl.innerHTML='<div style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;background:rgba(114,47,55,.1);color:var(--acc);font-weight:700;font-size:.8rem">✓ Entrada utilizada</div>';
+    stEl.innerHTML='<div style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;background:var(--acc-d);color:var(--acc);font-weight:700;font-size:.8rem">✓ Entrada utilizada</div>';
   }else{
     stEl.innerHTML='<div style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;background:rgba(22,163,74,.1);color:#16a34a;font-weight:700;font-size:.8rem">● Entrada válida</div>';
   }
@@ -1139,10 +1142,12 @@ function updAdmUI(){
   if(spoForm)spoForm.style.display=isAdmin?'block':'none';
   var usrBtn=document.getElementById('usersBtn');
   if(usrBtn)usrBtn.style.display=isAdmin?'flex':'none';
+  var admMBtn=document.getElementById('admMenuBtn');
+  if(admMBtn)admMBtn.style.display=isAdmin?'flex':'none';
   // Update cuenta button
-  var cBtn=document.getElementById('cuentaBtnTxt'),cSub=document.getElementById('cuentaBtnSub');
+  var cBtn=document.getElementById('loginBtnTxt'),cSub=document.getElementById('loginBtnSub');
   if(cBtn&&curUser){cBtn.textContent=curUser.nombre;cSub.textContent='Sesión activa — '+CL[curUser.cat]}
-  else if(cBtn){cBtn.textContent='Mi Cuenta';cSub.textContent='Registrate o iniciá sesión'}
+  else if(cBtn){cBtn.textContent='Iniciar Sesión';cSub.textContent='Jugadores y administrador'}
   // FAB: admin or logged in player
   var showFab=(curPg==='inicio'||curPg==='resultados')&&(isAdmin||!!curUser);
   document.getElementById('fab').classList.toggle('show',showFab);
@@ -1214,13 +1219,12 @@ subPg=function(s){
   if(s==='balance'){balView='ingresos';rBalance()}
   if(s==='entrada')rEntradas();
   if(s==='users')rUsers();
-  if(s==='cuenta'){
+  if(s==='login'){
     if(curUser){showCuentaLogged()}
     else{
-      document.getElementById('cuentaAuth').style.display='block';
-      document.getElementById('cuentaLogged').style.display='none';
-      // Fill category selector
-      var sel=document.getElementById('regCat');sel.innerHTML='<option value="">Categoría...</option>';
+      document.getElementById('authForms').style.display='block';
+      document.getElementById('profilePanel').style.display='none';
+      var sel=document.getElementById('regCat');sel.innerHTML='<option value="">Tu categoría...</option>';
       CATS.forEach(function(c){if(parts.some(function(p){return p.cat===c}))sel.innerHTML+='<option value="'+c+'">'+CL[c]+'</option>'});
     }
   }
