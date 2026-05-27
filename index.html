@@ -1125,9 +1125,6 @@ function delUser(uid){
   db.ref('usuarios').set(usuarios);rUsers();toast('Cuenta eliminada');
 }
 function updAdmUI(){
-  var btn=document.getElementById('admBtnTxt'),sub=document.getElementById('admBtnSub');
-  if(isAdmin){btn.textContent='Panel Administrador';sub.textContent='Sesión activa'}
-  else{btn.textContent='Iniciar Sesión Administrador';sub.textContent='Gestionar torneo'}
   document.querySelectorAll('.pdl').forEach(function(b){b.style.display=isAdmin?'flex':'none'});
   document.querySelectorAll('.adm-edit').forEach(function(b){b.style.display=isAdmin?'flex':'none'});
   var addForm=document.querySelector('#sub-part .af');
@@ -1144,9 +1141,10 @@ function updAdmUI(){
   if(usrBtn)usrBtn.style.display=isAdmin?'flex':'none';
   var admMBtn=document.getElementById('admMenuBtn');
   if(admMBtn)admMBtn.style.display=isAdmin?'flex':'none';
-  // Update cuenta button
+  // Update login button text
   var cBtn=document.getElementById('loginBtnTxt'),cSub=document.getElementById('loginBtnSub');
   if(cBtn&&curUser){cBtn.textContent=curUser.nombre;cSub.textContent='Sesión activa — '+CL[curUser.cat]}
+  else if(cBtn&&isAdmin){cBtn.textContent='Admin activo';cSub.textContent='Sesión administrador'}
   else if(cBtn){cBtn.textContent='Iniciar Sesión';cSub.textContent='Jugadores y administrador'}
   // FAB: admin or logged in player
   var showFab=(curPg==='inicio'||curPg==='resultados')&&(isAdmin||!!curUser);
