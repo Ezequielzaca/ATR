@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>Tenis ATR 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 :root{--bg:#f5f0e6;--card:#ffffff;--card-h:#ede8de;--acc:#722F37;--acc-d:rgba(114,47,55,.12);--acc-g:rgba(114,47,55,.25);--t1:#2d1f1f;--t2:#6b5c5c;--tm:#9a8a8a;--brd:rgba(114,47,55,.1);--r:16px;--rs:10px;--nav-h:72px;--sig:#a855f7;--oro:#d4a017;--pla:#8a8a8a;--bro:#c47a20;--mad:#7a5a30;--muj:#d44a7a}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -251,47 +252,67 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 <div class="page" id="pg-mas">
   <div class="slbl">Más</div>
   <div id="masMain">
+    <div class="mi" onclick="subPg('cuenta')"><div class="mic" style="background:linear-gradient(135deg,#722F37,#5a1f27)">👤</div><div><div class="mit" id="cuentaBtnTxt">Mi Cuenta</div><div class="mid" id="cuentaBtnSub">Registrate o iniciá sesión</div></div></div>
     <div class="mi" id="admBtn" onclick="subPg('admin')"><div class="mic" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">🔐</div><div><div class="mit" id="admBtnTxt">Iniciar Sesión Administrador</div><div class="mid" id="admBtnSub">Gestionar torneo</div></div></div>
     <div class="mi" onclick="subPg('part')"><div class="mic pa">👤</div><div><div class="mit">Participantes</div><div class="mid">Cargar y ver jugadores</div></div></div>
     <div class="mi" id="pagosBtn" style="display:none" onclick="subPg('pagos')"><div class="mic" style="background:linear-gradient(135deg,#f59e0b,#d97706)">💰</div><div><div class="mit">Pagos</div><div class="mid">Estado de pagos de participantes</div></div></div>
     <div class="mi" id="balanceBtn" style="display:none" onclick="subPg('balance')"><div class="mic" style="background:linear-gradient(135deg,#6366f1,#4f46e5)">📊</div><div><div class="mit">Balance</div><div class="mid">Ingresos, gastos y resumen</div></div></div>
     <div class="mi" onclick="subPg('spo')"><div class="mic sp">⭐</div><div><div class="mit">Sponsors</div><div class="mid">Marcas del torneo</div></div></div>
     <div class="mi" onclick="subPg('cont')"><div class="mic co">💬</div><div><div class="mit">Contacto</div><div class="mid">Escribinos</div></div></div>
-    <div class="mi" id="entradaBtn" style="display:none" onclick="subPg('entrada')"><div class="mic" style="background:linear-gradient(135deg,#722F37,#5a1f27)">🎟️</div><div><div class="mit">Entrada</div><div class="mid">Registros y QR</div></div></div>
+    <div class="mi" id="entradaBtn" style="display:none" onclick="subPg('entrada')"><div class="mic" style="background:linear-gradient(135deg,#722F37,#5a1f27)">🎟️</div><div><div class="mit">Entrada</div><div class="mid">QR y verificación</div></div></div>
+    <div class="mi" id="usersBtn" style="display:none" onclick="subPg('users')"><div class="mic" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">🗂️</div><div><div class="mit">Usuarios</div><div class="mid">Cuentas de jugadores</div></div></div>
   </div>
-  <!-- Entrada -->
-  <div id="sub-entrada" style="display:none">
-    <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Entrada</span></div>
-    <!-- Registration form (shown if not registered) -->
-    <div id="entReg">
+  <!-- Mi Cuenta -->
+  <div id="sub-cuenta" style="display:none">
+    <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t" id="cuentaTitle">Mi Cuenta</span></div>
+    <!-- Not logged in -->
+    <div id="cuentaAuth">
+      <div class="af" style="margin-bottom:12px">
+        <div class="af-t">Crear Cuenta de Jugador</div>
+        <div class="fr"><select class="fs" id="regCat" onchange="regFillPlayers()"><option value="">Categoría...</option></select></div>
+        <div class="fr"><select class="fs" id="regPid"><option value="">Seleccioná tu nombre...</option></select></div>
+        <div class="fr"><input class="fi" id="regEmail" placeholder="Email" type="email"/></div>
+        <div class="fr"><input class="fi" id="regPass" placeholder="Contraseña" type="password"/></div>
+        <button class="fb" onclick="regUser()">Crear Cuenta</button>
+        <div id="regErr" style="color:#dc2626;font-size:.8rem;text-align:center;margin-top:10px;display:none"></div>
+      </div>
       <div class="af">
-        <div class="af-t">🎟️ Registrate para el torneo</div>
-        <div class="fr"><input class="fi" id="entN" placeholder="Nombre"/></div>
-        <div class="fr"><input class="fi" id="entA" placeholder="Apellido"/></div>
-        <button class="fb" onclick="regEntrada()">Generar mi Entrada</button>
+        <div class="af-t">Ya tengo cuenta</div>
+        <div class="fr"><input class="fi" id="logEmail" placeholder="Email" type="email"/></div>
+        <div class="fr"><input class="fi" id="logPass" placeholder="Contraseña" type="password"/></div>
+        <button class="fb" onclick="loginUser()">Iniciar Sesión</button>
+        <div id="logErr" style="color:#dc2626;font-size:.8rem;text-align:center;margin-top:10px;display:none"></div>
       </div>
     </div>
-    <!-- QR Card (shown after registration) -->
-    <div id="entCard" style="display:none">
-      <div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--r);overflow:hidden;text-align:center">
+    <!-- Logged in -->
+    <div id="cuentaLogged" style="display:none">
+      <div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--r);overflow:hidden;text-align:center;margin-bottom:16px">
         <div style="padding:24px 20px 16px;background:linear-gradient(135deg,#722F37,#943d47)">
-          <div style="font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:2px;opacity:.8;color:#fff;margin-bottom:4px">Tenis ATR 2026</div>
-          <div id="entNombre" style="font-size:1.3rem;font-weight:800;color:#fff"></div>
-          <div id="entStatus" style="margin-top:8px"></div>
+          <div style="font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.7);margin-bottom:4px">Tenis ATR 2026</div>
+          <div id="cuentaNombre" style="font-size:1.3rem;font-weight:800;color:#fff"></div>
+          <div id="cuentaCat" style="margin-top:6px"></div>
         </div>
+        <!-- QR -->
         <div style="padding:24px;background:var(--card)">
-          <div id="entQR" style="display:inline-block;padding:12px;background:#fff;border-radius:12px"></div>
-          <div id="entId" style="font-family:'Space Mono',monospace;font-size:.65rem;color:var(--tm);margin-top:10px"></div>
+          <div style="font-size:.7rem;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Tu Entrada QR</div>
+          <div id="cuentaQR" style="display:inline-block;padding:12px;background:#fff;border-radius:12px"></div>
+          <div id="cuentaQRStatus" style="margin-top:10px"></div>
         </div>
-        <div id="entPlayerInfo" style="display:none;padding:0 20px 20px;text-align:left"></div>
       </div>
-      <button onclick="clearEntrada()" style="width:100%;margin-top:12px;padding:10px;border-radius:var(--rs);border:1px solid var(--brd);background:var(--card);color:var(--tm);font-family:'Outfit',sans-serif;font-size:.8rem;cursor:pointer">Cerrar sesión de entrada</button>
+      <button class="fb" onclick="nav('resultados')" style="margin-bottom:8px">Cargar mis Resultados</button>
+      <button onclick="logoutUser()" style="width:100%;padding:10px;border-radius:var(--rs);border:1px solid var(--brd);background:var(--card);color:var(--tm);font-family:'Outfit',sans-serif;font-size:.8rem;cursor:pointer">Cerrar Sesión</button>
     </div>
-    <!-- Admin: list of entries -->
-    <div id="entAdmList" style="display:none;margin-top:20px">
-      <div class="slbl">Entradas Registradas</div>
-      <div id="entListEl"></div>
-    </div>
+  </div>
+  <!-- Entrada (admin: scan/check QR) -->
+  <div id="sub-entrada" style="display:none">
+    <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Entradas</span></div>
+    <div class="slbl">Estado de Entradas</div>
+    <div id="entList"></div>
+  </div>
+  <!-- Usuarios (admin) -->
+  <div id="sub-users" style="display:none">
+    <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Usuarios Registrados</span></div>
+    <div id="usersList"></div>
   </div>
   <div id="sub-part" style="display:none">
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Participantes</span></div>
@@ -500,7 +521,7 @@ function nav(pg){
 }
 
 // ═══ FAB ═══
-function updFab(){document.getElementById('fab').classList.toggle('show',(curPg==='inicio'||curPg==='resultados')&&isAdmin)}
+function updFab(){var showFab=(curPg==='inicio'||curPg==='resultados')&&(isAdmin||!!curUser);document.getElementById('fab').classList.toggle('show',showFab)}
 function fabAct(){if(curPg==='resultados')openResMod();if(curPg==='inicio')openSchMod()}
 
 // ═══ CALENDAR ═══
@@ -748,6 +769,11 @@ function openResMod(){
   document.getElementById('rP1').innerHTML='<option value="">J1...</option>';
   document.getElementById('rP2').innerHTML='<option value="">J2...</option>';
   document.getElementById('rSc').value='';document.getElementById('rW').value='';document.getElementById('rDt').value=todayStr;
+  // Pre-fill for logged-in player
+  if(curUser&&!isAdmin){
+    document.getElementById('rCat').value=curUser.cat;
+    if(curUser.grupo){document.getElementById('rGrp').value=curUser.grupo;fillPlByGrp(curUser.cat,curUser.grupo,document.getElementById('rP1'),document.getElementById('rP2'));document.getElementById('rP1').value=curUser.pid}
+  }
 }
 function rPickCat(){document.getElementById('rGrp').value='';document.getElementById('rP1').innerHTML='<option value="">J1...</option>';document.getElementById('rP2').innerHTML='<option value="">J2...</option>'}
 function rPickGrp(){
@@ -968,6 +994,114 @@ function delBal(tipo,idx){
 
 // ═══ ADMIN ═══
 var isAdmin=sessionStorage.getItem('atr_admin')==='1';
+var curUser=JSON.parse(sessionStorage.getItem('atr_user')||'null');
+var usuarios=[];
+db.ref('usuarios').on('value',function(s){usuarios=s.val()||[]});
+db.ref('usuarios').once('value',function(s){usuarios=s.val()||[]});
+
+// ═══ USER REGISTRATION & LOGIN ═══
+function regFillPlayers(){
+  var cat=document.getElementById('regCat').value;
+  var sel=document.getElementById('regPid');sel.innerHTML='<option value="">Seleccioná tu nombre...</option>';
+  if(!cat)return;
+  var pl=parts.filter(function(p){return p.cat===cat}).sort(function(a,b){return a.apellido.localeCompare(b.apellido)});
+  pl.forEach(function(p){
+    // Check if already registered
+    var taken=usuarios.some(function(u){return u.pid===p.id});
+    sel.innerHTML+='<option value="'+p.id+'"'+(taken?' disabled style="color:#999"':'')+'>'+p.apellido+' '+p.nombre+(taken?' (ya registrado)':'')+'</option>';
+  });
+}
+function regUser(){
+  var pid=document.getElementById('regPid').value,email=document.getElementById('regEmail').value.trim(),pass=document.getElementById('regPass').value;
+  var errEl=document.getElementById('regErr');errEl.style.display='none';
+  if(!pid||!email||!pass){errEl.textContent='Completá todos los campos';errEl.style.display='block';return}
+  if(pass.length<4){errEl.textContent='La contraseña debe tener al menos 4 caracteres';errEl.style.display='block';return}
+  // Check if player already registered
+  if(usuarios.some(function(u){return u.pid===pid})){errEl.textContent='Este jugador ya tiene una cuenta creada';errEl.style.display='block';return}
+  // Check email not taken
+  if(usuarios.some(function(u){return u.email===email})){errEl.textContent='Este email ya está registrado';errEl.style.display='block';return}
+  var p=parts.find(function(x){return x.id===pid});if(!p)return;
+  var uid=Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+  var user={uid:uid,pid:pid,nombre:p.apellido+' '+p.nombre,cat:p.cat,grupo:p.grupo||'',email:email,pass:pass,qrUsed:false};
+  usuarios.push(user);
+  db.ref('usuarios').set(usuarios);
+  curUser=user;sessionStorage.setItem('atr_user',JSON.stringify(user));
+  showCuentaLogged();updAdmUI();toast('Cuenta creada — Bienvenido!');
+}
+function loginUser(){
+  var email=document.getElementById('logEmail').value.trim(),pass=document.getElementById('logPass').value;
+  var errEl=document.getElementById('logErr');errEl.style.display='none';
+  if(!email||!pass){errEl.textContent='Completá email y contraseña';errEl.style.display='block';return}
+  var user=usuarios.find(function(u){return u.email===email&&u.pass===pass});
+  if(!user){errEl.textContent='Email o contraseña incorrectos';errEl.style.display='block';return}
+  curUser=user;sessionStorage.setItem('atr_user',JSON.stringify(user));
+  showCuentaLogged();updAdmUI();toast('Sesión iniciada — '+user.nombre);
+}
+function logoutUser(){
+  curUser=null;sessionStorage.removeItem('atr_user');
+  document.getElementById('cuentaAuth').style.display='block';
+  document.getElementById('cuentaLogged').style.display='none';
+  document.getElementById('cuentaTitle').textContent='Mi Cuenta';
+  updAdmUI();toast('Sesión cerrada');
+}
+function showCuentaLogged(){
+  document.getElementById('cuentaAuth').style.display='none';
+  document.getElementById('cuentaLogged').style.display='block';
+  document.getElementById('cuentaTitle').textContent='Mi Cuenta';
+  document.getElementById('cuentaNombre').textContent=curUser.nombre;
+  document.getElementById('cuentaCat').innerHTML='<span class="lb l-'+CS[curUser.cat]+'" style="font-size:.7rem">'+CL[curUser.cat]+(curUser.grupo?' — Grupo '+curUser.grupo:'')+'</span>';
+  // QR
+  var qrEl=document.getElementById('cuentaQR');qrEl.innerHTML='';
+  var qrData='ATR2026-'+curUser.uid+'-'+curUser.pid;
+  try{new QRCode(qrEl,{text:qrData,width:180,height:180,colorDark:'#722F37',colorLight:'#ffffff'})}catch(e){qrEl.textContent='Error generando QR'}
+  // Status
+  var stEl=document.getElementById('cuentaQRStatus');
+  // Refresh from Firebase
+  var freshUser=usuarios.find(function(u){return u.uid===curUser.uid});
+  var used=freshUser?freshUser.qrUsed:curUser.qrUsed;
+  if(used){
+    stEl.innerHTML='<div style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;background:rgba(114,47,55,.1);color:var(--acc);font-weight:700;font-size:.8rem">✓ Entrada utilizada</div>';
+  }else{
+    stEl.innerHTML='<div style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;background:rgba(22,163,74,.1);color:#16a34a;font-weight:700;font-size:.8rem">● Entrada válida</div>';
+  }
+}
+
+// ═══ ENTRADA (admin) ═══
+function rEntradas(){
+  var el=document.getElementById('entList');el.innerHTML='';
+  if(!usuarios.length){el.innerHTML='<div class="es"><div class="es-i">🎟️</div><div class="es-t">Sin usuarios registrados</div></div>';return}
+  var sorted=usuarios.slice().sort(function(a,b){return(a.nombre||'').localeCompare(b.nombre||'')});
+  sorted.forEach(function(u,i){
+    var used=u.qrUsed;
+    var statusBadge=used?'<span style="padding:3px 10px;border-radius:6px;font-size:.65rem;font-weight:700;background:rgba(114,47,55,.1);color:var(--acc)">USADA</span>':'<span style="padding:3px 10px;border-radius:6px;font-size:.65rem;font-weight:700;background:rgba(22,163,74,.1);color:#16a34a">VÁLIDA</span>';
+    var toggleBtn=used?'<button onclick="toggleQR(\''+u.uid+'\',false)" style="padding:4px 10px;border-radius:6px;border:1px solid #16a34a;background:rgba(22,163,74,.1);color:#16a34a;font-size:.65rem;font-weight:600;cursor:pointer">Reactivar</button>':'<button onclick="toggleQR(\''+u.uid+'\',true)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);font-size:.65rem;font-weight:600;cursor:pointer">Marcar usada</button>';
+    el.innerHTML+='<div class="pc" style="flex-wrap:wrap"><div class="pav">'+(u.nombre?u.nombre[0]:'?')+'</div><div style="flex:1;min-width:0"><div class="pnm">'+u.nombre+'</div><div style="font-size:.65rem;color:var(--tm)">'+CL[u.cat]+(u.grupo?' — G'+u.grupo:'')+'</div></div>'+statusBadge+'<div style="width:100%;display:flex;gap:6px;margin-top:8px;justify-content:flex-end">'+toggleBtn+'</div></div>';
+  });
+}
+function toggleQR(uid,val){
+  var u=usuarios.find(function(x){return x.uid===uid});
+  if(u){u.qrUsed=val;db.ref('usuarios').set(usuarios);rEntradas();toast(val?'Entrada marcada como usada':'Entrada reactivada')}
+}
+
+// ═══ USUARIOS (admin: ver cuentas) ═══
+function rUsers(){
+  var el=document.getElementById('usersList');el.innerHTML='';
+  if(!usuarios.length){el.innerHTML='<div class="es"><div class="es-i">🗂️</div><div class="es-t">Sin usuarios registrados</div></div>';return}
+  var sorted=usuarios.slice().sort(function(a,b){return(a.nombre||'').localeCompare(b.nombre||'')});
+  sorted.forEach(function(u){
+    el.innerHTML+='<div class="pc" style="flex-wrap:wrap"><div class="pav">'+(u.nombre?u.nombre[0]:'?')+'</div><div style="flex:1;min-width:0"><div class="pnm">'+u.nombre+'</div><div style="font-size:.65rem;color:var(--tm)">'+u.email+'</div><div style="font-size:.6rem;color:var(--tm);font-family:Space Mono,monospace;margin-top:2px">Pass: '+u.pass+'</div></div><div style="display:flex;gap:4px"><button class="adm-edit" onclick="editUserPass(\''+u.uid+'\')" style="width:28px;height:28px;font-size:.7rem">✎</button><button class="adm-del" onclick="delUser(\''+u.uid+'\')" style="width:28px;height:28px;font-size:.7rem">✕</button></div></div>';
+  });
+}
+function editUserPass(uid){
+  var u=usuarios.find(function(x){return x.uid===uid});if(!u)return;
+  var np=prompt('Nueva contraseña para '+u.nombre+':',u.pass);if(np===null||!np)return;
+  u.pass=np;db.ref('usuarios').set(usuarios);rUsers();toast('Contraseña actualizada');
+}
+function delUser(uid){
+  if(!confirm('Eliminar esta cuenta?'))return;
+  usuarios=usuarios.filter(function(u){return u.uid!==uid});
+  db.ref('usuarios').set(usuarios);rUsers();toast('Cuenta eliminada');
+}
 function updAdmUI(){
   var btn=document.getElementById('admBtnTxt'),sub=document.getElementById('admBtnSub');
   if(isAdmin){btn.textContent='Panel Administrador';sub.textContent='Sesión activa'}
@@ -984,7 +1118,15 @@ function updAdmUI(){
   if(balBtn)balBtn.style.display=isAdmin?'flex':'none';
   var spoForm=document.getElementById('spoAddForm');
   if(spoForm)spoForm.style.display=isAdmin?'block':'none';
-  document.getElementById('fab').classList.toggle('show',(curPg==='inicio'||curPg==='resultados')&&isAdmin);
+  var usrBtn=document.getElementById('usersBtn');
+  if(usrBtn)usrBtn.style.display=isAdmin?'flex':'none';
+  // Update cuenta button
+  var cBtn=document.getElementById('cuentaBtnTxt'),cSub=document.getElementById('cuentaBtnSub');
+  if(cBtn&&curUser){cBtn.textContent=curUser.nombre;cSub.textContent='Sesión activa — '+CL[curUser.cat]}
+  else if(cBtn){cBtn.textContent='Mi Cuenta';cSub.textContent='Registrate o iniciá sesión'}
+  // FAB: admin or logged in player
+  var showFab=(curPg==='inicio'||curPg==='resultados')&&(isAdmin||!!curUser);
+  document.getElementById('fab').classList.toggle('show',showFab);
 }
 function doLogin(){
   var u=document.getElementById('admUser').value.trim(),p=document.getElementById('admPass').value;
@@ -1051,6 +1193,18 @@ subPg=function(s){
   if(s==='spo'){rSpo();updAdmUI()}
   if(s==='pagos')rPagos();
   if(s==='balance'){balView='ingresos';rBalance()}
+  if(s==='entrada')rEntradas();
+  if(s==='users')rUsers();
+  if(s==='cuenta'){
+    if(curUser){showCuentaLogged()}
+    else{
+      document.getElementById('cuentaAuth').style.display='block';
+      document.getElementById('cuentaLogged').style.display='none';
+      // Fill category selector
+      var sel=document.getElementById('regCat');sel.innerHTML='<option value="">Categoría...</option>';
+      CATS.forEach(function(c){if(parts.some(function(p){return p.cat===c}))sel.innerHTML+='<option value="'+c+'">'+CL[c]+'</option>'});
+    }
+  }
   if(s==='admin'){
     if(isAdmin){document.getElementById('admLogin').style.display='none';document.getElementById('admPanel').style.display='block';document.getElementById('admTitle').textContent='Panel Administrador';rAdmPanel()}
     else{document.getElementById('admLogin').style.display='block';document.getElementById('admPanel').style.display='none';document.getElementById('admTitle').textContent='Iniciar Sesión'}
