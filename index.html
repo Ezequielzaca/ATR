@@ -606,6 +606,10 @@ function rCGrpTabs(){
 function togCat(cat){selCat=selCat===cat?null:cat;selGrp=null;rCTabs();rGrid()}
 function setSelGrp(g){selGrp=g;rCGrpTabs();rGrid()}
 
+function flipScore(sc){
+  return sc.trim().split(/\s+/).map(function(s){var p=s.split('-');return p.length===2?p[1]+'-'+p[0]:s}).join(' ');
+}
+
 function buildGrid(players,title){
   if(!players.length)return'';
   var rM={};results.filter(function(r){return r.cat===selCat}).forEach(function(r){rM[r.p1id+'_'+r.p2id]=r;rM[r.p2id+'_'+r.p1id]={p1id:r.p2id,p2id:r.p1id,score:r.score,winner:r.winner,flip:true}});
@@ -618,7 +622,11 @@ function buildGrid(players,title){
     players.forEach(function(q,j){
       if(i===j){html+='<td class="self">—</td>';return}
       var k=p.id+'_'+q.id,r=rM[k];
-      if(r){var w=r.flip?r.winner===2:r.winner===1;html+='<td class="'+(w?'win':'loss')+'">'+r.score+'</td>'}
+      if(r){
+        var w=r.flip?r.winner===2:r.winner===1;
+        var sc=w?r.score:flipScore(r.score);
+        html+='<td class="'+(w?'win':'loss')+'">'+sc+'</td>';
+      }
       else html+='<td></td>';
     });html+='</tr>';
   });
