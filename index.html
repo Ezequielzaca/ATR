@@ -247,10 +247,14 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 <!-- PUNTOS -->
 <div class="page" id="pg-puntos">
   <div class="slbl">Tabla de Puntos</div>
-  <div class="ctabs" id="pModeTabs" style="margin-bottom:10px"></div>
-  <div class="ctabs" id="pTabs"></div>
-  <div class="ctabs" id="pGrpTabs" style="margin-top:-10px"></div>
-  <div id="pTbl"></div>
+  <div style="margin-bottom:14px"><input class="fi" id="pSearch" placeholder="🔍 Buscar jugador..." oninput="searchPlayer()" style="width:100%"/></div>
+  <div id="pSearchResult" style="display:none;margin-bottom:16px"></div>
+  <div id="pNormal">
+    <div class="ctabs" id="pModeTabs" style="margin-bottom:10px"></div>
+    <div class="ctabs" id="pTabs"></div>
+    <div class="ctabs" id="pGrpTabs" style="margin-top:-10px"></div>
+    <div id="pTbl"></div>
+  </div>
 </div>
 
 <!-- RESULTADOS -->
@@ -847,6 +851,96 @@ function rPts(){
     h+='<td class="sep">'+s.gg+'</td><td>'+s.gp+'</td><td class="'+vc(s.gd)+'">'+vs(s.gd)+'</td></tr>';
   });
   h+='</tbody></table></div>';el.innerHTML=h;
+}
+
+// ═══ PLAYER SEARCH ═══
+function searchPlayer(){
+  var q=document.getElementById('pSearch').value.trim().toLowerCase();
+  var resEl=document.getElementById('pSearchResult');
+  var normEl=document.getElementById('pNormal');
+  if(!q||q.length<2){resEl.style.display='none';normEl.style.display='block';return}
+  resEl.style.display='block';normEl.style.display='none';
+  // Find matching players
+  var matches=parts.filter(function(p){
+    var full=(p.apellido+' '+p.nombre).toLowerCase();
+    var full2=(p.nombre+' '+p.apellido).toLowerCase();
+    return full.indexOf(q)!==-1||full2.indexOf(q)!==-1;
+  });
+  // Also check amistosos for non-registered names
+  var amiNames={};
+  amistosos.forEach(function(am){
+    if(am.p1.toLowerCase().indexOf(q)!==-1)amiNames[am.p1]=true;
+    if(am.p2.toLowerCase().indexOf(q)!==-1)amiNames[am.p2]=true;
+  });
+  if(!matches.length&&!Object.keys(amiNames).length){resEl.innerHTML='<div class="es" style="padding:20px"><div class="es-t">No se encontró "'+q+'"</div></div>';return}
+  var html='';
+  // Registered players
+  matches.forEach(function(p){
+    var nm=p.apellido+' '+p.nombre;
+    // Tournament stats
+    var tPj=0,tPg=0,tPp=0,tPts=0,tSg=0,tSp=0,tGg=0,tGp=0;
+    results.filter(function(r){return r.cat===p.cat}).forEach(function(r){
+      var sc=parseScore(r.score);
+      var wid=r.winner===1?r.p1id:r.p2id,lid=r.winner===1?r.p2id:r.p1id;
+      if(wid===p.id){tPj++;tPg++;tPts++;tSg+=r.winner===1?sc.s1:sc.s2;tSp+=r.winner===1?sc.s2:sc.s1;tGg+=r.winner===1?sc.g1:sc.g2;tGp+=r.winner===1?sc.g2:sc.g1}
+      if(lid===p.id){tPj++;tPp++;tPts--;tSg+=r.winner===1?sc.s2:sc.s1;tSp+=r.winner===1?sc.s1:sc.s2;tGg+=r.winner===1?sc.g2:sc.g1;tGp+=r.winner===1?sc.g1:sc.g2}
+    });
+    // Amistosos stats
+    var aPj=0,aPg=0,aPp=0,aPts=0;
+    amistosos.forEach(function(am){
+      var w=am.winner===1?am.p1:am.p2,l=am.winner===1?am.p2:am.p1;
+      if(w===nm){aPj++;aPg++;aPts++}
+      if(l===nm){aPj++;aPp++;aPts--}
+    });
+    var totalPts=tPts+aPts;
+    function vc(v){return v>0?'pos':v<0?'neg':'zer'}
+    function vs(v){return v>0?'+'+v:''+v}
+    html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:18px;margin-bottom:12px">';
+    html+='<div style="font-weight:800;font-size:1.05rem;margin-bottom:4px">'+nm+'</div>';
+    html+='<div style="margin-bottom:12px"><span class="lb l-'+CS[p.cat]+'" style="font-size:.65rem">'+CL[p.cat]+'</span><span style="font-size:.65rem;color:var(--tm);margin-left:8px">Grupo '+(p.grupo||'?')+'</span></div>';
+    // ATR stats
+    html+='<div style="font-size:.7rem;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">ATR 2026</div>';
+    html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">';
+    html+='<div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">PJ</span> <b>'+tPj+'</b></div>';
+    html+='<div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">PG</span> <b class="pos">'+tPg+'</b></div>';
+    html+='<div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">PP</span> <b class="neg">'+tPp+'</b></div>';
+    html+='<div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">Pts</span> <b class="'+vc(tPts)+'">'+vs(tPts)+'</b></div>';
+    html+='<div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">Sets</span> <b>'+tSg+'-'+tSp+'</b></div>';
+    html+='<div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">Games</span> <b>'+tGg+'-'+tGp+'</b></div>';
+    html+='</div>';
+    // Amistosos stats
+    if(aPj>0){
+      html+='<div style="font-size:.7rem;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">🤝 Amistosos</div>';
+      html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">';
+      html+='<div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">PJ</span> <b>'+aPj+'</b></div>';
+      html+='<div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">G</span> <b class="pos">'+aPg+'</b></div>';
+      html+='<div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">P</span> <b class="neg">'+aPp+'</b></div>';
+      html+='<div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">Pts</span> <b class="'+vc(aPts)+'">'+vs(aPts)+'</b></div>';
+      html+='</div>';
+    }
+    // Total
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:8px;background:var(--acc-d)">';
+    html+='<span style="font-size:.75rem;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:1px">Total General</span>';
+    html+='<span style="font-family:Space Mono,monospace;font-weight:800;font-size:1.1rem;color:var(--acc)">'+vs(totalPts)+' pts</span>';
+    html+='</div></div>';
+  });
+  // Non-registered amistoso-only players
+  Object.keys(amiNames).forEach(function(name){
+    if(matches.some(function(p){return(p.apellido+' '+p.nombre)===name}))return;
+    var ag=0,ap=0;
+    amistosos.forEach(function(am){
+      var w=am.winner===1?am.p1:am.p2,l=am.winner===1?am.p2:am.p1;
+      if(w===name){ag++;} if(l===name){ap++;}
+    });
+    html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:18px;margin-bottom:12px">';
+    html+='<div style="font-weight:800;font-size:1.05rem;margin-bottom:4px">'+name+'</div>';
+    html+='<div style="margin-bottom:12px"><span class="lb" style="background:var(--acc-d);color:var(--acc);font-size:.65rem">INVITADO</span></div>';
+    html+='<div style="font-size:.7rem;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">🤝 Amistosos</div>';
+    html+='<div style="display:flex;gap:8px"><div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">G</span> <b class="pos">'+ag+'</b></div>';
+    html+='<div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">P</span> <b class="neg">'+ap+'</b></div></div>';
+    html+='</div>';
+  });
+  resEl.innerHTML=html;
 }
 
 // ═══ FIFA CARD ═══
