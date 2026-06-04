@@ -247,6 +247,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 <!-- PUNTOS -->
 <div class="page" id="pg-puntos">
   <div class="slbl">Tabla de Puntos</div>
+  <div class="ctabs" id="pModeTabs" style="margin-bottom:10px"></div>
   <div class="ctabs" id="pTabs"></div>
   <div class="ctabs" id="pGrpTabs" style="margin-top:-10px"></div>
   <div id="pTbl"></div>
@@ -444,10 +445,11 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 <!-- Modal: Amistoso -->
 <div class="mbg" id="mAmi" onclick="if(event.target===this)clMod('mAmi')"><div class="mdl">
   <div class="mh"><span class="mt">Cargar Amistoso</span><button class="mx" onclick="clMod('mAmi')">✕</button></div>
-  <div class="fr"><input class="fi" id="aP1N" placeholder="Tu nombre" readonly/></div>
-  <div class="fr"><input class="fi" id="aP2N" placeholder="Nombre rival"/><input class="fi" id="aP2A" placeholder="Apellido rival"/></div>
+  <div class="fr"><input class="fi" id="aP1N" placeholder="Nombre J1"/><input class="fi" id="aP1A" placeholder="Apellido J1"/></div>
+  <div style="text-align:center;color:var(--tm);font-weight:700;margin:-4px 0 6px">VS</div>
+  <div class="fr"><input class="fi" id="aP2N" placeholder="Nombre J2"/><input class="fi" id="aP2A" placeholder="Apellido J2"/></div>
   <div class="fr"><input class="fi" id="aScore" placeholder="Score (ej: 6-3 6-4)"/></div>
-  <div class="fr"><select class="fs" id="aWin"><option value="">Resultado...</option><option value="1">Gané</option><option value="2">Perdí</option></select></div>
+  <div class="fr"><select class="fs" id="aWin"><option value="">Ganador...</option><option value="1">Jugador 1</option><option value="2">Jugador 2</option></select></div>
   <div class="fr"><input type="date" class="fi" id="aDate"/></div>
   <button class="fb" onclick="saveAmistoso()">Guardar Amistoso</button>
 </div></div>
@@ -551,7 +553,7 @@ function nav(pg){
   var t=document.getElementById('pg-'+pg);if(t)t.classList.add('active');
   if(pg==='mas')backMas();
   if(pg==='cuadros'){rCTabs();rGrid()}
-  if(pg==='puntos'){rPTabs();rPts()}
+  if(pg==='puntos'){rPModeTabs();rPTabs();rPts()}
   if(pg==='resultados'){rResTabs();if(resView==='torneo'){rRes();document.getElementById('rList').style.display='block';document.getElementById('aList').style.display='none'}else{rAmistosos();document.getElementById('rList').style.display='none';document.getElementById('aList').style.display='block'}}
   updFab();window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -682,9 +684,23 @@ function rGrid(){
 }
 
 // ═══ PUNTOS ═══
-var ptsGrp=null; // null=general, 'A','B','C','D'
+var ptsGrp=null;
+var ptsMode='torneo'; // 'torneo','amistosos','general'
+function rPModeTabs(){
+  var el=document.getElementById('pModeTabs');el.innerHTML='';
+  ['Torneo','Amistosos','General'].forEach(function(label){
+    var val=label.toLowerCase();
+    var d=document.createElement('div');d.className='ct';
+    if(ptsMode===val){d.style.background='var(--acc-d)';d.style.color='var(--acc)';d.style.borderColor='var(--acc)'}
+    d.textContent=label;
+    d.onclick=function(){ptsMode=val;ptsCat=null;ptsGrp=null;rPModeTabs();rPTabs();rPts()};
+    el.appendChild(d);
+  });
+}
 function rPTabs(){
   var t=document.getElementById('pTabs');t.innerHTML='';
+  var gt=document.getElementById('pGrpTabs');gt.innerHTML='';
+  if(ptsMode==='amistosos')return; // No category tabs for amistosos
   CATS.forEach(function(cat){
     var n=parts.filter(function(p){return p.cat===cat}).length;if(!n)return;
     t.innerHTML+='<div class="ct'+(ptsCat===cat?' a-'+CS[cat]:'')+'" onclick="togPCat(\''+cat+'\')">'+CL[cat]+' ('+n+')</div>';
@@ -724,6 +740,74 @@ function parseScore(sc){
 }
 function rPts(){
   var el=document.getElementById('pTbl');
+  
+  // ── AMISTOSOS MODE ──
+  if(ptsMode==='amistosos'){
+    var aStats={};
+    amistosos.forEach(function(am){
+      if(!aStats[am.p1])aStats[am.p1]={nm:am.p1,pj:0,pg:0,pp:0,pts:0};
+      if(!aStats[am.p2])aStats[am.p2]={nm:am.p2,pj:0,pg:0,pp:0,pts:0};
+      var w=am.winner===1?am.p1:am.p2,l=am.winner===1?am.p2:am.p1;
+      aStats[w].pj++;aStats[w].pg++;aStats[w].pts++;
+      aStats[l].pj++;aStats[l].pp++;aStats[l].pts--;
+    });
+    var arr=Object.values(aStats).sort(function(a,b){return b.pts-a.pts||b.pg-a.pg});
+    arr.forEach(function(s,i){s.pos=i+1});
+    if(!arr.length){el.innerHTML='<div class="es"><div class="es-i">🤝</div><div class="es-t">Sin amistosos cargados</div></div>';return}
+    var h='<div style="font-weight:600;font-size:.85rem;margin-bottom:10px;text-align:center">Ranking Amistosos</div>';
+    h+='<div class="pw"><table class="pt"><thead><tr><th>#</th><th>Jugador</th><th>PJ</th><th>PG</th><th>PP</th><th>Pts</th></tr></thead><tbody>';
+    arr.forEach(function(s,i){
+      var pC=i===0?'p1c':i===1?'p2c':i===2?'p3c':'';
+      function vc(v){return v>0?'pos':v<0?'neg':'zer'}
+      function vs(v){return v>0?'+'+v:''+v}
+      h+='<tr><td class="pp '+pC+'">'+s.pos+'</td><td class="pn">'+s.nm+'</td>';
+      h+='<td>'+s.pj+'</td><td class="pos">'+s.pg+'</td><td class="neg">'+s.pp+'</td><td class="pv '+vc(s.pts)+'">'+vs(s.pts)+'</td></tr>';
+    });
+    h+='</tbody></table></div>';el.innerHTML=h;return;
+  }
+
+  // ── GENERAL MODE ──
+  if(ptsMode==='general'){
+    var gStats={};
+    // Tournament points
+    parts.forEach(function(p){gStats[p.id]={id:p.id,nm:p.apellido+' '+p.nombre,cat:p.cat,grp:p.grupo||'',tPts:0,tPj:0,tPg:0,tPp:0,aPts:0,aPj:0,aPg:0,aPp:0}});
+    results.forEach(function(r){
+      var wid=r.winner===1?r.p1id:r.p2id,lid=r.winner===1?r.p2id:r.p1id;
+      if(gStats[wid]){gStats[wid].tPj++;gStats[wid].tPg++;gStats[wid].tPts++}
+      if(gStats[lid]){gStats[lid].tPj++;gStats[lid].tPp++;gStats[lid].tPts--}
+    });
+    // Amistosos points - match by name
+    amistosos.forEach(function(am){
+      var w=am.winner===1?am.p1:am.p2,l=am.winner===1?am.p2:am.p1;
+      Object.values(gStats).forEach(function(s){
+        if(s.nm===w||s.nm===w){s.aPj++;s.aPg++;s.aPts++}
+        if(s.nm===l){s.aPj++;s.aPp++;s.aPts--}
+      });
+    });
+    var arr=Object.values(gStats).map(function(s){s.totalPts=s.tPts+s.aPts;s.totalPj=s.tPj+s.aPj;return s});
+    arr.sort(function(a,b){return b.totalPts-a.totalPts||b.tPts-a.tPts});
+    arr.forEach(function(s,i){s.pos=i+1});
+    // Filter out players with 0 total games if too many
+    var active=arr.filter(function(s){return s.totalPj>0});
+    var inactive=arr.filter(function(s){return s.totalPj===0});
+    var show=active.length?active:arr;
+    function vc(v){return v>0?'pos':v<0?'neg':'zer'}
+    function vs(v){return v>0?'+'+v:''+v}
+    var h='<div style="font-weight:600;font-size:.85rem;margin-bottom:10px;text-align:center">Ranking General (ATR + Amistosos)</div>';
+    h+='<div class="pw"><table class="pt"><thead><tr><th>#</th><th>Jugador</th><th>Cat</th><th class="sep">ATR</th><th class="sep">AMI</th><th class="sep">Total</th></tr></thead><tbody>';
+    show.forEach(function(s,i){
+      var pC=i===0?'p1c':i===1?'p2c':i===2?'p3c':'';
+      h+='<tr><td class="pp '+pC+'">'+s.pos+'</td><td class="pn">'+s.nm+'</td>';
+      h+='<td style="font-size:.55rem;color:var(--tm)">'+CL[s.cat]+'</td>';
+      h+='<td class="sep '+vc(s.tPts)+'">'+vs(s.tPts)+'</td>';
+      h+='<td class="sep '+vc(s.aPts)+'">'+vs(s.aPts)+'</td>';
+      h+='<td class="sep pv '+vc(s.totalPts)+'">'+vs(s.totalPts)+'</td></tr>';
+    });
+    if(inactive.length)h+='<tr><td colspan="6" style="text-align:center;font-size:.7rem;color:var(--tm);padding:12px">+'+inactive.length+' jugadores sin partidos</td></tr>';
+    h+='</tbody></table></div>';el.innerHTML=h;return;
+  }
+
+  // ── TORNEO MODE (original) ──
   if(!ptsCat){el.innerHTML='';return}
   var pl=parts.filter(function(p){return p.cat===ptsCat&&(ptsGrp===null||p.grupo===ptsGrp)});
   if(!pl.length){el.innerHTML='<div class="es"><div class="es-i">📋</div><div class="es-t">Sin participantes'+(ptsGrp?' en Grupo '+ptsGrp:'')+'</div></div>';return}
@@ -736,7 +820,6 @@ function rPts(){
   });
   var arr=Object.values(st);arr.forEach(function(s){s.sd=s.sg-s.sp;s.gd=s.gg-s.gp});
   arr.sort(function(a,b){return b.pts-a.pts||b.sd-a.sd||b.gd-a.gd});
-  // Rating
   arr.forEach(function(s,i){
     s.pos=i+1;
     if(s.pj===0){s.rat=50}else{
@@ -843,22 +926,24 @@ function rAmistosos(){
 }
 function openAmiMod(){
   document.getElementById('mAmi').classList.add('show');
-  var nombre='';
-  if(curUser)nombre=curUser.nombre;
-  else if(isAdmin)nombre='Admin';
-  document.getElementById('aP1N').value=nombre;
+  document.getElementById('aP1N').value='';document.getElementById('aP1A').value='';
   document.getElementById('aP2N').value='';document.getElementById('aP2A').value='';
   document.getElementById('aScore').value='';document.getElementById('aWin').value='';
   document.getElementById('aDate').value=todayStr;
+  // Pre-fill J1 if player is logged in
+  if(curUser&&!isAdmin){
+    var p=parts.find(function(x){return x.id===curUser.pid});
+    if(p){document.getElementById('aP1N').value=p.nombre;document.getElementById('aP1A').value=p.apellido}
+  }
 }
 function saveAmistoso(){
-  var p1=document.getElementById('aP1N').value.trim();
+  var p1n=document.getElementById('aP1N').value.trim(),p1a=document.getElementById('aP1A').value.trim();
   var p2n=document.getElementById('aP2N').value.trim(),p2a=document.getElementById('aP2A').value.trim();
   var score=document.getElementById('aScore').value.trim(),winner=parseInt(document.getElementById('aWin').value),fecha=document.getElementById('aDate').value;
-  if(!p1||!p2n||!score||!winner||!fecha){toast('Completá todos los campos');return}
+  if(!p1n||!p2n||!score||!winner||!fecha){toast('Completá todos los campos');return}
+  var p1=p1a?p1a+' '+p1n:p1n;
   var p2=p2a?p2a+' '+p2n:p2n;
-  var uid=curUser?curUser.pid:(isAdmin?'admin':'anon');
-  amistosos.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),p1:p1,p2:p2,score:score,winner:winner,fecha:fecha,uid:uid});
+  amistosos.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),p1:p1,p2:p2,score:score,winner:winner,fecha:fecha});
   db.ref('amistosos').set(amistosos);
   clMod('mAmi');rAmistosos();toast('Amistoso guardado');
 }
