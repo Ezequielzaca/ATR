@@ -254,8 +254,10 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 
 <!-- RESULTADOS -->
 <div class="page" id="pg-resultados">
-  <div class="slbl">Últimos Resultados</div>
+  <div class="slbl">Resultados</div>
+  <div class="ctabs" id="resTabs" style="margin-bottom:14px"></div>
   <div id="rList"></div>
+  <div id="aList" style="display:none"></div>
 </div>
 
 <!-- MÁS -->
@@ -439,6 +441,17 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 
 <div class="toast" id="toast"></div>
 
+<!-- Modal: Amistoso -->
+<div class="mbg" id="mAmi" onclick="if(event.target===this)clMod('mAmi')"><div class="mdl">
+  <div class="mh"><span class="mt">Cargar Amistoso</span><button class="mx" onclick="clMod('mAmi')">✕</button></div>
+  <div class="fr"><input class="fi" id="aP1N" placeholder="Tu nombre" readonly/></div>
+  <div class="fr"><input class="fi" id="aP2N" placeholder="Nombre rival"/><input class="fi" id="aP2A" placeholder="Apellido rival"/></div>
+  <div class="fr"><input class="fi" id="aScore" placeholder="Score (ej: 6-3 6-4)"/></div>
+  <div class="fr"><select class="fs" id="aWin"><option value="">Resultado...</option><option value="1">Gané</option><option value="2">Perdí</option></select></div>
+  <div class="fr"><input type="date" class="fi" id="aDate"/></div>
+  <button class="fb" onclick="saveAmistoso()">Guardar Amistoso</button>
+</div></div>
+
 <!-- Modal: Edit Result -->
 <div class="mbg" id="mEdit" onclick="if(event.target===this)clMod('mEdit')"><div class="mdl">
   <div class="mh"><span class="mt">Editar Resultado</span><button class="mx" onclick="clMod('mEdit')">✕</button></div>
@@ -502,6 +515,8 @@ db.ref('sponsors').once('value',function(s){sponsors=s.val()||[]});
 var balIngresos=[],balGastos=[];
 db.ref('balIngresos').on('value',function(s){balIngresos=s.val()||[]});
 db.ref('balGastos').on('value',function(s){balGastos=s.val()||[]});
+var amistosos=[];
+db.ref('amistosos').on('value',function(s){amistosos=s.val()||[]});
 
 // ═══ STATE ═══
 var parts=[],results=[],schedule=[];
@@ -537,13 +552,17 @@ function nav(pg){
   if(pg==='mas')backMas();
   if(pg==='cuadros'){rCTabs();rGrid()}
   if(pg==='puntos'){rPTabs();rPts()}
-  if(pg==='resultados')rRes();
+  if(pg==='resultados'){rResTabs();if(resView==='torneo'){rRes();document.getElementById('rList').style.display='block';document.getElementById('aList').style.display='none'}else{rAmistosos();document.getElementById('rList').style.display='none';document.getElementById('aList').style.display='block'}}
   updFab();window.scrollTo({top:0,behavior:'smooth'});
 }
 
 // ═══ FAB ═══
 function updFab(){var showFab=(curPg==='inicio'||curPg==='resultados')&&(isAdmin||!!curUser);document.getElementById('fab').classList.toggle('show',showFab)}
-function fabAct(){if(curPg==='resultados')openResMod();if(curPg==='inicio')openSchMod()}
+function fabAct(){
+  if(curPg==='resultados'&&resView==='amistosos')openAmiMod();
+  else if(curPg==='resultados')openResMod();
+  else if(curPg==='inicio')openSchMod();
+}
 
 // ═══ CALENDAR ═══
 function toggleCal(){var b=document.getElementById('calBtn'),x=document.getElementById('calBox');b.classList.toggle('open');x.classList.toggle('open');if(x.classList.contains('open'))rCal()}
@@ -756,15 +775,19 @@ function openCard(i){
   var g=gr(s.pos,s.rat),a=ac(s.pos,s.rat);
   var pl=s.pos===1?'1ER PUESTO':s.pos===2?'2DO PUESTO':s.pos===3?'3ER PUESTO':s.pos+'° PUESTO';
   var wp=s.pj>0?Math.round(s.pg/s.pj*100):0,sp=s.pj>0?Math.round(s.sg/Math.max(s.sg+s.sp,1)*100):0,gp=s.pj>0?Math.round(s.gg/Math.max(s.gg+s.gp,1)*100):0;
+  // Amistosos stats
+  var amiG=0,amiP=0;
+  amistosos.forEach(function(am){if(am.uid===s.id){if(am.winner===1)amiG++;else amiP++}});
+  var amiTotal=amiG+amiP;
   var paid=pagos[s.id]===true;
   var pagoBtn='';
   if(!paid){
     var msg=encodeURIComponent('Hola! Soy '+s.nm+' y quiero pagar la inscripción del Torneo ATR 2026 ($60.000). ¿Cómo puedo hacer el pago?');
-    pagoBtn='<div style="padding:12px 20px 20px;background:'+g+'"><a href="https://wa.me/5493794825167?text='+msg+'" target="_blank" style="display:block;width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#722F37,#5a1f27);color:#fff;text-align:center;font-weight:800;font-size:.95rem;text-decoration:none;letter-spacing:.5px">💳 Pagar Inscripción — $60.000</a></div>';
+    pagoBtn='<div style="padding:12px 20px 20px;background:'+g+'"><a href="https://mpago.la/2cTi1G5" target="_blank" style="display:block;width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#009ee3,#007eb5);color:#fff;text-align:center;font-weight:800;font-size:.95rem;text-decoration:none;letter-spacing:.5px">💳 Pagar Inscripción — $60.000</a></div>';
   }else{
     pagoBtn='<div style="padding:12px 20px 20px;background:'+g+';text-align:center"><div style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;background:rgba(114,47,55,.15);color:var(--acc);font-weight:700;font-size:.85rem">✓ Inscripción pagada</div></div>';
   }
-  c.innerHTML='<div class="fc-top" style="background:'+g+';color:#fff"><button class="fc-x" onclick="clCard()">✕</button><div class="fc-r" style="color:'+a+'">'+s.rat+'</div><div class="fc-pos" style="color:'+a+'">'+pl+'</div><div class="fc-nm">'+s.nm+'</div><div class="fc-cat">'+CL[s.cat]+'</div></div><div class="fc-div"></div><div class="fc-sts" style="background:'+g+';color:#fff"><div class="fst"><span class="fst-l">PJ</span><span class="fst-v">'+s.pj+'</span></div><div class="fst"><span class="fst-l">Pts</span><span class="fst-v" style="color:'+(s.pts>=0?a:'#f87171')+'">'+(s.pts>0?'+':'')+s.pts+'</span></div><div class="fst"><span class="fst-l">PG</span><span class="fst-v" style="color:var(--acc)">'+s.pg+'</span></div><div class="fst"><span class="fst-l">PP</span><span class="fst-v" style="color:#f87171">'+s.pp+'</span></div><div class="fst fst-f"><span class="fst-l">Victorias</span><span class="fst-v">'+wp+'%</span></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Sets '+s.sg+'G / '+s.sp+'P</span><span class="fst-v" style="color:'+(s.sd>=0?a:'#f87171')+'">'+(s.sd>0?'+':'')+s.sd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+sp+'%;background:'+a+'"></div></div></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Games '+s.gg+'G / '+s.gp+'P</span><span class="fst-v" style="color:'+(s.gd>=0?a:'#f87171')+'">'+(s.gd>0?'+':'')+s.gd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+gp+'%;background:'+a+'"></div></div></div></div>'+pagoBtn;
+  c.innerHTML='<div class="fc-top" style="background:'+g+';color:#fff"><button class="fc-x" onclick="clCard()">✕</button><div class="fc-r" style="color:'+a+'">'+s.rat+'</div><div class="fc-pos" style="color:'+a+'">'+pl+'</div><div class="fc-nm">'+s.nm+'</div><div class="fc-cat">'+CL[s.cat]+'</div></div><div class="fc-div"></div><div class="fc-sts" style="background:'+g+';color:#fff"><div class="fst"><span class="fst-l">PJ</span><span class="fst-v">'+s.pj+'</span></div><div class="fst"><span class="fst-l">Pts</span><span class="fst-v" style="color:'+(s.pts>=0?a:'#f87171')+'">'+(s.pts>0?'+':'')+s.pts+'</span></div><div class="fst"><span class="fst-l">PG</span><span class="fst-v" style="color:var(--acc)">'+s.pg+'</span></div><div class="fst"><span class="fst-l">PP</span><span class="fst-v" style="color:#f87171">'+s.pp+'</span></div><div class="fst fst-f"><span class="fst-l">Victorias</span><span class="fst-v">'+wp+'%</span></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Sets '+s.sg+'G / '+s.sp+'P</span><span class="fst-v" style="color:'+(s.sd>=0?a:'#f87171')+'">'+(s.sd>0?'+':'')+s.sd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+sp+'%;background:'+a+'"></div></div></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Games '+s.gg+'G / '+s.gp+'P</span><span class="fst-v" style="color:'+(s.gd>=0?a:'#f87171')+'">'+(s.gd>0?'+':'')+s.gd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+gp+'%;background:'+a+'"></div></div></div></div>'+(amiTotal>0?'<div style="padding:0 20px 12px;background:'+g+'"><div class="fst fst-f" style="background:rgba(255,255,255,.08)"><span class="fst-l">🤝 Amistosos</span><span class="fst-v"><span style="color:'+a+'">'+amiG+'G</span> / <span style="color:#f87171">'+amiP+'P</span></span></div></div>':'')+pagoBtn;
   bg.classList.add('show');
 }
 function clCard(){document.getElementById('cardBg').classList.remove('show')}
@@ -781,6 +804,68 @@ function rRes(){
     byD[f].forEach(function(m){h+='<div class="rm"><span class="lb l-'+CS[m.cat]+'" style="flex-shrink:0">'+CL[m.cat]+'</span><span class="rp"><span class="'+(m.winner===1?'rw':'')+'">'+m.p1+'</span> vs <span class="'+(m.winner===2?'rw':'')+'">'+m.p2+'</span></span><span class="rsc">'+m.score+'</span></div>'});
     h+='</div>';el.innerHTML+=h;
   });
+}
+
+// ═══ AMISTOSOS ═══
+var resView='torneo';
+function rResTabs(){
+  var el=document.getElementById('resTabs');el.innerHTML='';
+  ['Torneo','Amistosos'].forEach(function(label){
+    var val=label.toLowerCase();
+    var d=document.createElement('div');d.className='ct';
+    if(resView===val){d.style.background='var(--acc-d)';d.style.color='var(--acc)';d.style.borderColor='var(--acc)'}
+    d.textContent=label;
+    d.onclick=function(){
+      resView=val;rResTabs();
+      document.getElementById('rList').style.display=val==='torneo'?'block':'none';
+      document.getElementById('aList').style.display=val==='amistosos'?'block':'none';
+      if(val==='torneo')rRes();else rAmistosos();
+      updFab();
+    };
+    el.appendChild(d);
+  });
+}
+function rAmistosos(){
+  var el=document.getElementById('aList');el.innerHTML='';
+  var sr=amistosos.slice().sort(function(a,b){return(b.fecha||'').localeCompare(a.fecha||'')});
+  if(!sr.length){el.innerHTML='<div class="es"><div class="es-i">🤝</div><div class="es-t">Sin amistosos cargados</div><div class="es-s">Usá el + para cargar uno</div></div>';return}
+  var byD={};sr.forEach(function(r){if(!byD[r.fecha])byD[r.fecha]=[];byD[r.fecha].push(r)});
+  Object.keys(byD).sort().reverse().forEach(function(f){
+    var dp=f.split('-'),dO=new Date(dp[0],dp[1]-1,dp[2]),dn=DN[dO.getDay()];
+    var h='<div class="rc"><div class="rd">'+dn+' '+dp[2]+' de '+MN[dO.getMonth()]+' '+dp[0]+'</div>';
+    byD[f].forEach(function(m){
+      var delBtn='';
+      if(isAdmin||(curUser&&curUser.pid===m.uid))delBtn='<button class="adm-del" onclick="delAmistoso(\''+m.id+'\')" style="width:24px;height:24px;font-size:.6rem;margin-left:6px">✕</button>';
+      h+='<div class="rm"><span class="lb" style="background:var(--acc-d);color:var(--acc);flex-shrink:0">AMI</span><span class="rp"><span class="'+(m.winner===1?'rw':'')+'">'+m.p1+'</span> vs <span class="'+(m.winner===2?'rw':'')+'">'+m.p2+'</span></span><span class="rsc">'+m.score+'</span>'+delBtn+'</div>';
+    });
+    h+='</div>';el.innerHTML+=h;
+  });
+}
+function openAmiMod(){
+  document.getElementById('mAmi').classList.add('show');
+  var nombre='';
+  if(curUser)nombre=curUser.nombre;
+  else if(isAdmin)nombre='Admin';
+  document.getElementById('aP1N').value=nombre;
+  document.getElementById('aP2N').value='';document.getElementById('aP2A').value='';
+  document.getElementById('aScore').value='';document.getElementById('aWin').value='';
+  document.getElementById('aDate').value=todayStr;
+}
+function saveAmistoso(){
+  var p1=document.getElementById('aP1N').value.trim();
+  var p2n=document.getElementById('aP2N').value.trim(),p2a=document.getElementById('aP2A').value.trim();
+  var score=document.getElementById('aScore').value.trim(),winner=parseInt(document.getElementById('aWin').value),fecha=document.getElementById('aDate').value;
+  if(!p1||!p2n||!score||!winner||!fecha){toast('Completá todos los campos');return}
+  var p2=p2a?p2a+' '+p2n:p2n;
+  var uid=curUser?curUser.pid:(isAdmin?'admin':'anon');
+  amistosos.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),p1:p1,p2:p2,score:score,winner:winner,fecha:fecha,uid:uid});
+  db.ref('amistosos').set(amistosos);
+  clMod('mAmi');rAmistosos();toast('Amistoso guardado');
+}
+function delAmistoso(id){
+  if(!confirm('Eliminar amistoso?'))return;
+  amistosos=amistosos.filter(function(a){return a.id!==id});
+  db.ref('amistosos').set(amistosos);rAmistosos();toast('Eliminado');
 }
 
 // ═══ MODALS ═══
