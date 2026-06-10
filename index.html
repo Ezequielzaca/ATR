@@ -3,9 +3,14 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#722F37"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Tenis ATR"/>
+<meta name="description" content="Torneo Tenis ATR 2026 - Corrientes. Cuadros, resultados, puntos y más."/>
 <title>Tenis ATR 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" defer></script>
 <style>
 :root{--bg:#f5f0e6;--card:#ffffff;--card-h:#ede8de;--acc:#722F37;--acc-d:rgba(114,47,55,.12);--acc-g:rgba(114,47,55,.25);--t1:#2d1f1f;--t2:#6b5c5c;--tm:#9a8a8a;--brd:rgba(114,47,55,.1);--r:16px;--rs:10px;--nav-h:72px;--sig:#a855f7;--oro:#d4a017;--pla:#8a8a8a;--bro:#c47a20;--mad:#7a5a30;--muj:#d44a7a;--hdr-bg:rgba(245,240,230,.92);--nav-bg:rgba(245,240,230,.95);--mdl-bg:#f5f0e6;--input-bg:#fff;--tbl-hdr:#ede8de;--win-bg:rgba(22,163,74,.12);--win-c:#16a34a;--loss-bg:rgba(220,38,38,.08);--loss-c:#dc2626}
 body.dark{--bg:#0d0d0d;--card:#1a1a1a;--card-h:#252525;--acc:#c4575f;--acc-d:rgba(196,87,95,.15);--acc-g:rgba(196,87,95,.25);--t1:#e8e0e0;--t2:#9a8a8a;--tm:#6b5c5c;--brd:rgba(255,255,255,.08);--hdr-bg:rgba(13,13,13,.92);--nav-bg:rgba(13,13,13,.95);--mdl-bg:#1a1a1a;--input-bg:#111;--tbl-hdr:#1a1a1a;--win-bg:rgba(22,163,74,.15);--win-c:#4ade80;--loss-bg:rgba(220,38,38,.12);--loss-c:#f87171}
@@ -219,6 +224,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 
 <!-- INICIO -->
 <div class="page active" id="pg-inicio">
+  <div id="statsDash" style="display:flex;gap:8px;margin-bottom:16px"></div>
   <button class="cal-btn" id="calBtn" onclick="toggleCal()">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     Calendario
@@ -556,6 +562,7 @@ function nav(pg){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
   var t=document.getElementById('pg-'+pg);if(t)t.classList.add('active');
   if(pg==='mas')backMas();
+  if(pg==='inicio'){rUp();rStatsDash()}
   if(pg==='cuadros'){rCTabs();rGrid()}
   if(pg==='puntos'){rPModeTabs();rPTabs();rPts()}
   if(pg==='resultados'){rResTabs();if(resView==='torneo'){rRes();document.getElementById('rList').style.display='block';document.getElementById('aList').style.display='none'}else{rAmistosos();document.getElementById('rList').style.display='none';document.getElementById('aList').style.display='block'}}
@@ -588,21 +595,33 @@ function rCal(){
 }
 
 // ═══ UPCOMING ═══
+// ═══ STATS DASHBOARD ═══
+function rStatsDash(){
+  var el=document.getElementById('statsDash');if(!el)return;
+  var totalJug=parts.length;
+  var totalPart=results.length;
+  var totalAmi=amistosos.length;
+  var hoy=schedule.filter(function(s){return s.date===todayStr}).length;
+  function card(num,label,icon){return '<div style="flex:1;background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:12px 8px;text-align:center"><div style="font-size:1.05rem;font-weight:800;color:var(--acc)">'+num+'</div><div style="font-size:.55rem;color:var(--tm);font-weight:600;text-transform:uppercase;letter-spacing:.5px">'+icon+' '+label+'</div></div>'}
+  el.innerHTML=card(totalJug,'Jugadores','🎾')+card(totalPart,'Partidos','🏆')+card(totalAmi,'Amistosos','🤝')+(hoy>0?card(hoy,'Hoy','📅'):'');
+}
+
 function rUp(){
-  var el=document.getElementById('upList');if(!el)return;el.innerHTML='';
+  var el=document.getElementById('upList');if(!el)return;
   var up=schedule.filter(function(s){return s.date>=todayStr}).sort(function(a,b){return(a.date+a.time).localeCompare(b.date+b.time)});
   window._upMatches=up;
   if(!up.length){el.innerHTML='<div class="es"><div class="es-i">🎾</div><div class="es-t">No hay partidos programados</div><div class="es-s">'+(isAdmin?'Usá el + para programar':'')+'</div></div>';return}
-  var cd='';
+  var html='';var cd='';
   up.forEach(function(m,idx){
     if(m.date!==cd){
       cd=m.date;var dp=cd.split('-'),dO=new Date(dp[0],dp[1]-1,dp[2]);
       var dn=DN[dO.getDay()],isT=cd===todayStr;
-      el.innerHTML+='<div class="up-dh">'+(isT?'Hoy — ':'')+dn+' '+dp[2]+' de '+MN[dO.getMonth()]+'</div>';
+      html+='<div class="up-dh">'+(isT?'Hoy — ':'')+dn+' '+dp[2]+' de '+MN[dO.getMonth()]+'</div>';
     }
     var admPlus=isAdmin?'<button onclick="openResFromMatch('+idx+')" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;flex-shrink:0;transition:.2s" title="Cargar resultado">+</button>':'';
-    el.innerHTML+='<div class="up-card"><div class="up-time">'+m.time+'</div><div class="crt c'+m.court+'"><span>'+m.court+'</span><small>cancha</small></div><div style="flex:1;min-width:0"><div class="up-pl">'+m.p1+' vs '+m.p2+'</div><div><span class="lb l-'+CS[m.cat]+'">'+CL[m.cat]+'</span></div></div>'+admPlus+'</div>';
+    html+='<div class="up-card"><div class="up-time">'+m.time+'</div><div class="crt c'+m.court+'"><span>'+m.court+'</span><small>cancha</small></div><div style="flex:1;min-width:0"><div class="up-pl">'+m.p1+' vs '+m.p2+'</div><div><span class="lb l-'+CS[m.cat]+'">'+CL[m.cat]+'</span></div></div>'+admPlus+'</div>';
   });
+  el.innerHTML=html;
 }
 
 // ═══ CUADROS ═══
@@ -784,7 +803,7 @@ function rPts(){
     amistosos.forEach(function(am){
       var w=am.winner===1?am.p1:am.p2,l=am.winner===1?am.p2:am.p1;
       Object.values(gStats).forEach(function(s){
-        if(s.nm===w||s.nm===w){s.aPj++;s.aPg++;s.aPts++}
+        if(s.nm===w){s.aPj++;s.aPg++;s.aPts++}
         if(s.nm===l){s.aPj++;s.aPp++;s.aPts--}
       });
     });
@@ -971,16 +990,17 @@ function clCard(){document.getElementById('cardBg').classList.remove('show')}
 
 // ═══ RESULTADOS ═══
 function rRes(){
-  var el=document.getElementById('rList');el.innerHTML='';
+  var el=document.getElementById('rList');
   var sr=results.slice().sort(function(a,b){return b.fecha.localeCompare(a.fecha)});
   if(!sr.length){el.innerHTML='<div class="es"><div class="es-i">🕐</div><div class="es-t">Sin resultados aún</div><div class="es-s">Usá el + para cargar</div></div>';return}
   var byD={};sr.forEach(function(r){if(!byD[r.fecha])byD[r.fecha]=[];byD[r.fecha].push(r)});
-  Object.keys(byD).sort().reverse().forEach(function(f){
+  var html='';Object.keys(byD).sort().reverse().forEach(function(f){
     var dp=f.split('-'),dO=new Date(dp[0],dp[1]-1,dp[2]),dn=DN[dO.getDay()];
     var h='<div class="rc"><div class="rd">'+dn+' '+dp[2]+' de '+MN[dO.getMonth()]+' '+dp[0]+'</div>';
     byD[f].forEach(function(m){h+='<div class="rm"><span class="lb l-'+CS[m.cat]+'" style="flex-shrink:0">'+CL[m.cat]+'</span><span class="rp"><span class="'+(m.winner===1?'rw':'')+'">'+m.p1+'</span> vs <span class="'+(m.winner===2?'rw':'')+'">'+m.p2+'</span></span><span class="rsc">'+m.score+'</span></div>'});
-    h+='</div>';el.innerHTML+=h;
+    h+='</div>';html+=h;
   });
+  el.innerHTML=html;
 }
 
 // ═══ AMISTOSOS ═══
@@ -1003,11 +1023,11 @@ function rResTabs(){
   });
 }
 function rAmistosos(){
-  var el=document.getElementById('aList');el.innerHTML='';
+  var el=document.getElementById('aList');
   var sr=amistosos.slice().sort(function(a,b){return(b.fecha||'').localeCompare(a.fecha||'')});
   if(!sr.length){el.innerHTML='<div class="es"><div class="es-i">🤝</div><div class="es-t">Sin amistosos cargados</div><div class="es-s">Usá el + para cargar uno</div></div>';return}
   var byD={};sr.forEach(function(r){if(!byD[r.fecha])byD[r.fecha]=[];byD[r.fecha].push(r)});
-  Object.keys(byD).sort().reverse().forEach(function(f){
+  var html='';Object.keys(byD).sort().reverse().forEach(function(f){
     var dp=f.split('-'),dO=new Date(dp[0],dp[1]-1,dp[2]),dn=DN[dO.getDay()];
     var h='<div class="rc"><div class="rd">'+dn+' '+dp[2]+' de '+MN[dO.getMonth()]+' '+dp[0]+'</div>';
     byD[f].forEach(function(m){
@@ -1015,8 +1035,9 @@ function rAmistosos(){
       if(isAdmin||(curUser&&curUser.pid===m.uid))delBtn='<button class="adm-del" onclick="delAmistoso(\''+m.id+'\')" style="width:24px;height:24px;font-size:.6rem;margin-left:6px">✕</button>';
       h+='<div class="rm"><span class="lb" style="background:var(--acc-d);color:var(--acc);flex-shrink:0">AMI</span><span class="rp"><span class="'+(m.winner===1?'rw':'')+'">'+m.p1+'</span> vs <span class="'+(m.winner===2?'rw':'')+'">'+m.p2+'</span></span><span class="rsc">'+m.score+'</span>'+delBtn+'</div>';
     });
-    h+='</div>';el.innerHTML+=h;
+    h+='</div>';html+=h;
   });
+  el.innerHTML=html;
 }
 function openAmiMod(){
   document.getElementById('mAmi').classList.add('show');
@@ -1117,18 +1138,19 @@ function saveSch(){
 function subPg(s){document.getElementById('masMain').style.display='none';document.querySelectorAll('[id^="sub-"]').forEach(function(e){e.style.display='none'});var t=document.getElementById('sub-'+s);if(t)t.style.display='block';if(s==='part')rPList();if(s==='spo')rSpo()}
 function backMas(){document.querySelectorAll('[id^="sub-"]').forEach(function(e){e.style.display='none'});document.getElementById('masMain').style.display='block'}
 function rPList(){
-  var el=document.getElementById('pList');el.innerHTML='';
+  var el=document.getElementById('pList');
   var s=parts.slice().sort(function(a,b){return(a.cat+a.apellido).localeCompare(b.cat+b.apellido)});
   if(!s.length){el.innerHTML='<div class="es"><div class="es-i">👤</div><div class="es-t">Sin participantes</div></div>';return}
-  var cc='';s.forEach(function(p){
-    if(p.cat!==cc){cc=p.cat;el.innerHTML+='<div class="slbl" style="margin-top:16px">'+CL[p.cat]+'</div>'}
+  var html='';var cc='';s.forEach(function(p){
+    if(p.cat!==cc){cc=p.cat;html+='<div class="slbl" style="margin-top:16px">'+CL[p.cat]+'</div>'}
     var btns='';
     if(isAdmin){
       btns='<button class="adm-edit" onclick="editPart(\''+p.id+'\')" title="Editar" style="width:28px;height:28px;font-size:.7rem">✎</button>';
       btns+='<button class="pdl" onclick="delP(\''+p.id+'\')">✕</button>';
     }
-    el.innerHTML+='<div class="pc"><div class="pav">'+(p.nombre[0]||'')+(p.apellido[0]||'')+'</div><span class="pnm">'+p.apellido+', '+p.nombre+'</span><span class="lb l-'+CS[p.cat]+'" style="font-size:.55rem;margin-right:4px">'+(p.grupo?'G'+p.grupo:'?')+'</span>'+btns+'</div>';
+    html+='<div class="pc"><div class="pav">'+(p.nombre[0]||'')+(p.apellido[0]||'')+'</div><span class="pnm">'+p.apellido+', '+p.nombre+'</span><span class="lb l-'+CS[p.cat]+'" style="font-size:.55rem;margin-right:4px">'+(p.grupo?'G'+p.grupo:'?')+'</span>'+btns+'</div>';
   });
+  el.innerHTML=html;
 }
 function addP(){
   var n=document.getElementById('iN').value.trim(),a=document.getElementById('iA').value.trim(),c=document.getElementById('iC').value,g=document.getElementById('iG').value;
@@ -1168,9 +1190,9 @@ function saveEditP(){
 }
 function delP(id){if(!confirm('Eliminar participante?'))return;parts=parts.filter(function(p){return p.id!==id});db.ref('participantes').set(parts);rPList();toast('Eliminado')}
 function rSpo(){
-  var el=document.getElementById('sList');el.innerHTML='';
+  var el=document.getElementById('sList');
   if(!sponsors.length){el.innerHTML='<div class="es"><div class="es-i">⭐</div><div class="es-t">Sin sponsors cargados</div></div>';return}
-  sponsors.forEach(function(s,i){
+  var html='';sponsors.forEach(function(s,i){
     var btns='';
     if(isAdmin){
       btns='<div style="display:flex;gap:4px;flex-shrink:0"><button class="adm-edit" onclick="editSpo('+i+')" style="width:28px;height:28px;font-size:.7rem">✎</button><button class="adm-del" onclick="delSpo('+i+')" style="width:28px;height:28px;font-size:.7rem">✕</button></div>';
@@ -1185,8 +1207,9 @@ function rSpo(){
       var label=s.ig.length>25?s.ig.substring(0,25)+'…':s.ig;
       contacto+='<a href="'+link+'" target="_blank" style="color:var(--acc);text-decoration:none;font-size:.7rem">🔗 '+label+'</a>';
     }
-    el.innerHTML+='<div class="spc" style="flex-wrap:wrap"><div class="spl">'+(s.e||'⭐')+'</div><div style="flex:1;min-width:0"><div class="spn">'+s.n+'</div><div class="spt">'+s.t+montoTxt+'</div>'+(contacto?'<div style="margin-top:6px">'+contacto+'</div>':'')+'</div>'+btns+'</div>';
+    html+='<div class="spc" style="flex-wrap:wrap"><div class="spl">'+(s.e||'⭐')+'</div><div style="flex:1;min-width:0"><div class="spn">'+s.n+'</div><div class="spt">'+s.t+montoTxt+'</div>'+(contacto?'<div style="margin-top:6px">'+contacto+'</div>':'')+'</div>'+btns+'</div>';
   });
+  el.innerHTML=html;
 }
 function addSpo(){
   var n=document.getElementById('spoN').value.trim(),t=document.getElementById('spoT').value.trim(),m=document.getElementById('spoM').value;
@@ -1253,17 +1276,18 @@ function rBalance(){
   document.getElementById('balFecha').value=todayStr;
 
   // List
-  var el=document.getElementById('balList');el.innerHTML='';
+  var el=document.getElementById('balList');
   var items=balView==='ingresos'?balIngresos:balGastos;
   var sorted=items.slice().sort(function(a,b){return(b.fecha||'').localeCompare(a.fecha||'')});
   if(!sorted.length){el.innerHTML='<div class="es" style="padding:30px"><div class="es-t">Sin '+(balView==='ingresos'?'ingresos':'gastos')+' registrados</div></div>';return}
-  sorted.forEach(function(item){
+  var html='';sorted.forEach(function(item){
     var idx=items.indexOf(item);
     var color=balView==='ingresos'?'var(--acc)':'#f87171';
     var admBtns='';
     if(isAdmin)admBtns='<button class="adm-del" onclick="delBal(\''+balView+'\','+idx+')" style="width:26px;height:26px;font-size:.65rem">✕</button>';
-    el.innerHTML+='<div class="pc" style="padding:10px 14px"><div style="flex:1"><div style="font-weight:600;font-size:.85rem">'+item.desc+'</div><div style="font-size:.65rem;color:var(--tm)">'+item.fecha+(item.tipo?' — '+item.tipo:'')+'</div></div><div style="font-family:Space Mono,monospace;font-weight:700;font-size:.85rem;color:'+color+';margin-right:8px">$'+Number(item.monto).toLocaleString()+'</div>'+admBtns+'</div>';
+    html+='<div class="pc" style="padding:10px 14px"><div style="flex:1"><div style="font-weight:600;font-size:.85rem">'+item.desc+'</div><div style="font-size:.65rem;color:var(--tm)">'+item.fecha+(item.tipo?' — '+item.tipo:'')+'</div></div><div style="font-family:Space Mono,monospace;font-weight:700;font-size:.85rem;color:'+color+';margin-right:8px">$'+Number(item.monto).toLocaleString()+'</div>'+admBtns+'</div>';
   });
+  el.innerHTML=html;
 }
 function addBal(){
   var desc=document.getElementById('balDesc').value.trim(),monto=parseFloat(document.getElementById('balMonto').value),fecha=document.getElementById('balFecha').value;
@@ -1362,15 +1386,16 @@ function showCuentaLogged(){
 
 // ═══ ENTRADA (admin) ═══
 function rEntradas(){
-  var el=document.getElementById('entList');el.innerHTML='';
+  var el=document.getElementById('entList');
   if(!usuarios.length){el.innerHTML='<div class="es"><div class="es-i">🎟️</div><div class="es-t">Sin usuarios registrados</div></div>';return}
   var sorted=usuarios.slice().sort(function(a,b){return(a.nombre||'').localeCompare(b.nombre||'')});
-  sorted.forEach(function(u,i){
+  var html='';sorted.forEach(function(u,i){
     var used=u.qrUsed;
     var statusBadge=used?'<span style="padding:3px 10px;border-radius:6px;font-size:.65rem;font-weight:700;background:rgba(114,47,55,.1);color:var(--acc)">USADA</span>':'<span style="padding:3px 10px;border-radius:6px;font-size:.65rem;font-weight:700;background:rgba(22,163,74,.1);color:#16a34a">VÁLIDA</span>';
     var toggleBtn=used?'<button onclick="toggleQR(\''+u.uid+'\',false)" style="padding:4px 10px;border-radius:6px;border:1px solid #16a34a;background:rgba(22,163,74,.1);color:#16a34a;font-size:.65rem;font-weight:600;cursor:pointer">Reactivar</button>':'<button onclick="toggleQR(\''+u.uid+'\',true)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);font-size:.65rem;font-weight:600;cursor:pointer">Marcar usada</button>';
-    el.innerHTML+='<div class="pc" style="flex-wrap:wrap"><div class="pav">'+(u.nombre?u.nombre[0]:'?')+'</div><div style="flex:1;min-width:0"><div class="pnm">'+u.nombre+'</div><div style="font-size:.65rem;color:var(--tm)">'+CL[u.cat]+(u.grupo?' — G'+u.grupo:'')+'</div></div>'+statusBadge+'<div style="width:100%;display:flex;gap:6px;margin-top:8px;justify-content:flex-end">'+toggleBtn+'</div></div>';
+    html+='<div class="pc" style="flex-wrap:wrap"><div class="pav">'+(u.nombre?u.nombre[0]:'?')+'</div><div style="flex:1;min-width:0"><div class="pnm">'+u.nombre+'</div><div style="font-size:.65rem;color:var(--tm)">'+CL[u.cat]+(u.grupo?' — G'+u.grupo:'')+'</div></div>'+statusBadge+'<div style="width:100%;display:flex;gap:6px;margin-top:8px;justify-content:flex-end">'+toggleBtn+'</div></div>';
   });
+  el.innerHTML=html;
 }
 function toggleQR(uid,val){
   var u=usuarios.find(function(x){return x.uid===uid});
@@ -1379,12 +1404,13 @@ function toggleQR(uid,val){
 
 // ═══ USUARIOS (admin: ver cuentas) ═══
 function rUsers(){
-  var el=document.getElementById('usersList');el.innerHTML='';
+  var el=document.getElementById('usersList');
   if(!usuarios.length){el.innerHTML='<div class="es"><div class="es-i">🗂️</div><div class="es-t">Sin usuarios registrados</div></div>';return}
   var sorted=usuarios.slice().sort(function(a,b){return(a.nombre||'').localeCompare(b.nombre||'')});
-  sorted.forEach(function(u){
-    el.innerHTML+='<div class="pc" style="flex-wrap:wrap"><div class="pav">'+(u.nombre?u.nombre[0]:'?')+'</div><div style="flex:1;min-width:0"><div class="pnm">'+u.nombre+'</div><div style="font-size:.65rem;color:var(--tm)">'+u.email+'</div><div style="font-size:.6rem;color:var(--tm);font-family:Space Mono,monospace;margin-top:2px">Pass: '+u.pass+'</div></div><div style="display:flex;gap:4px"><button class="adm-edit" onclick="editUserPass(\''+u.uid+'\')" style="width:28px;height:28px;font-size:.7rem">✎</button><button class="adm-del" onclick="delUser(\''+u.uid+'\')" style="width:28px;height:28px;font-size:.7rem">✕</button></div></div>';
+  var html='';sorted.forEach(function(u){
+    html+='<div class="pc" style="flex-wrap:wrap"><div class="pav">'+(u.nombre?u.nombre[0]:'?')+'</div><div style="flex:1;min-width:0"><div class="pnm">'+u.nombre+'</div><div style="font-size:.65rem;color:var(--tm)">'+u.email+'</div><div style="font-size:.6rem;color:var(--tm);font-family:Space Mono,monospace;margin-top:2px">Pass: '+u.pass+'</div></div><div style="display:flex;gap:4px"><button class="adm-edit" onclick="editUserPass(\''+u.uid+'\')" style="width:28px;height:28px;font-size:.7rem">✎</button><button class="adm-del" onclick="delUser(\''+u.uid+'\')" style="width:28px;height:28px;font-size:.7rem">✕</button></div></div>';
   });
+  el.innerHTML=html;
 }
 function editUserPass(uid){
   var u=usuarios.find(function(x){return x.uid===uid});if(!u)return;
@@ -1442,16 +1468,19 @@ function doLogout(){
   updAdmUI();toast('Sesión cerrada');
 }
 function rAdmPanel(){
-  var el=document.getElementById('admSch');el.innerHTML='';
-  if(!schedule.length)el.innerHTML='<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin partidos</div>';
-  else schedule.forEach(function(m,i){el.innerHTML+='<div class="adm-card"><div class="adm-info">'+m.p1+' vs '+m.p2+'<small>'+m.date+' '+m.time+' - Cancha '+m.court+' - '+CL[m.cat]+'</small></div><button class="adm-del" onclick="admDelSch('+i+')">✕</button></div>'});
-  var el2=document.getElementById('admRes');el2.innerHTML='';
-  if(!results.length)el2.innerHTML='<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin resultados</div>';
-  else results.forEach(function(r,i){el2.innerHTML+='<div class="adm-card"><div class="adm-info">'+r.p1+' vs '+r.p2+' → '+r.score+'<small>'+r.fecha+' - '+CL[r.cat]+(r.grupo?' G'+r.grupo:'')+' - Ganó: '+(r.winner===1?r.p1:r.p2)+'</small></div><button class="adm-edit" onclick="admEditRes('+i+')" title="Editar">✎</button><button class="adm-del" onclick="admDelRes('+i+')" title="Eliminar">✕</button></div>'});
-  var el3=document.getElementById('admPart');el3.innerHTML='';
+  var el=document.getElementById('admSch');var h1='';
+  if(!schedule.length)h1='<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin partidos</div>';
+  else schedule.forEach(function(m,i){h1+='<div class="adm-card"><div class="adm-info">'+m.p1+' vs '+m.p2+'<small>'+m.date+' '+m.time+' - Cancha '+m.court+' - '+CL[m.cat]+'</small></div><button class="adm-del" onclick="admDelSch('+i+')">✕</button></div>'});
+  el.innerHTML=h1;
+  var el2=document.getElementById('admRes');var h2='';
+  if(!results.length)h2='<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin resultados</div>';
+  else results.forEach(function(r,i){h2+='<div class="adm-card"><div class="adm-info">'+r.p1+' vs '+r.p2+' → '+r.score+'<small>'+r.fecha+' - '+CL[r.cat]+(r.grupo?' G'+r.grupo:'')+' - Ganó: '+(r.winner===1?r.p1:r.p2)+'</small></div><button class="adm-edit" onclick="admEditRes('+i+')" title="Editar">✎</button><button class="adm-del" onclick="admDelRes('+i+')" title="Eliminar">✕</button></div>'});
+  el2.innerHTML=h2;
+  var el3=document.getElementById('admPart');var h3='';
   var sorted=parts.slice().sort(function(a,b){return(a.cat+a.apellido).localeCompare(b.cat+b.apellido)});
-  if(!sorted.length)el3.innerHTML='<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin participantes</div>';
-  else{var cc='';sorted.forEach(function(p){if(p.cat!==cc){cc=p.cat;el3.innerHTML+='<div class="slbl" style="margin-top:12px;margin-bottom:6px">'+CL[p.cat]+'</div>'}el3.innerHTML+='<div class="adm-card"><div class="adm-info">'+p.apellido+', '+p.nombre+'</div><button class="adm-del" onclick="admDelPart(\''+p.id+'\')">✕</button></div>'})}
+  if(!sorted.length)h3='<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin participantes</div>';
+  else{var cc='';sorted.forEach(function(p){if(p.cat!==cc){cc=p.cat;h3+='<div class="slbl" style="margin-top:12px;margin-bottom:6px">'+CL[p.cat]+'</div>'}h3+='<div class="adm-card"><div class="adm-info">'+p.apellido+', '+p.nombre+'</div><button class="adm-del" onclick="admDelPart(\''+p.id+'\')">✕</button></div>'})}
+  el3.innerHTML=h3;
 }
 function admDelSch(i){if(!confirm('Eliminar partido?'))return;schedule.splice(i,1);db.ref('programacion').set(schedule);rAdmPanel();rCal();rUp();toast('Eliminado')}
 function admDelRes(i){if(!confirm('Eliminar resultado?'))return;results.splice(i,1);db.ref('resultados').set(results);rAdmPanel();toast('Eliminado')}
@@ -1521,7 +1550,7 @@ function rPagos(){
     ft.appendChild(d);
   });
 
-  var el=document.getElementById('pagoList');el.innerHTML='';
+  var el=document.getElementById('pagoList');
   var sorted=parts.slice().sort(function(a,b){return(a.cat+a.apellido).localeCompare(b.cat+b.apellido)});
 
   // Filter
@@ -1533,11 +1562,11 @@ function rPagos(){
   // Summary
   var totalPag=parts.filter(function(p){return pagos[p.id]===true}).length;
   var totalNoPag=parts.length-totalPag;
-  el.innerHTML+='<div style="display:flex;gap:10px;margin-bottom:16px"><div style="flex:1;background:rgba(114,47,55,.1);border:1px solid rgba(114,47,55,.2);border-radius:var(--rs);padding:12px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:var(--acc)">'+totalPag+'</div><div style="font-size:.65rem;color:var(--acc);font-weight:600;text-transform:uppercase;letter-spacing:1px">Pagaron</div></div><div style="flex:1;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:var(--rs);padding:12px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:#f87171">'+totalNoPag+'</div><div style="font-size:.65rem;color:#f87171;font-weight:600;text-transform:uppercase;letter-spacing:1px">No pagaron</div></div></div>';
+  var html='<div style="display:flex;gap:10px;margin-bottom:16px"><div style="flex:1;background:rgba(114,47,55,.1);border:1px solid rgba(114,47,55,.2);border-radius:var(--rs);padding:12px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:var(--acc)">'+totalPag+'</div><div style="font-size:.65rem;color:var(--acc);font-weight:600;text-transform:uppercase;letter-spacing:1px">Pagaron</div></div><div style="flex:1;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:var(--rs);padding:12px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:#f87171">'+totalNoPag+'</div><div style="font-size:.65rem;color:#f87171;font-weight:600;text-transform:uppercase;letter-spacing:1px">No pagaron</div></div></div>';
 
   var cc='';
   sorted.forEach(function(p){
-    if(p.cat!==cc){cc=p.cat;el.innerHTML+='<div class="slbl" style="margin-top:14px">'+CL[p.cat]+'</div>'}
+    if(p.cat!==cc){cc=p.cat;html+='<div class="slbl" style="margin-top:14px">'+CL[p.cat]+'</div>'}
     var paid=pagos[p.id]===true;
     var siStyle=paid?'background:var(--acc);color:#fff;border-color:var(--acc)':'background:transparent;color:var(--tm);border-color:var(--brd)';
     var noStyle=!paid?'background:#ef4444;color:#fff;border-color:#ef4444':'background:transparent;color:var(--tm);border-color:var(--brd)';
@@ -1548,8 +1577,9 @@ function rPagos(){
     }else{
       btns='<div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;'+(paid?'background:var(--acc);color:#fff':'background:rgba(239,68,68,.15);color:#f87171')+'">'+(paid?'✓':'✗')+'</div>';
     }
-    el.innerHTML+='<div class="pc"><div class="pav">'+(p.nombre[0]||'')+(p.apellido[0]||'')+'</div><span class="pnm" style="flex:1">'+p.apellido+', '+p.nombre+'</span><span class="lb l-'+CS[p.cat]+'" style="font-size:.5rem;margin-right:4px">'+(p.grupo?'G'+p.grupo:'')+'</span><div style="display:flex;gap:4px">'+btns+'</div></div>';
+    html+='<div class="pc"><div class="pav">'+(p.nombre[0]||'')+(p.apellido[0]||'')+'</div><span class="pnm" style="flex:1">'+p.apellido+', '+p.nombre+'</span><span class="lb l-'+CS[p.cat]+'" style="font-size:.5rem;margin-right:4px">'+(p.grupo?'G'+p.grupo:'')+'</span><div style="display:flex;gap:4px">'+btns+'</div></div>';
   });
+  el.innerHTML=html;
 }
 var INSCRIPCION=60000;
 function setPago(id,val){
@@ -1574,7 +1604,7 @@ function setPago(id,val){
 
 // ═══ INIT ═══
 function initApp(){
-  rCal();rUp();rCTabs();updFab();updAdmUI();
+  rCal();rUp();rCTabs();rStatsDash();updFab();updAdmUI();
   document.getElementById('app').style.opacity='1';
 }
 </script>
