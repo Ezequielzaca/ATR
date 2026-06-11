@@ -256,7 +256,6 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
   <div style="margin-bottom:14px"><input class="fi" id="pSearch" placeholder="🔍 Buscar jugador..." oninput="searchPlayer()" style="width:100%"/></div>
   <div id="pSearchResult" style="display:none;margin-bottom:16px"></div>
   <div id="pNormal">
-    <div class="ctabs" id="pModeTabs" style="margin-bottom:10px"></div>
     <div class="ctabs" id="pTabs"></div>
     <div class="ctabs" id="pGrpTabs" style="margin-top:-10px"></div>
     <div id="pTbl"></div>
@@ -265,10 +264,8 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 
 <!-- RESULTADOS -->
 <div class="page" id="pg-resultados">
-  <div class="slbl">Resultados</div>
-  <div class="ctabs" id="resTabs" style="margin-bottom:14px"></div>
+  <div class="slbl">Últimos Resultados</div>
   <div id="rList"></div>
-  <div id="aList" style="display:none"></div>
 </div>
 
 <!-- MÁS -->
@@ -452,18 +449,6 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 
 <div class="toast" id="toast"></div>
 
-<!-- Modal: Amistoso -->
-<div class="mbg" id="mAmi" onclick="if(event.target===this)clMod('mAmi')"><div class="mdl">
-  <div class="mh"><span class="mt">Cargar Amistoso</span><button class="mx" onclick="clMod('mAmi')">✕</button></div>
-  <div class="fr"><input class="fi" id="aP1N" placeholder="Nombre J1"/><input class="fi" id="aP1A" placeholder="Apellido J1"/></div>
-  <div style="text-align:center;color:var(--tm);font-weight:700;margin:-4px 0 6px">VS</div>
-  <div class="fr"><input class="fi" id="aP2N" placeholder="Nombre J2"/><input class="fi" id="aP2A" placeholder="Apellido J2"/></div>
-  <div class="fr"><input class="fi" id="aScore" placeholder="Score (ej: 6-3 6-4)"/></div>
-  <div class="fr"><select class="fs" id="aWin"><option value="">Ganador...</option><option value="1">Jugador 1</option><option value="2">Jugador 2</option></select></div>
-  <div class="fr"><input type="date" class="fi" id="aDate"/></div>
-  <button class="fb" onclick="saveAmistoso()">Guardar Amistoso</button>
-</div></div>
-
 <!-- Modal: Edit Result -->
 <div class="mbg" id="mEdit" onclick="if(event.target===this)clMod('mEdit')"><div class="mdl">
   <div class="mh"><span class="mt">Editar Resultado</span><button class="mx" onclick="clMod('mEdit')">✕</button></div>
@@ -527,8 +512,6 @@ db.ref('sponsors').once('value',function(s){sponsors=s.val()||[]});
 var balIngresos=[],balGastos=[];
 db.ref('balIngresos').on('value',function(s){balIngresos=s.val()||[]});
 db.ref('balGastos').on('value',function(s){balGastos=s.val()||[]});
-var amistosos=[];
-db.ref('amistosos').on('value',function(s){amistosos=s.val()||[]});
 
 // ═══ STATE ═══
 var parts=[],results=[],schedule=[];
@@ -564,18 +547,14 @@ function nav(pg){
   if(pg==='mas')backMas();
   if(pg==='inicio'){rUp();rStatsDash()}
   if(pg==='cuadros'){rCTabs();rGrid()}
-  if(pg==='puntos'){rPModeTabs();rPTabs();rPts()}
-  if(pg==='resultados'){rResTabs();if(resView==='torneo'){rRes();document.getElementById('rList').style.display='block';document.getElementById('aList').style.display='none'}else{rAmistosos();document.getElementById('rList').style.display='none';document.getElementById('aList').style.display='block'}}
+  if(pg==='puntos'){rPTabs();rPts()}
+  if(pg==='resultados')rRes();
   updFab();window.scrollTo({top:0,behavior:'smooth'});
 }
 
 // ═══ FAB ═══
 function updFab(){var showFab=(curPg==='inicio'||curPg==='resultados')&&(isAdmin||!!curUser);document.getElementById('fab').classList.toggle('show',showFab)}
-function fabAct(){
-  if(curPg==='resultados'&&resView==='amistosos')openAmiMod();
-  else if(curPg==='resultados')openResMod();
-  else if(curPg==='inicio')openSchMod();
-}
+function fabAct(){if(curPg==='resultados')openResMod();if(curPg==='inicio')openSchMod()}
 
 // ═══ CALENDAR ═══
 function toggleCal(){var b=document.getElementById('calBtn'),x=document.getElementById('calBox');b.classList.toggle('open');x.classList.toggle('open');if(x.classList.contains('open'))rCal()}
@@ -600,10 +579,9 @@ function rStatsDash(){
   var el=document.getElementById('statsDash');if(!el)return;
   var totalJug=parts.length;
   var totalPart=results.length;
-  var totalAmi=amistosos.length;
   var hoy=schedule.filter(function(s){return s.date===todayStr}).length;
   function card(num,label,icon){return '<div style="flex:1;background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:12px 8px;text-align:center"><div style="font-size:1.05rem;font-weight:800;color:var(--acc)">'+num+'</div><div style="font-size:.55rem;color:var(--tm);font-weight:600;text-transform:uppercase;letter-spacing:.5px">'+icon+' '+label+'</div></div>'}
-  el.innerHTML=card(totalJug,'Jugadores','🎾')+card(totalPart,'Partidos','🏆')+card(totalAmi,'Amistosos','🤝')+(hoy>0?card(hoy,'Hoy','📅'):'');
+  el.innerHTML=card(totalJug,'Jugadores','🎾')+card(totalPart,'Partidos','🏆')+(hoy>0?card(hoy,'Hoy','📅'):'');
 }
 
 function rUp(){
@@ -708,22 +686,8 @@ function rGrid(){
 
 // ═══ PUNTOS ═══
 var ptsGrp=null;
-var ptsMode='torneo'; // 'torneo','amistosos','general'
-function rPModeTabs(){
-  var el=document.getElementById('pModeTabs');el.innerHTML='';
-  ['Torneo','Amistosos','General'].forEach(function(label){
-    var val=label.toLowerCase();
-    var d=document.createElement('div');d.className='ct';
-    if(ptsMode===val){d.style.background='var(--acc-d)';d.style.color='var(--acc)';d.style.borderColor='var(--acc)'}
-    d.textContent=label;
-    d.onclick=function(){ptsMode=val;ptsCat=null;ptsGrp=null;rPModeTabs();rPTabs();rPts()};
-    el.appendChild(d);
-  });
-}
 function rPTabs(){
   var t=document.getElementById('pTabs');t.innerHTML='';
-  var gt=document.getElementById('pGrpTabs');gt.innerHTML='';
-  if(ptsMode==='amistosos')return; // No category tabs for amistosos
   CATS.forEach(function(cat){
     var n=parts.filter(function(p){return p.cat===cat}).length;if(!n)return;
     t.innerHTML+='<div class="ct'+(ptsCat===cat?' a-'+CS[cat]:'')+'" onclick="togPCat(\''+cat+'\')">'+CL[cat]+' ('+n+')</div>';
@@ -764,80 +728,14 @@ function parseScore(sc){
 function rPts(){
   var el=document.getElementById('pTbl');
   
-  // ── AMISTOSOS MODE ──
-  if(ptsMode==='amistosos'){
-    var aStats={};
-    amistosos.forEach(function(am){
-      if(!aStats[am.p1])aStats[am.p1]={nm:am.p1,pj:0,pg:0,pp:0,pts:0};
-      if(!aStats[am.p2])aStats[am.p2]={nm:am.p2,pj:0,pg:0,pp:0,pts:0};
-      var w=am.winner===1?am.p1:am.p2,l=am.winner===1?am.p2:am.p1;
-      aStats[w].pj++;aStats[w].pg++;aStats[w].pts++;
-      aStats[l].pj++;aStats[l].pp++;aStats[l].pts--;
-    });
-    var arr=Object.values(aStats).sort(function(a,b){return b.pts-a.pts||b.pg-a.pg});
-    arr.forEach(function(s,i){s.pos=i+1});
-    if(!arr.length){el.innerHTML='<div class="es"><div class="es-i">🤝</div><div class="es-t">Sin amistosos cargados</div></div>';return}
-    var h='<div style="font-weight:600;font-size:.85rem;margin-bottom:10px;text-align:center">Ranking Amistosos</div>';
-    h+='<div class="pw"><table class="pt"><thead><tr><th>#</th><th>Jugador</th><th>PJ</th><th>PG</th><th>PP</th><th>Pts</th></tr></thead><tbody>';
-    arr.forEach(function(s,i){
-      var pC=i===0?'p1c':i===1?'p2c':i===2?'p3c':'';
-      function vc(v){return v>0?'pos':v<0?'neg':'zer'}
-      function vs(v){return v>0?'+'+v:''+v}
-      h+='<tr><td class="pp '+pC+'">'+s.pos+'</td><td class="pn">'+s.nm+'</td>';
-      h+='<td>'+s.pj+'</td><td class="pos">'+s.pg+'</td><td class="neg">'+s.pp+'</td><td class="pv '+vc(s.pts)+'">'+vs(s.pts)+'</td></tr>';
-    });
-    h+='</tbody></table></div>';el.innerHTML=h;return;
-  }
-
-  // ── GENERAL MODE ──
-  if(ptsMode==='general'){
-    var gStats={};
-    // Tournament points
-    parts.forEach(function(p){gStats[p.id]={id:p.id,nm:p.apellido+' '+p.nombre,cat:p.cat,grp:p.grupo||'',tPts:0,tPj:0,tPg:0,tPp:0,aPts:0,aPj:0,aPg:0,aPp:0}});
-    results.forEach(function(r){
-      var wid=r.winner===1?r.p1id:r.p2id,lid=r.winner===1?r.p2id:r.p1id;
-      if(gStats[wid]){gStats[wid].tPj++;gStats[wid].tPg++;gStats[wid].tPts++}
-      if(gStats[lid]){gStats[lid].tPj++;gStats[lid].tPp++;gStats[lid].tPts--}
-    });
-    // Amistosos points - match by name
-    amistosos.forEach(function(am){
-      var w=am.winner===1?am.p1:am.p2,l=am.winner===1?am.p2:am.p1;
-      Object.values(gStats).forEach(function(s){
-        if(s.nm===w){s.aPj++;s.aPg++;s.aPts++}
-        if(s.nm===l){s.aPj++;s.aPp++;s.aPts--}
-      });
-    });
-    var arr=Object.values(gStats).map(function(s){s.totalPts=s.tPts+s.aPts;s.totalPj=s.tPj+s.aPj;return s});
-    arr.sort(function(a,b){return b.totalPts-a.totalPts||b.tPts-a.tPts});
-    arr.forEach(function(s,i){s.pos=i+1});
-    // Filter out players with 0 total games if too many
-    var active=arr.filter(function(s){return s.totalPj>0});
-    var inactive=arr.filter(function(s){return s.totalPj===0});
-    var show=active.length?active:arr;
-    function vc(v){return v>0?'pos':v<0?'neg':'zer'}
-    function vs(v){return v>0?'+'+v:''+v}
-    var h='<div style="font-weight:600;font-size:.85rem;margin-bottom:10px;text-align:center">Ranking General (ATR + Amistosos)</div>';
-    h+='<div class="pw"><table class="pt"><thead><tr><th>#</th><th>Jugador</th><th>Cat</th><th class="sep">ATR</th><th class="sep">AMI</th><th class="sep">Total</th></tr></thead><tbody>';
-    show.forEach(function(s,i){
-      var pC=i===0?'p1c':i===1?'p2c':i===2?'p3c':'';
-      h+='<tr><td class="pp '+pC+'">'+s.pos+'</td><td class="pn">'+s.nm+'</td>';
-      h+='<td style="font-size:.55rem;color:var(--tm)">'+CL[s.cat]+'</td>';
-      h+='<td class="sep '+vc(s.tPts)+'">'+vs(s.tPts)+'</td>';
-      h+='<td class="sep '+vc(s.aPts)+'">'+vs(s.aPts)+'</td>';
-      h+='<td class="sep pv '+vc(s.totalPts)+'">'+vs(s.totalPts)+'</td></tr>';
-    });
-    if(inactive.length)h+='<tr><td colspan="6" style="text-align:center;font-size:.7rem;color:var(--tm);padding:12px">+'+inactive.length+' jugadores sin partidos</td></tr>';
-    h+='</tbody></table></div>';el.innerHTML=h;return;
-  }
-
-  // ── TORNEO MODE (original) ──
   if(!ptsCat){el.innerHTML='';return}
   var pl=parts.filter(function(p){return p.cat===ptsCat&&(ptsGrp===null||p.grupo===ptsGrp)});
   if(!pl.length){el.innerHTML='<div class="es"><div class="es-i">📋</div><div class="es-t">Sin participantes'+(ptsGrp?' en Grupo '+ptsGrp:'')+'</div></div>';return}
   var st={};pl.forEach(function(p){st[p.id]={id:p.id,nm:p.apellido+' '+p.nombre,cat:p.cat,grp:p.grupo||'',pj:0,pg:0,pp:0,pts:0,sg:0,sp:0,gg:0,gp:0}});
   results.filter(function(r){return r.cat===ptsCat}).forEach(function(r){
     var sc=parseScore(r.score),wid=r.winner===1?r.p1id:r.p2id,lid=r.winner===1?r.p2id:r.p1id;
-    var wS=r.winner===1?sc.s1:sc.s2,lS=r.winner===1?sc.s2:sc.s1,wG=r.winner===1?sc.g1:sc.g2,lG=r.winner===1?sc.g2:sc.g1;
+    // El score siempre se carga desde la perspectiva del GANADOR
+    var wS=sc.s1,lS=sc.s2,wG=sc.g1,lG=sc.g2;
     if(st[wid]){st[wid].pj++;st[wid].pg++;st[wid].pts++;st[wid].sg+=wS;st[wid].sp+=lS;st[wid].gg+=wG;st[wid].gp+=lG}
     if(st[lid]){st[lid].pj++;st[lid].pp++;st[lid].pts--;st[lid].sg+=lS;st[lid].sp+=wS;st[lid].gg+=lG;st[lid].gp+=wG}
   });
@@ -885,13 +783,7 @@ function searchPlayer(){
     var full2=(p.nombre+' '+p.apellido).toLowerCase();
     return full.indexOf(q)!==-1||full2.indexOf(q)!==-1;
   });
-  // Also check amistosos for non-registered names
-  var amiNames={};
-  amistosos.forEach(function(am){
-    if(am.p1.toLowerCase().indexOf(q)!==-1)amiNames[am.p1]=true;
-    if(am.p2.toLowerCase().indexOf(q)!==-1)amiNames[am.p2]=true;
-  });
-  if(!matches.length&&!Object.keys(amiNames).length){resEl.innerHTML='<div class="es" style="padding:20px"><div class="es-t">No se encontró "'+q+'"</div></div>';return}
+  if(!matches.length){resEl.innerHTML='<div class="es" style="padding:20px"><div class="es-t">No se encontró "'+q+'"</div></div>';return}
   var html='';
   // Registered players
   matches.forEach(function(p){
@@ -901,17 +793,10 @@ function searchPlayer(){
     results.filter(function(r){return r.cat===p.cat}).forEach(function(r){
       var sc=parseScore(r.score);
       var wid=r.winner===1?r.p1id:r.p2id,lid=r.winner===1?r.p2id:r.p1id;
-      if(wid===p.id){tPj++;tPg++;tPts++;tSg+=r.winner===1?sc.s1:sc.s2;tSp+=r.winner===1?sc.s2:sc.s1;tGg+=r.winner===1?sc.g1:sc.g2;tGp+=r.winner===1?sc.g2:sc.g1}
-      if(lid===p.id){tPj++;tPp++;tPts--;tSg+=r.winner===1?sc.s2:sc.s1;tSp+=r.winner===1?sc.s1:sc.s2;tGg+=r.winner===1?sc.g2:sc.g1;tGp+=r.winner===1?sc.g1:sc.g2}
+      if(wid===p.id){tPj++;tPg++;tPts++;tSg+=sc.s1;tSp+=sc.s2;tGg+=sc.g1;tGp+=sc.g2}
+      if(lid===p.id){tPj++;tPp++;tPts--;tSg+=sc.s2;tSp+=sc.s1;tGg+=sc.g2;tGp+=sc.g1}
     });
-    // Amistosos stats
-    var aPj=0,aPg=0,aPp=0,aPts=0;
-    amistosos.forEach(function(am){
-      var w=am.winner===1?am.p1:am.p2,l=am.winner===1?am.p2:am.p1;
-      if(w===nm){aPj++;aPg++;aPts++}
-      if(l===nm){aPj++;aPp++;aPts--}
-    });
-    var totalPts=tPts+aPts;
+    var totalPts=tPts;
     function vc(v){return v>0?'pos':v<0?'neg':'zer'}
     function vs(v){return v>0?'+'+v:''+v}
     html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:18px;margin-bottom:12px">';
@@ -927,37 +812,11 @@ function searchPlayer(){
     html+='<div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">Sets</span> <b>'+tSg+'-'+tSp+'</b></div>';
     html+='<div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">Games</span> <b>'+tGg+'-'+tGp+'</b></div>';
     html+='</div>';
-    // Amistosos stats
-    if(aPj>0){
-      html+='<div style="font-size:.7rem;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">🤝 Amistosos</div>';
-      html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">';
-      html+='<div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">PJ</span> <b>'+aPj+'</b></div>';
-      html+='<div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">G</span> <b class="pos">'+aPg+'</b></div>';
-      html+='<div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">P</span> <b class="neg">'+aPp+'</b></div>';
-      html+='<div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">Pts</span> <b class="'+vc(aPts)+'">'+vs(aPts)+'</b></div>';
-      html+='</div>';
-    }
     // Total
     html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:8px;background:var(--acc-d)">';
-    html+='<span style="font-size:.75rem;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:1px">Total General</span>';
+    html+='<span style="font-size:.75rem;font-weight:700;color:var(--acc);text-transform:uppercase;letter-spacing:1px">Total Puntos</span>';
     html+='<span style="font-family:Space Mono,monospace;font-weight:800;font-size:1.1rem;color:var(--acc)">'+vs(totalPts)+' pts</span>';
     html+='</div></div>';
-  });
-  // Non-registered amistoso-only players
-  Object.keys(amiNames).forEach(function(name){
-    if(matches.some(function(p){return(p.apellido+' '+p.nombre)===name}))return;
-    var ag=0,ap=0;
-    amistosos.forEach(function(am){
-      var w=am.winner===1?am.p1:am.p2,l=am.winner===1?am.p2:am.p1;
-      if(w===name){ag++;} if(l===name){ap++;}
-    });
-    html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:18px;margin-bottom:12px">';
-    html+='<div style="font-weight:800;font-size:1.05rem;margin-bottom:4px">'+name+'</div>';
-    html+='<div style="margin-bottom:12px"><span class="lb" style="background:var(--acc-d);color:var(--acc);font-size:.65rem">INVITADO</span></div>';
-    html+='<div style="font-size:.7rem;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">🤝 Amistosos</div>';
-    html+='<div style="display:flex;gap:8px"><div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">G</span> <b class="pos">'+ag+'</b></div>';
-    html+='<div style="background:var(--bg);padding:6px 10px;border-radius:8px;font-size:.75rem"><span style="color:var(--tm)">P</span> <b class="neg">'+ap+'</b></div></div>';
-    html+='</div>';
   });
   resEl.innerHTML=html;
 }
@@ -971,10 +830,6 @@ function openCard(i){
   var g=gr(s.pos,s.rat),a=ac(s.pos,s.rat);
   var pl=s.pos===1?'1ER PUESTO':s.pos===2?'2DO PUESTO':s.pos===3?'3ER PUESTO':s.pos+'° PUESTO';
   var wp=s.pj>0?Math.round(s.pg/s.pj*100):0,sp=s.pj>0?Math.round(s.sg/Math.max(s.sg+s.sp,1)*100):0,gp=s.pj>0?Math.round(s.gg/Math.max(s.gg+s.gp,1)*100):0;
-  // Amistosos stats
-  var amiG=0,amiP=0;
-  amistosos.forEach(function(am){if(am.uid===s.id){if(am.winner===1)amiG++;else amiP++}});
-  var amiTotal=amiG+amiP;
   var paid=pagos[s.id]===true;
   var pagoBtn='';
   if(!paid){
@@ -983,7 +838,7 @@ function openCard(i){
   }else{
     pagoBtn='<div style="padding:12px 20px 20px;background:'+g+';text-align:center"><div style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;background:rgba(114,47,55,.15);color:var(--acc);font-weight:700;font-size:.85rem">✓ Inscripción pagada</div></div>';
   }
-  c.innerHTML='<div class="fc-top" style="background:'+g+';color:#fff"><button class="fc-x" onclick="clCard()">✕</button><div class="fc-r" style="color:'+a+'">'+s.rat+'</div><div class="fc-pos" style="color:'+a+'">'+pl+'</div><div class="fc-nm">'+s.nm+'</div><div class="fc-cat">'+CL[s.cat]+'</div></div><div class="fc-div"></div><div class="fc-sts" style="background:'+g+';color:#fff"><div class="fst"><span class="fst-l">PJ</span><span class="fst-v">'+s.pj+'</span></div><div class="fst"><span class="fst-l">Pts</span><span class="fst-v" style="color:'+(s.pts>=0?a:'#f87171')+'">'+(s.pts>0?'+':'')+s.pts+'</span></div><div class="fst"><span class="fst-l">PG</span><span class="fst-v" style="color:var(--acc)">'+s.pg+'</span></div><div class="fst"><span class="fst-l">PP</span><span class="fst-v" style="color:#f87171">'+s.pp+'</span></div><div class="fst fst-f"><span class="fst-l">Victorias</span><span class="fst-v">'+wp+'%</span></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Sets '+s.sg+'G / '+s.sp+'P</span><span class="fst-v" style="color:'+(s.sd>=0?a:'#f87171')+'">'+(s.sd>0?'+':'')+s.sd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+sp+'%;background:'+a+'"></div></div></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Games '+s.gg+'G / '+s.gp+'P</span><span class="fst-v" style="color:'+(s.gd>=0?a:'#f87171')+'">'+(s.gd>0?'+':'')+s.gd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+gp+'%;background:'+a+'"></div></div></div></div>'+(amiTotal>0?'<div style="padding:0 20px 12px;background:'+g+'"><div class="fst fst-f" style="background:rgba(255,255,255,.08)"><span class="fst-l">🤝 Amistosos</span><span class="fst-v"><span style="color:'+a+'">'+amiG+'G</span> / <span style="color:#f87171">'+amiP+'P</span></span></div></div>':'')+pagoBtn;
+  c.innerHTML='<div class="fc-top" style="background:'+g+';color:#fff"><button class="fc-x" onclick="clCard()">✕</button><div class="fc-r" style="color:'+a+'">'+s.rat+'</div><div class="fc-pos" style="color:'+a+'">'+pl+'</div><div class="fc-nm">'+s.nm+'</div><div class="fc-cat">'+CL[s.cat]+'</div></div><div class="fc-div"></div><div class="fc-sts" style="background:'+g+';color:#fff"><div class="fst"><span class="fst-l">PJ</span><span class="fst-v">'+s.pj+'</span></div><div class="fst"><span class="fst-l">Pts</span><span class="fst-v" style="color:'+(s.pts>=0?a:'#f87171')+'">'+(s.pts>0?'+':'')+s.pts+'</span></div><div class="fst"><span class="fst-l">PG</span><span class="fst-v" style="color:var(--acc)">'+s.pg+'</span></div><div class="fst"><span class="fst-l">PP</span><span class="fst-v" style="color:#f87171">'+s.pp+'</span></div><div class="fst fst-f"><span class="fst-l">Victorias</span><span class="fst-v">'+wp+'%</span></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Sets '+s.sg+'G / '+s.sp+'P</span><span class="fst-v" style="color:'+(s.sd>=0?a:'#f87171')+'">'+(s.sd>0?'+':'')+s.sd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+sp+'%;background:'+a+'"></div></div></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Games '+s.gg+'G / '+s.gp+'P</span><span class="fst-v" style="color:'+(s.gd>=0?a:'#f87171')+'">'+(s.gd>0?'+':'')+s.gd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+gp+'%;background:'+a+'"></div></div></div></div>'+pagoBtn;
   bg.classList.add('show');
 }
 function clCard(){document.getElementById('cardBg').classList.remove('show')}
@@ -1001,71 +856,6 @@ function rRes(){
     h+='</div>';html+=h;
   });
   el.innerHTML=html;
-}
-
-// ═══ AMISTOSOS ═══
-var resView='torneo';
-function rResTabs(){
-  var el=document.getElementById('resTabs');el.innerHTML='';
-  ['Torneo','Amistosos'].forEach(function(label){
-    var val=label.toLowerCase();
-    var d=document.createElement('div');d.className='ct';
-    if(resView===val){d.style.background='var(--acc-d)';d.style.color='var(--acc)';d.style.borderColor='var(--acc)'}
-    d.textContent=label;
-    d.onclick=function(){
-      resView=val;rResTabs();
-      document.getElementById('rList').style.display=val==='torneo'?'block':'none';
-      document.getElementById('aList').style.display=val==='amistosos'?'block':'none';
-      if(val==='torneo')rRes();else rAmistosos();
-      updFab();
-    };
-    el.appendChild(d);
-  });
-}
-function rAmistosos(){
-  var el=document.getElementById('aList');
-  var sr=amistosos.slice().sort(function(a,b){return(b.fecha||'').localeCompare(a.fecha||'')});
-  if(!sr.length){el.innerHTML='<div class="es"><div class="es-i">🤝</div><div class="es-t">Sin amistosos cargados</div><div class="es-s">Usá el + para cargar uno</div></div>';return}
-  var byD={};sr.forEach(function(r){if(!byD[r.fecha])byD[r.fecha]=[];byD[r.fecha].push(r)});
-  var html='';Object.keys(byD).sort().reverse().forEach(function(f){
-    var dp=f.split('-'),dO=new Date(dp[0],dp[1]-1,dp[2]),dn=DN[dO.getDay()];
-    var h='<div class="rc"><div class="rd">'+dn+' '+dp[2]+' de '+MN[dO.getMonth()]+' '+dp[0]+'</div>';
-    byD[f].forEach(function(m){
-      var delBtn='';
-      if(isAdmin||(curUser&&curUser.pid===m.uid))delBtn='<button class="adm-del" onclick="delAmistoso(\''+m.id+'\')" style="width:24px;height:24px;font-size:.6rem;margin-left:6px">✕</button>';
-      h+='<div class="rm"><span class="lb" style="background:var(--acc-d);color:var(--acc);flex-shrink:0">AMI</span><span class="rp"><span class="'+(m.winner===1?'rw':'')+'">'+m.p1+'</span> vs <span class="'+(m.winner===2?'rw':'')+'">'+m.p2+'</span></span><span class="rsc">'+m.score+'</span>'+delBtn+'</div>';
-    });
-    h+='</div>';html+=h;
-  });
-  el.innerHTML=html;
-}
-function openAmiMod(){
-  document.getElementById('mAmi').classList.add('show');
-  document.getElementById('aP1N').value='';document.getElementById('aP1A').value='';
-  document.getElementById('aP2N').value='';document.getElementById('aP2A').value='';
-  document.getElementById('aScore').value='';document.getElementById('aWin').value='';
-  document.getElementById('aDate').value=todayStr;
-  // Pre-fill J1 if player is logged in
-  if(curUser&&!isAdmin){
-    var p=parts.find(function(x){return x.id===curUser.pid});
-    if(p){document.getElementById('aP1N').value=p.nombre;document.getElementById('aP1A').value=p.apellido}
-  }
-}
-function saveAmistoso(){
-  var p1n=document.getElementById('aP1N').value.trim(),p1a=document.getElementById('aP1A').value.trim();
-  var p2n=document.getElementById('aP2N').value.trim(),p2a=document.getElementById('aP2A').value.trim();
-  var score=document.getElementById('aScore').value.trim(),winner=parseInt(document.getElementById('aWin').value),fecha=document.getElementById('aDate').value;
-  if(!p1n||!p2n||!score||!winner||!fecha){toast('Completá todos los campos');return}
-  var p1=p1a?p1a+' '+p1n:p1n;
-  var p2=p2a?p2a+' '+p2n:p2n;
-  amistosos.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),p1:p1,p2:p2,score:score,winner:winner,fecha:fecha});
-  db.ref('amistosos').set(amistosos);
-  clMod('mAmi');rAmistosos();toast('Amistoso guardado');
-}
-function delAmistoso(id){
-  if(!confirm('Eliminar amistoso?'))return;
-  amistosos=amistosos.filter(function(a){return a.id!==id});
-  db.ref('amistosos').set(amistosos);rAmistosos();toast('Eliminado');
 }
 
 // ═══ MODALS ═══
