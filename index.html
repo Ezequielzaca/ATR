@@ -1680,6 +1680,16 @@ function initApp(){
   rStatsDash();
   rAnuncio();
   updAdmUI();
+  checkDbWrite();
+}
+// Detectar si Firebase rechaza escrituras (reglas vencidas/bloqueadas)
+function checkDbWrite(){
+  db.ref('_ping').set(Date.now()).catch(function(){
+    var w=document.createElement('div');
+    w.style.cssText='position:fixed;top:0;left:0;right:0;z-index:500;background:#dc2626;color:#fff;padding:10px 16px;font-size:.78rem;font-weight:700;text-align:center;font-family:Outfit,sans-serif';
+    w.innerHTML='⚠ LOS DATOS NO SE ESTÁN GUARDANDO — Firebase rechaza las escrituras. Hay que actualizar las Reglas en la consola de Firebase (Realtime Database → Reglas → ".write": true → Publicar).';
+    document.body.appendChild(w);
+  });
 }
 </script>
 </body>
