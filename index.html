@@ -1209,7 +1209,14 @@ var curUser=JSON.parse(sessionStorage.getItem('atr_user')||'null');
 if(!isAdmin&&curUser&&curUser.admin===true)isAdmin=true;
 var usuarios=[];
 db.ref('usuarios').on('value',function(s){
-  usuarios=s.val()||[];
+  var v=s.val()||[];
+  // Firebase puede devolver objeto en vez de array — normalizar
+  usuarios=Array.isArray(v)?v.filter(Boolean):Object.keys(v).map(function(k){return v[k]}).filter(Boolean);
+  // Refrescar listas admin si están a la vista
+  var su=document.getElementById('sub-users');
+  if(su&&su.style.display!=='none'&&typeof rUsers==='function')rUsers();
+  var se=document.getElementById('sub-entrada');
+  if(se&&se.style.display!=='none'&&typeof rEntradas==='function')rEntradas();
   // Sincronizar rol admin del usuario logueado (alta/baja en vivo)
   if(curUser&&sessionStorage.getItem('atr_admin')!=='1'){
     var fu=usuarios.find(function(u){return u.uid===curUser.uid});
@@ -1220,7 +1227,6 @@ db.ref('usuarios').on('value',function(s){
     }
   }
 });
-db.ref('usuarios').once('value',function(s){usuarios=s.val()||[]});
 
 // ═══ USER REGISTRATION & LOGIN ═══
 function regFillPlayers(){
@@ -1376,9 +1382,11 @@ function showScanRes(type,title,sub,u){
 // ═══ USUARIOS (admin: ver cuentas) ═══
 function rUsers(){
   var el=document.getElementById('usersList');
-  if(!usuarios.length){el.innerHTML='<div class="es"><div class="es-i">🗂️</div><div class="es-t">Sin usuarios registrados</div></div>';return}
+  if(!usuarios.length){el.innerHTML='<div class="es"><div class="es-i">🗂️</div><div class="es-t">Sin usuarios registrados</div><div class="es-s">Cuando un jugador cree su cuenta va a aparecer acá automáticamente</div></div>';return}
   var sorted=usuarios.slice().sort(function(a,b){return(a.nombre||'').localeCompare(b.nombre||'')});
-  var html='';sorted.forEach(function(u){
+  var nAdm=usuarios.filter(function(u){return u.admin===true}).length;
+  var html='<div style="display:flex;gap:8px;margin-bottom:14px"><div style="flex:1;background:rgba(114,47,55,.1);border:1px solid rgba(114,47,55,.2);border-radius:var(--rs);padding:10px;text-align:center"><div style="font-size:1.2rem;font-weight:800;color:var(--acc)">'+usuarios.length+'</div><div style="font-size:.6rem;color:var(--acc);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Cuentas creadas</div></div><div style="flex:1;background:rgba(212,160,23,.08);border:1px solid rgba(212,160,23,.25);border-radius:var(--rs);padding:10px;text-align:center"><div style="font-size:1.2rem;font-weight:800;color:var(--oro)">'+nAdm+'</div><div style="font-size:.6rem;color:var(--oro);font-weight:600;text-transform:uppercase;letter-spacing:.5px">👑 Admins</div></div></div>';
+  sorted.forEach(function(u){
     var adm=u.admin===true;
     var admBadge=adm?' <span style="padding:2px 8px;border-radius:5px;font-size:.55rem;font-weight:800;background:rgba(212,160,23,.15);color:var(--oro);letter-spacing:.5px;vertical-align:middle">👑 ADMIN</span>':'';
     var admStyle=adm?'background:rgba(212,160,23,.2);border:1px solid var(--oro)':'background:transparent;border:1px solid var(--brd);filter:grayscale(1);opacity:.5';
