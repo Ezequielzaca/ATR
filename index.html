@@ -224,6 +224,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 
 <!-- INICIO -->
 <div class="page active" id="pg-inicio">
+  <div id="anuncioBanner" style="display:none;margin-bottom:14px"></div>
   <div id="statsDash" style="display:flex;gap:8px;margin-bottom:16px"></div>
   <button class="cal-btn" id="calBtn" onclick="toggleCal()">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -275,6 +276,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div class="mi" onclick="subPg('login')"><div class="mic" style="background:linear-gradient(135deg,#722F37,#5a1f27)">🔐</div><div><div class="mit" id="loginBtnTxt">Iniciar Sesión</div><div class="mid" id="loginBtnSub">Jugadores y administrador</div></div></div>
     <div class="mi" onclick="subPg('part')"><div class="mic pa">👤</div><div><div class="mit">Participantes</div><div class="mid">Ver jugadores del torneo</div></div></div>
     <div class="mi" onclick="subPg('spo')"><div class="mic sp">⭐</div><div><div class="mit">Sponsors</div><div class="mid">Marcas del torneo</div></div></div>
+    <div class="mi" onclick="subPg('info')"><div class="mic" style="background:linear-gradient(135deg,#0ea5e9,#0369a1)">📋</div><div><div class="mit">Información</div><div class="mid">Reglamento, premios y sede</div></div></div>
     <div class="mi" onclick="subPg('cont')"><div class="mic co">💬</div><div><div class="mit">Contacto</div><div class="mid">Escribinos</div></div></div>
     <div class="mi" id="pagosBtn" style="display:none" onclick="subPg('pagos')"><div class="mic" style="background:linear-gradient(135deg,#f59e0b,#d97706)">💰</div><div><div class="mit">Pagos</div><div class="mid">Estado de pagos</div></div></div>
     <div class="mi" id="balanceBtn" style="display:none" onclick="subPg('balance')"><div class="mic" style="background:linear-gradient(135deg,#6366f1,#4f46e5)">📊</div><div><div class="mit">Balance</div><div class="mid">Ingresos y gastos</div></div></div>
@@ -388,7 +390,12 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Contacto</span></div>
     <a class="ctc" href="https://www.instagram.com/tenis_atr" target="_blank"><div class="ctic ig">📸</div><div><div style="font-weight:600">Instagram</div><div style="font-size:.78rem;color:var(--tm)">@tenis_atr</div></div></a>
     <a class="ctc" href="https://wa.me/5493794825167" target="_blank"><div class="ctic wp">📱</div><div><div style="font-weight:600">WhatsApp</div><div style="font-size:.78rem;color:var(--tm)">+54 9 379 482-5167</div></div></a>
-    <a class="ctc" href="/cdn-cgi/l/email-protection#067263686f7567727446616b676f6a2865696b"><div class="ctic em">✉️</div><div><div style="font-weight:600">Email</div><div style="font-size:.78rem;color:var(--tm)"><span class="__cf_email__" data-cfemail="3440515a5d47554046745359555d581a575b59">[email&#160;protected]</span></div></div></a>
+    <a class="ctc" href="mailto:tenisatr@gmail.com"><div class="ctic em">✉️</div><div><div style="font-weight:600">Email</div><div style="font-size:.78rem;color:var(--tm)">tenisatr@gmail.com</div></div></a>
+  </div>
+  <!-- Información -->
+  <div id="sub-info" style="display:none">
+    <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Información</span></div>
+    <div id="infoContent"></div>
   </div>
   <!-- Admin -->
   <div id="sub-admin" style="display:none">
@@ -426,7 +433,8 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 <!-- Modal: Result -->
 <div class="mbg" id="mRes" onclick="if(event.target===this)clMod('mRes')"><div class="mdl">
   <div class="mh"><span class="mt">Cargar Resultado</span><button class="mx" onclick="clMod('mRes')">✕</button></div>
-  <div class="fr"><select class="fs" id="rCat" onchange="rPickCat()"><option value="">Categoría...</option></select><select class="fs" id="rGrp" onchange="rPickGrp()"><option value="">Grupo...</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
+  <div class="fr"><select class="fs" id="rCat" onchange="rPickCat()"><option value="">Categoría...</option></select><select class="fs" id="rFase" onchange="rPickFase()"><option value="grupos">Fase: Grupos</option><option value="cuartos">Cuartos de Final</option><option value="semis">Semifinal</option><option value="final">Final</option></select></div>
+  <div class="fr" id="rGrpRow"><select class="fs" id="rGrp" onchange="rPickGrp()"><option value="">Grupo...</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
   <div class="fr"><select class="fs" id="rP1"><option value="">J1...</option></select><span style="color:var(--tm);align-self:center;font-weight:700">VS</span><select class="fs" id="rP2"><option value="">J2...</option></select></div>
   <div class="fr"><input class="fi" id="rSc" placeholder="Score (ej: 6-3 6-4)"/></div>
   <div class="fr"><select class="fs" id="rW"><option value="">Ganador...</option><option value="1">Jugador 1</option><option value="2">Jugador 2</option></select></div>
@@ -477,7 +485,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 </div></nav>
 
 <!-- Firebase Compat SDK (NO module) -->
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script>
 // ═══ FIREBASE INIT ═══
@@ -504,6 +512,8 @@ function toggleTheme(){
 var MN=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 var DN=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 var CATS=['signature','oro','plata','bronce','madera','mujeres'];
+var FASE_L={grupos:'Grupos',cuartos:'Cuartos de Final',semis:'Semifinal',final:'Final'};
+var FASE_PTS={cuartos:2,semis:3,final:5};
 var CL={signature:'Signature',oro:'Oro',plata:'Plata',bronce:'Bronce',madera:'Madera',mujeres:'Mujeres'};
 var CS={signature:'sig',oro:'oro',plata:'pla',bronce:'bro',madera:'mad',mujeres:'muj'};
 var sponsors=[];
@@ -545,7 +555,7 @@ function nav(pg){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
   var t=document.getElementById('pg-'+pg);if(t)t.classList.add('active');
   if(pg==='mas')backMas();
-  if(pg==='inicio'){rUp();rStatsDash()}
+  if(pg==='inicio'){rUp();rStatsDash();rAnuncio()}
   if(pg==='cuadros'){rCTabs();rGrid()}
   if(pg==='puntos'){rPTabs();rPts()}
   if(pg==='resultados')rRes();
@@ -615,8 +625,8 @@ function rCTabs(){
 function rCGrpTabs(){
   var gt=document.getElementById('cGrpTabs');gt.innerHTML='';
   if(!selCat)return;
-  var grps=[null,'A','B','C','D'];
-  var labels=['General','A','B','C','D'];
+  var grps=[null,'A','B','C','D','PO'];
+  var labels=['General','A','B','C','D','🏆 Playoffs'];
   grps.forEach(function(val,i){
     var d=document.createElement('div');d.className='ct';
     if(selGrp===val){d.style.background='var(--acc-d)';d.style.color='var(--acc)';d.style.borderColor='var(--acc)'}
@@ -634,7 +644,7 @@ function flipScore(sc){
 
 function buildGrid(players,title){
   if(!players.length)return'';
-  var rM={};results.filter(function(r){return r.cat===selCat}).forEach(function(r){rM[r.p1id+'_'+r.p2id]=r;rM[r.p2id+'_'+r.p1id]={p1id:r.p2id,p2id:r.p1id,score:r.score,winner:r.winner,flip:true}});
+  var rM={};results.filter(function(r){return r.cat===selCat&&(!r.fase||r.fase==='grupos')}).forEach(function(r){rM[r.p1id+'_'+r.p2id]=r;rM[r.p2id+'_'+r.p1id]={p1id:r.p2id,p2id:r.p1id,score:r.score,winner:r.winner,flip:true}});
   var html='<div class="slbl" style="margin-top:16px;margin-bottom:8px">'+title+'</div>';
   html+='<div class="gw"><table class="gt"><thead><tr><th></th><th class="cn">#</th>';
   players.forEach(function(_,i){html+='<th class="cn">'+(i+1)+'</th>'});
@@ -656,9 +666,41 @@ function buildGrid(players,title){
   return html;
 }
 
+function rPlayoffs(){
+  var fases=['cuartos','semis','final'];
+  var icons={cuartos:'🎾',semis:'🥎',final:'🏆'};
+  var html='';
+  var any=false;
+  fases.forEach(function(f){
+    var matches=results.filter(function(r){return r.cat===selCat&&r.fase===f}).sort(function(a,b){return(a.fecha||'').localeCompare(b.fecha||'')});
+    html+='<div class="slbl" style="margin-top:18px;margin-bottom:8px">'+icons[f]+' '+FASE_L[f]+'</div>';
+    if(!matches.length){
+      html+='<div style="background:var(--card);border:1px dashed var(--brd);border-radius:var(--rs);padding:14px;text-align:center;font-size:.75rem;color:var(--tm)">Sin partidos cargados</div>';
+      return;
+    }
+    any=true;
+    matches.forEach(function(m){
+      var wName=m.winner===1?m.p1:m.p2,lName=m.winner===1?m.p2:m.p1;
+      html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px">';
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">';
+      html+='<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.85rem;color:var(--win-c)">'+wName+' <span style="font-size:.6rem;font-weight:600">✓</span></div><div style="font-size:.8rem;color:var(--tm)">'+lName+'</div></div>';
+      html+='<div style="font-family:Space Mono,monospace;font-weight:700;font-size:.82rem;color:var(--acc);flex-shrink:0">'+m.score+'</div>';
+      html+='</div><div style="font-size:.6rem;color:var(--tm);margin-top:6px">'+m.fecha+' · +'+FASE_PTS[f]+' pts al ganador</div></div>';
+    });
+    // Champion highlight
+    if(f==='final'&&matches.length){
+      var fm=matches[matches.length-1];
+      var champ=fm.winner===1?fm.p1:fm.p2;
+      html+='<div style="background:linear-gradient(135deg,#722F37,#943d47);border-radius:var(--r);padding:18px;text-align:center;margin-top:10px"><div style="font-size:1.6rem">🏆</div><div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:2px;margin:4px 0">Campeón '+CL[selCat]+'</div><div style="font-size:1.15rem;font-weight:800;color:#fff">'+champ+'</div></div>';
+    }
+  });
+  return html;
+}
+
 function rGrid(){
   var el=document.getElementById('cGrid');
   if(!selCat){el.innerHTML='';return}
+  if(selGrp==='PO'){el.innerHTML=rPlayoffs();return}
   var pl=parts.filter(function(p){return p.cat===selCat});
   if(!pl.length){el.innerHTML='<div class="es"><div class="es-i">📋</div><div class="es-t">Sin participantes en '+CL[selCat]+'</div></div>';return}
 
@@ -732,12 +774,21 @@ function rPts(){
   var pl=parts.filter(function(p){return p.cat===ptsCat&&(ptsGrp===null||p.grupo===ptsGrp)});
   if(!pl.length){el.innerHTML='<div class="es"><div class="es-i">📋</div><div class="es-t">Sin participantes'+(ptsGrp?' en Grupo '+ptsGrp:'')+'</div></div>';return}
   var st={};pl.forEach(function(p){st[p.id]={id:p.id,nm:p.apellido+' '+p.nombre,cat:p.cat,grp:p.grupo||'',pj:0,pg:0,pp:0,pts:0,sg:0,sp:0,gg:0,gp:0}});
-  results.filter(function(r){return r.cat===ptsCat}).forEach(function(r){
+  results.filter(function(r){
+    if(r.cat!==ptsCat)return false;
+    var isPO=r.fase&&r.fase!=='grupos';
+    // Vista de grupo específico: solo partidos de fase de grupos
+    if(ptsGrp!==null&&isPO)return false;
+    return true;
+  }).forEach(function(r){
     var sc=parseScore(r.score),wid=r.winner===1?r.p1id:r.p2id,lid=r.winner===1?r.p2id:r.p1id;
     // El score siempre se carga desde la perspectiva del GANADOR
     var wS=sc.s1,lS=sc.s2,wG=sc.g1,lG=sc.g2;
-    if(st[wid]){st[wid].pj++;st[wid].pg++;st[wid].pts++;st[wid].sg+=wS;st[wid].sp+=lS;st[wid].gg+=wG;st[wid].gp+=lG}
-    if(st[lid]){st[lid].pj++;st[lid].pp++;st[lid].pts--;st[lid].sg+=lS;st[lid].sp+=wS;st[lid].gg+=lG;st[lid].gp+=wG}
+    var isPO=r.fase&&r.fase!=='grupos';
+    var wPts=isPO?(FASE_PTS[r.fase]||1):1;
+    var lPts=isPO?0:-1; // En playoffs el perdedor no resta
+    if(st[wid]){st[wid].pj++;st[wid].pg++;st[wid].pts+=wPts;st[wid].sg+=wS;st[wid].sp+=lS;st[wid].gg+=wG;st[wid].gp+=lG}
+    if(st[lid]){st[lid].pj++;st[lid].pp++;st[lid].pts+=lPts;st[lid].sg+=lS;st[lid].sp+=wS;st[lid].gg+=lG;st[lid].gp+=wG}
   });
   var arr=Object.values(st);arr.forEach(function(s){s.sd=s.sg-s.sp;s.gd=s.gg-s.gp});
   arr.sort(function(a,b){return b.pts-a.pts||b.sd-a.sd||b.gd-a.gd});
@@ -793,8 +844,11 @@ function searchPlayer(){
     results.filter(function(r){return r.cat===p.cat}).forEach(function(r){
       var sc=parseScore(r.score);
       var wid=r.winner===1?r.p1id:r.p2id,lid=r.winner===1?r.p2id:r.p1id;
-      if(wid===p.id){tPj++;tPg++;tPts++;tSg+=sc.s1;tSp+=sc.s2;tGg+=sc.g1;tGp+=sc.g2}
-      if(lid===p.id){tPj++;tPp++;tPts--;tSg+=sc.s2;tSp+=sc.s1;tGg+=sc.g2;tGp+=sc.g1}
+      var isPO=r.fase&&r.fase!=='grupos';
+      var wPts=isPO?(FASE_PTS[r.fase]||1):1;
+      var lPts=isPO?0:-1;
+      if(wid===p.id){tPj++;tPg++;tPts+=wPts;tSg+=sc.s1;tSp+=sc.s2;tGg+=sc.g1;tGp+=sc.g2}
+      if(lid===p.id){tPj++;tPp++;tPts+=lPts;tSg+=sc.s2;tSp+=sc.s1;tGg+=sc.g2;tGp+=sc.g1}
     });
     var totalPts=tPts;
     function vc(v){return v>0?'pos':v<0?'neg':'zer'}
@@ -852,7 +906,7 @@ function rRes(){
   var html='';Object.keys(byD).sort().reverse().forEach(function(f){
     var dp=f.split('-'),dO=new Date(dp[0],dp[1]-1,dp[2]),dn=DN[dO.getDay()];
     var h='<div class="rc"><div class="rd">'+dn+' '+dp[2]+' de '+MN[dO.getMonth()]+' '+dp[0]+'</div>';
-    byD[f].forEach(function(m){h+='<div class="rm"><span class="lb l-'+CS[m.cat]+'" style="flex-shrink:0">'+CL[m.cat]+'</span><span class="rp"><span class="'+(m.winner===1?'rw':'')+'">'+m.p1+'</span> vs <span class="'+(m.winner===2?'rw':'')+'">'+m.p2+'</span></span><span class="rsc">'+m.score+'</span></div>'});
+    byD[f].forEach(function(m){var faseBadge=(m.fase&&m.fase!=='grupos')?'<span class="lb" style="background:linear-gradient(135deg,#722F37,#943d47);color:#fff;flex-shrink:0;font-size:.5rem">'+(m.fase==='final'?'🏆 FINAL':m.fase==='semis'?'SEMI':'4TOS')+'</span>':'';h+='<div class="rm"><span class="lb l-'+CS[m.cat]+'" style="flex-shrink:0">'+CL[m.cat]+'</span>'+faseBadge+'<span class="rp"><span class="'+(m.winner===1?'rw':'')+'">'+m.p1+'</span> vs <span class="'+(m.winner===2?'rw':'')+'">'+m.p2+'</span></span><span class="rsc">'+m.score+'</span></div>'});
     h+='</div>';html+=h;
   });
   el.innerHTML=html;
@@ -866,9 +920,16 @@ function fillPlByGrp(cat,grp,s1,s2){
   var o='<option value="">Jugador...</option>';pl.forEach(function(p){o+='<option value="'+p.id+'">'+p.apellido+' '+p.nombre+'</option>'});
   s1.innerHTML=o;s2.innerHTML=o;
 }
+function fillPlByCat(cat,s1,s2){
+  var pl=parts.filter(function(p){return p.cat===cat}).sort(function(a,b){return a.apellido.localeCompare(b.apellido)});
+  var o='<option value="">Jugador...</option>';pl.forEach(function(p){o+='<option value="'+p.id+'">'+p.apellido+' '+p.nombre+' (G'+(p.grupo||'?')+')</option>'});
+  s1.innerHTML=o;s2.innerHTML=o;
+}
 function openResMod(){
   document.getElementById('mRes').classList.add('show');
   fillCatSel(document.getElementById('rCat'));
+  document.getElementById('rFase').value='grupos';
+  document.getElementById('rGrpRow').style.display='flex';
   document.getElementById('rGrp').value='';
   document.getElementById('rP1').innerHTML='<option value="">J1...</option>';
   document.getElementById('rP2').innerHTML='<option value="">J2...</option>';
@@ -879,7 +940,30 @@ function openResMod(){
     if(curUser.grupo){document.getElementById('rGrp').value=curUser.grupo;fillPlByGrp(curUser.cat,curUser.grupo,document.getElementById('rP1'),document.getElementById('rP2'));document.getElementById('rP1').value=curUser.pid}
   }
 }
-function rPickCat(){document.getElementById('rGrp').value='';document.getElementById('rP1').innerHTML='<option value="">J1...</option>';document.getElementById('rP2').innerHTML='<option value="">J2...</option>'}
+function rPickFase(){
+  var fase=document.getElementById('rFase').value;
+  var cat=document.getElementById('rCat').value;
+  if(fase==='grupos'){
+    document.getElementById('rGrpRow').style.display='flex';
+    document.getElementById('rGrp').value='';
+    document.getElementById('rP1').innerHTML='<option value="">J1...</option>';
+    document.getElementById('rP2').innerHTML='<option value="">J2...</option>';
+  }else{
+    // Playoffs: hide group, fill all players of category
+    document.getElementById('rGrpRow').style.display='none';
+    if(cat)fillPlByCat(cat,document.getElementById('rP1'),document.getElementById('rP2'));
+  }
+}
+function rPickCat(){
+  var fase=document.getElementById('rFase').value;
+  document.getElementById('rGrp').value='';
+  if(fase!=='grupos'){
+    var cat=document.getElementById('rCat').value;
+    if(cat){fillPlByCat(cat,document.getElementById('rP1'),document.getElementById('rP2'));return}
+  }
+  document.getElementById('rP1').innerHTML='<option value="">J1...</option>';
+  document.getElementById('rP2').innerHTML='<option value="">J2...</option>';
+}
 function rPickGrp(){
   var cat=document.getElementById('rCat').value,grp=document.getElementById('rGrp').value;
   if(cat&&grp)fillPlByGrp(cat,grp,document.getElementById('rP1'),document.getElementById('rP2'));
@@ -888,11 +972,13 @@ function rPickGrp(){
 function saveRes(){
   var cat=document.getElementById('rCat').value,p1id=document.getElementById('rP1').value,p2id=document.getElementById('rP2').value;
   var score=document.getElementById('rSc').value.trim(),winner=parseInt(document.getElementById('rW').value),fecha=document.getElementById('rDt').value;
+  var fase=document.getElementById('rFase').value||'grupos';
   if(!cat||!p1id||!p2id||!score||!winner||!fecha||p1id===p2id){toast('Completá todos los campos');return}
+  if(fase==='grupos'&&!document.getElementById('rGrp').value){toast('Seleccioná el grupo');return}
   var p1=parts.find(function(p){return p.id===p1id}),p2=parts.find(function(p){return p.id===p2id});
-  var grp=document.getElementById('rGrp').value||'';
-  results.push({fecha:fecha,cat:cat,grupo:grp,p1id:p1id,p2id:p2id,p1:p1.apellido+' '+p1.nombre,p2:p2.apellido+' '+p2.nombre,score:score,winner:winner});
-  db.ref('resultados').set(results);clMod('mRes');rRes();toast('Resultado guardado');
+  var grp=fase==='grupos'?document.getElementById('rGrp').value:'';
+  results.push({fecha:fecha,cat:cat,grupo:grp,fase:fase,p1id:p1id,p2id:p2id,p1:p1.apellido+' '+p1.nombre,p2:p2.apellido+' '+p2.nombre,score:score,winner:winner});
+  db.ref('resultados').set(results);clMod('mRes');rRes();toast('Resultado guardado'+(fase!=='grupos'?' — '+FASE_L[fase]:''));
 }
 // Quick result from upcoming match
 function openResFromMatch(idx){
@@ -1237,6 +1323,7 @@ function updAdmUI(){
   // FAB: admin or logged in player
   var showFab=(curPg==='inicio'||curPg==='resultados')&&(isAdmin||!!curUser);
   document.getElementById('fab').classList.toggle('show',showFab);
+  if(typeof rAnuncio==='function')rAnuncio();
 }
 function doLogin(){
   var u=document.getElementById('admUser').value.trim(),p=document.getElementById('admPass').value;
@@ -1264,7 +1351,7 @@ function rAdmPanel(){
   el.innerHTML=h1;
   var el2=document.getElementById('admRes');var h2='';
   if(!results.length)h2='<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin resultados</div>';
-  else results.forEach(function(r,i){h2+='<div class="adm-card"><div class="adm-info">'+r.p1+' vs '+r.p2+' → '+r.score+'<small>'+r.fecha+' - '+CL[r.cat]+(r.grupo?' G'+r.grupo:'')+' - Ganó: '+(r.winner===1?r.p1:r.p2)+'</small></div><button class="adm-edit" onclick="admEditRes('+i+')" title="Editar">✎</button><button class="adm-del" onclick="admDelRes('+i+')" title="Eliminar">✕</button></div>'});
+  else results.forEach(function(r,i){h2+='<div class="adm-card"><div class="adm-info">'+r.p1+' vs '+r.p2+' → '+r.score+'<small>'+r.fecha+' - '+CL[r.cat]+(r.grupo?' G'+r.grupo:'')+(r.fase&&r.fase!=='grupos'?' · '+FASE_L[r.fase]:'')+' - Ganó: '+(r.winner===1?r.p1:r.p2)+'</small></div><button class="adm-edit" onclick="admEditRes('+i+')" title="Editar">✎</button><button class="adm-del" onclick="admDelRes('+i+')" title="Eliminar">✕</button></div>'});
   el2.innerHTML=h2;
   var el3=document.getElementById('admPart');var h3='';
   var sorted=parts.slice().sort(function(a,b){return(a.cat+a.apellido).localeCompare(b.cat+b.apellido)});
@@ -1305,6 +1392,7 @@ subPg=function(s){
   if(s==='part'){rPList();updAdmUI()}
   if(s==='spo'){rSpo();updAdmUI()}
   if(s==='pagos')rPagos();
+  if(s==='info')rInfo();
   if(s==='balance'){balView='ingresos';rBalance()}
   if(s==='entrada')rEntradas();
   if(s==='users')rUsers();
@@ -1326,13 +1414,73 @@ subPg=function(s){
 // ═══ PAGOS ═══
 var pagos={};// {playerId: true/false}
 db.ref('pagos').on('value',function(s){pagos=s.val()||{}});
+var entregas={};// {playerId: true/false} - indumentaria entregada
+db.ref('entregas').on('value',function(s){entregas=s.val()||{}});
 
-var pagoView='todos';// 'todos','si','no'
+// ═══ ANUNCIO (banner editable por admin) ═══
+var anuncio={texto:'',activo:false};
+db.ref('anuncio').on('value',function(s){anuncio=s.val()||{texto:'',activo:false};rAnuncio()});
+function rAnuncio(){
+  var el=document.getElementById('anuncioBanner');if(!el)return;
+  var editBtn=isAdmin?'<button onclick="editAnuncio()" style="background:none;border:none;color:#fff;opacity:.7;cursor:pointer;font-size:.8rem;flex-shrink:0;padding:4px">✎</button>':'';
+  if(anuncio.activo&&anuncio.texto){
+    el.style.display='block';
+    el.innerHTML='<div style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#722F37,#943d47);border-radius:var(--rs);padding:12px 14px;color:#fff"><span style="font-size:1.1rem;flex-shrink:0">📢</span><div style="flex:1;font-size:.85rem;font-weight:600;line-height:1.4">'+anuncio.texto+'</div>'+editBtn+'</div>';
+  }else if(isAdmin){
+    el.style.display='block';
+    el.innerHTML='<button onclick="editAnuncio()" style="width:100%;padding:10px;border-radius:var(--rs);border:1px dashed var(--brd);background:transparent;color:var(--tm);font-family:Outfit,sans-serif;font-size:.78rem;cursor:pointer">📢 + Agregar anuncio</button>';
+  }else{
+    el.style.display='none';
+  }
+}
+function editAnuncio(){
+  var txt=prompt('Texto del anuncio (vacío para ocultar):',anuncio.texto||'');
+  if(txt===null)return;
+  anuncio={texto:txt.trim(),activo:!!txt.trim()};
+  db.ref('anuncio').set(anuncio);
+  toast(anuncio.activo?'Anuncio publicado':'Anuncio ocultado');
+}
+
+// ═══ INFORMACIÓN (reglamento, premios, sede) ═══
+var infoData={reglamento:'',premios:'',sede:'',sedeMapa:''};
+db.ref('info').on('value',function(s){infoData=s.val()||{reglamento:'',premios:'',sede:'',sedeMapa:''}});
+function rInfo(){
+  var el=document.getElementById('infoContent');if(!el)return;
+  function section(icon,title,content,field,isLink){
+    var editBtn=isAdmin?'<button onclick="editInfo(\''+field+'\')" class="adm-edit" style="width:26px;height:26px;font-size:.65rem;flex-shrink:0">✎</button>':'';
+    var body;
+    if(!content){
+      body='<div style="font-size:.78rem;color:var(--tm);font-style:italic">Sin información cargada'+(isAdmin?' — tocá ✎ para editar':'')+'</div>';
+    }else if(isLink){
+      body='<a href="'+content+'" target="_blank" style="font-size:.82rem;color:var(--acc);font-weight:600;text-decoration:none">📍 Ver en Google Maps →</a>';
+    }else{
+      body='<div style="font-size:.82rem;color:var(--t2);line-height:1.6;white-space:pre-wrap">'+content+'</div>';
+    }
+    return '<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:16px;margin-bottom:12px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:1.1rem">'+icon+'</span><span style="font-weight:700;font-size:.9rem;flex:1">'+title+'</span>'+editBtn+'</div>'+body+'</div>';
+  }
+  var html='';
+  html+=section('📜','Reglamento',infoData.reglamento,'reglamento',false);
+  html+=section('🏆','Premios',infoData.premios,'premios',false);
+  html+=section('🏟️','Sede',infoData.sede,'sede',false);
+  html+=section('🗺️','Ubicación',infoData.sedeMapa,'sedeMapa',true);
+  el.innerHTML=html;
+}
+function editInfo(field){
+  var labels={reglamento:'Reglamento del torneo',premios:'Premios por categoría',sede:'Información de la sede',sedeMapa:'Link de Google Maps'};
+  var current=infoData[field]||'';
+  var txt=prompt(labels[field]+':',current);
+  if(txt===null)return;
+  infoData[field]=txt.trim();
+  db.ref('info').set(infoData);
+  rInfo();toast('Información actualizada');
+}
+
+var pagoView='todos';// 'todos','si','no','sinentrega'
 function rPagos(){
   // Filter tabs
   var ft=document.getElementById('pagoFilter');ft.innerHTML='';
-  ['Todos','Pagaron','No pagaron'].forEach(function(label,i){
-    var val=['todos','si','no'][i];
+  ['Todos','Pagaron','No pagaron','Sin entregar'].forEach(function(label,i){
+    var val=['todos','si','no','sinentrega'][i];
     var d=document.createElement('div');d.className='ct';
     if(pagoView===val){d.style.background='var(--acc-d)';d.style.color='var(--acc)';d.style.borderColor='var(--acc)'}
     d.textContent=label;
@@ -1346,30 +1494,46 @@ function rPagos(){
   // Filter
   if(pagoView==='si')sorted=sorted.filter(function(p){return pagos[p.id]===true});
   if(pagoView==='no')sorted=sorted.filter(function(p){return!pagos[p.id]});
+  if(pagoView==='sinentrega')sorted=sorted.filter(function(p){return pagos[p.id]===true&&!entregas[p.id]});
 
   if(!sorted.length){el.innerHTML='<div class="es"><div class="es-i">💰</div><div class="es-t">Sin participantes en esta lista</div></div>';return}
 
   // Summary
   var totalPag=parts.filter(function(p){return pagos[p.id]===true}).length;
   var totalNoPag=parts.length-totalPag;
-  var html='<div style="display:flex;gap:10px;margin-bottom:16px"><div style="flex:1;background:rgba(114,47,55,.1);border:1px solid rgba(114,47,55,.2);border-radius:var(--rs);padding:12px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:var(--acc)">'+totalPag+'</div><div style="font-size:.65rem;color:var(--acc);font-weight:600;text-transform:uppercase;letter-spacing:1px">Pagaron</div></div><div style="flex:1;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:var(--rs);padding:12px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:#f87171">'+totalNoPag+'</div><div style="font-size:.65rem;color:#f87171;font-weight:600;text-transform:uppercase;letter-spacing:1px">No pagaron</div></div></div>';
+  var totalEnt=parts.filter(function(p){return entregas[p.id]===true}).length;
+  var pendEnt=totalPag-parts.filter(function(p){return pagos[p.id]===true&&entregas[p.id]===true}).length;
+  var html='<div style="display:flex;gap:8px;margin-bottom:8px"><div style="flex:1;background:rgba(114,47,55,.1);border:1px solid rgba(114,47,55,.2);border-radius:var(--rs);padding:10px;text-align:center"><div style="font-size:1.2rem;font-weight:800;color:var(--acc)">'+totalPag+'</div><div style="font-size:.6rem;color:var(--acc);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Pagaron</div></div><div style="flex:1;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:var(--rs);padding:10px;text-align:center"><div style="font-size:1.2rem;font-weight:800;color:#f87171">'+totalNoPag+'</div><div style="font-size:.6rem;color:#f87171;font-weight:600;text-transform:uppercase;letter-spacing:.5px">No pagaron</div></div></div>';
+  html+='<div style="display:flex;gap:8px;margin-bottom:14px"><div style="flex:1;background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.2);border-radius:var(--rs);padding:10px;text-align:center"><div style="font-size:1.2rem;font-weight:800;color:#16a34a">'+totalEnt+'</div><div style="font-size:.6rem;color:#16a34a;font-weight:600;text-transform:uppercase;letter-spacing:.5px">👕 Entregados</div></div><div style="flex:1;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:var(--rs);padding:10px;text-align:center"><div style="font-size:1.2rem;font-weight:800;color:#d97706">'+pendEnt+'</div><div style="font-size:.6rem;color:#d97706;font-weight:600;text-transform:uppercase;letter-spacing:.5px">⏳ Pendientes</div></div></div>';
+  html+='<div style="font-size:.6rem;color:var(--tm);margin-bottom:12px;text-align:center">$ = pago de inscripción &nbsp;·&nbsp; 👕 = indumentaria entregada</div>';
 
   var cc='';
   sorted.forEach(function(p){
     if(p.cat!==cc){cc=p.cat;html+='<div class="slbl" style="margin-top:14px">'+CL[p.cat]+'</div>'}
     var paid=pagos[p.id]===true;
-    var siStyle=paid?'background:var(--acc);color:#fff;border-color:var(--acc)':'background:transparent;color:var(--tm);border-color:var(--brd)';
-    var noStyle=!paid?'background:#ef4444;color:#fff;border-color:#ef4444':'background:transparent;color:var(--tm);border-color:var(--brd)';
+    var entregado=entregas[p.id]===true;
     var btns='';
     if(isAdmin){
-      btns='<button onclick="setPago(\''+p.id+'\',true)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid;cursor:pointer;font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;'+siStyle+'">✓</button>';
-      btns+='<button onclick="setPago(\''+p.id+'\',false)" style="width:32px;height:32px;border-radius:8px;border:1.5px solid;cursor:pointer;font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;'+noStyle+'">✗</button>';
+      // Pago toggle
+      var pagoStyle=paid?'background:var(--acc);color:#fff;border-color:var(--acc)':'background:transparent;color:var(--tm);border-color:var(--brd)';
+      btns+='<button onclick="setPago(\''+p.id+'\','+(paid?'false':'true')+')" title="'+(paid?'Marcar NO pagado':'Marcar pagado')+'" style="width:34px;height:34px;border-radius:8px;border:1.5px solid;cursor:pointer;font-size:.8rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;'+pagoStyle+'">$</button>';
+      // Entrega toggle
+      var entStyle=entregado?'background:#16a34a;color:#fff;border-color:#16a34a':'background:transparent;color:var(--tm);border-color:var(--brd)';
+      btns+='<button onclick="setEntrega(\''+p.id+'\','+(entregado?'false':'true')+')" title="'+(entregado?'Marcar NO entregado':'Marcar entregado')+'" style="width:34px;height:34px;border-radius:8px;border:1.5px solid;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s;'+entStyle+'">👕</button>';
     }else{
       btns='<div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;'+(paid?'background:var(--acc);color:#fff':'background:rgba(239,68,68,.15);color:#f87171')+'">'+(paid?'✓':'✗')+'</div>';
     }
-    html+='<div class="pc"><div class="pav">'+(p.nombre[0]||'')+(p.apellido[0]||'')+'</div><span class="pnm" style="flex:1">'+p.apellido+', '+p.nombre+'</span><span class="lb l-'+CS[p.cat]+'" style="font-size:.5rem;margin-right:4px">'+(p.grupo?'G'+p.grupo:'')+'</span><div style="display:flex;gap:4px">'+btns+'</div></div>';
+    html+='<div class="pc"><div class="pav">'+(p.nombre[0]||'')+(p.apellido[0]||'')+'</div><span class="pnm" style="flex:1">'+p.apellido+', '+p.nombre+'</span><span class="lb l-'+CS[p.cat]+'" style="font-size:.5rem;margin-right:4px">'+(p.grupo?'G'+p.grupo:'')+'</span><div style="display:flex;gap:5px">'+btns+'</div></div>';
   });
   el.innerHTML=html;
+}
+function setEntrega(id,val){
+  entregas[id]=val;
+  db.ref('entregas').set(entregas);
+  var p=parts.find(function(x){return x.id===id});
+  var nombre=p?p.apellido+' '+p.nombre:'Jugador';
+  rPagos();
+  toast(val?'👕 '+nombre+' — Indumentaria entregada':nombre+' — Entrega desmarcada');
 }
 var INSCRIPCION=60000;
 function setPago(id,val){
@@ -1394,7 +1558,7 @@ function setPago(id,val){
 
 // ═══ INIT ═══
 function initApp(){
-  rCal();rUp();rCTabs();rStatsDash();updFab();updAdmUI();
+  rCal();rUp();rCTabs();rStatsDash();rAnuncio();updFab();updAdmUI();
   document.getElementById('app').style.opacity='1';
 }
 </script>
