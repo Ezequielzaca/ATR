@@ -384,6 +384,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
   <div id="sub-pagos" style="display:none">
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Pagos</span></div>
     <div class="ctabs" id="pagoFilter" style="margin-bottom:12px"></div>
+    <div style="position:relative;margin-bottom:12px"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:.9rem;opacity:.5;pointer-events:none">🔍</span><input class="fi" id="pagoSearch" type="text" placeholder="Buscar jugador..." oninput="rPagos()" style="width:100%;padding-left:40px"/><button id="pagoSearchX" onclick="document.getElementById('pagoSearch').value='';rPagos()" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:8px;border:0;background:var(--acc-d);color:var(--acc);cursor:pointer;font-size:.75rem;font-weight:700">✕</button></div>
     <div id="pagoList"></div>
   </div>
   <div id="sub-cont" style="display:none">
@@ -1476,6 +1477,7 @@ function editInfo(field){
 }
 
 var pagoView='todos';// 'todos','si','no','sinentrega'
+function norm(s){return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
 function rPagos(){
   // Filter tabs
   var ft=document.getElementById('pagoFilter');ft.innerHTML='';
@@ -1496,7 +1498,14 @@ function rPagos(){
   if(pagoView==='no')sorted=sorted.filter(function(p){return!pagos[p.id]});
   if(pagoView==='sinentrega')sorted=sorted.filter(function(p){return pagos[p.id]===true&&!entregas[p.id]});
 
-  if(!sorted.length){el.innerHTML='<div class="es"><div class="es-i">💰</div><div class="es-t">Sin participantes en esta lista</div></div>';return}
+  // Search
+  var sIn=document.getElementById('pagoSearch');
+  var q=sIn?norm(sIn.value.trim()):'';
+  var sX=document.getElementById('pagoSearchX');
+  if(sX)sX.style.display=q?'block':'none';
+  if(q)sorted=sorted.filter(function(p){return norm(p.nombre+' '+p.apellido).indexOf(q)>-1});
+
+  if(!sorted.length){el.innerHTML='<div class="es"><div class="es-i">'+(q?'🔍':'💰')+'</div><div class="es-t">'+(q?'No se encontró "'+(sIn?sIn.value:'')+'"':'Sin participantes en esta lista')+'</div></div>';return}
 
   // Summary
   var totalPag=parts.filter(function(p){return pagos[p.id]===true}).length;
@@ -1542,24 +1551,21 @@ function setPago(id,val){
   var p=parts.find(function(x){return x.id===id});
   var nombre=p?p.apellido+' '+p.nombre:'Jugador';
   if(val){
-    // Add income
     balIngresos.push({desc:'Inscripción: '+nombre,monto:INSCRIPCION,fecha:todayStr,tipo:'inscripcion',pid:id});
-    db.ref('balIngresos').set(balIngresos);
   }else{
-    // Remove matching income
     balIngresos=balIngresos.filter(function(x){return!(x.pid===id&&x.tipo==='inscripcion')});
-    db.ref('balIngresos').set(balIngresos);
   }
+  db.ref('balIngresos').set(balIngresos);
   rPagos();
   toast(val?nombre+' — Pagó $'+INSCRIPCION.toLocaleString():nombre+' — Pago eliminado');
 }
 
-// Override updFab is already defined above with admin check
-
 // ═══ INIT ═══
 function initApp(){
-  rCal();rUp();rCTabs();rStatsDash();rAnuncio();updFab();updAdmUI();
-  document.getElementById('app').style.opacity='1';
+  refresh();
+  rStatsDash();
+  rAnuncio();
+  updAdmUI();
 }
 </script>
 </body>
