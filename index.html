@@ -1189,8 +1189,20 @@ function delBal(tipo,idx){
 // ═══ ADMIN ═══
 var isAdmin=sessionStorage.getItem('atr_admin')==='1';
 var curUser=JSON.parse(sessionStorage.getItem('atr_user')||'null');
+if(!isAdmin&&curUser&&curUser.admin===true)isAdmin=true;
 var usuarios=[];
-db.ref('usuarios').on('value',function(s){usuarios=s.val()||[]});
+db.ref('usuarios').on('value',function(s){
+  usuarios=s.val()||[];
+  // Sincronizar rol admin del usuario logueado (alta/baja en vivo)
+  if(curUser&&sessionStorage.getItem('atr_admin')!=='1'){
+    var fu=usuarios.find(function(u){return u.uid===curUser.uid});
+    if(fu){
+      curUser=fu;sessionStorage.setItem('atr_user',JSON.stringify(fu));
+      var nowAdm=fu.admin===true;
+      if(nowAdm!==isAdmin){isAdmin=nowAdm;if(typeof updAdmUI==='function')updAdmUI()}
+    }
+  }
+});
 db.ref('usuarios').once('value',function(s){usuarios=s.val()||[]});
 
 // ═══ USER REGISTRATION & LOGIN ═══
@@ -1229,10 +1241,12 @@ function loginUser(){
   var user=usuarios.find(function(u){return u.email===email&&u.pass===pass});
   if(!user){errEl.textContent='Email o contraseña incorrectos';errEl.style.display='block';return}
   curUser=user;sessionStorage.setItem('atr_user',JSON.stringify(user));
-  showCuentaLogged();updAdmUI();toast('Sesión iniciada — '+user.nombre);
+  if(user.admin===true)isAdmin=true;
+  showCuentaLogged();updAdmUI();toast('Sesión iniciada — '+user.nombre+(user.admin===true?' 👑':''));
 }
 function logoutUser(){
   curUser=null;sessionStorage.removeItem('atr_user');
+  if(sessionStorage.getItem('atr_admin')!=='1')isAdmin=false;
   document.getElementById('authForms').style.display='block';
   document.getElementById('profilePanel').style.display='none';
   document.getElementById('loginTitle').textContent='Iniciar Sesión';
@@ -1246,7 +1260,7 @@ function showCuentaLogged(){
   var catEl=document.getElementById('profCat');
   if(catEl)catEl.innerHTML='<span class="lb l-'+CS[curUser.cat]+'" style="font-size:.7rem">'+CL[curUser.cat]+(curUser.grupo?' — Grupo '+curUser.grupo:'')+'</span>';
   var roleEl=document.getElementById('profRole');
-  if(roleEl)roleEl.textContent='Jugador';
+  if(roleEl)roleEl.textContent=curUser.admin===true?'👑 Administrador':'Jugador';
   // QR
   var qrEl=document.getElementById('profQR');qrEl.innerHTML='';
   var qrData='ATR2026-'+curUser.uid+'-'+curUser.pid;
@@ -1285,7 +1299,10 @@ function rUsers(){
   if(!usuarios.length){el.innerHTML='<div class="es"><div class="es-i">🗂️</div><div class="es-t">Sin usuarios registrados</div></div>';return}
   var sorted=usuarios.slice().sort(function(a,b){return(a.nombre||'').localeCompare(b.nombre||'')});
   var html='';sorted.forEach(function(u){
-    html+='<div class="pc" style="flex-wrap:wrap"><div class="pav">'+(u.nombre?u.nombre[0]:'?')+'</div><div style="flex:1;min-width:0"><div class="pnm">'+u.nombre+'</div><div style="font-size:.65rem;color:var(--tm)">'+u.email+'</div><div style="font-size:.6rem;color:var(--tm);font-family:Space Mono,monospace;margin-top:2px">Pass: '+u.pass+'</div></div><div style="display:flex;gap:4px"><button class="adm-edit" onclick="editUserPass(\''+u.uid+'\')" style="width:28px;height:28px;font-size:.7rem">✎</button><button class="adm-del" onclick="delUser(\''+u.uid+'\')" style="width:28px;height:28px;font-size:.7rem">✕</button></div></div>';
+    var adm=u.admin===true;
+    var admBadge=adm?' <span style="padding:2px 8px;border-radius:5px;font-size:.55rem;font-weight:800;background:rgba(212,160,23,.15);color:var(--oro);letter-spacing:.5px;vertical-align:middle">👑 ADMIN</span>':'';
+    var admStyle=adm?'background:rgba(212,160,23,.2);border:1px solid var(--oro)':'background:transparent;border:1px solid var(--brd);filter:grayscale(1);opacity:.5';
+    html+='<div class="pc" style="flex-wrap:wrap"><div class="pav">'+(u.nombre?u.nombre[0]:'?')+'</div><div style="flex:1;min-width:0"><div class="pnm">'+u.nombre+admBadge+'</div><div style="font-size:.65rem;color:var(--tm)">'+u.email+'</div><div style="font-size:.6rem;color:var(--tm);font-family:Space Mono,monospace;margin-top:2px">Pass: '+u.pass+'</div></div><div style="display:flex;gap:4px"><button onclick="toggleUserAdmin(\''+u.uid+'\')" title="'+(adm?'Quitar admin':'Hacer admin')+'" style="width:28px;height:28px;border-radius:8px;cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;transition:.2s;'+admStyle+'">👑</button><button class="adm-edit" onclick="editUserPass(\''+u.uid+'\')" style="width:28px;height:28px;font-size:.7rem">✎</button><button class="adm-del" onclick="delUser(\''+u.uid+'\')" style="width:28px;height:28px;font-size:.7rem">✕</button></div></div>';
   });
   el.innerHTML=html;
 }
@@ -1298,6 +1315,15 @@ function delUser(uid){
   if(!confirm('Eliminar esta cuenta?'))return;
   usuarios=usuarios.filter(function(u){return u.uid!==uid});
   db.ref('usuarios').set(usuarios);rUsers();toast('Cuenta eliminada');
+}
+function toggleUserAdmin(uid){
+  var u=usuarios.find(function(x){return x.uid===uid});if(!u)return;
+  var val=u.admin!==true;
+  if(!confirm(val?'¿Dar permisos de ADMINISTRADOR a '+u.nombre+'?\n\nPodrá cargar partidos, marcar pagos, entregas y más.':'¿Quitar permisos de administrador a '+u.nombre+'?'))return;
+  u.admin=val;
+  db.ref('usuarios').set(usuarios);
+  rUsers();
+  toast(val?'👑 '+u.nombre+' ahora es administrador':u.nombre+' ya no es administrador');
 }
 function updAdmUI(){
   document.querySelectorAll('.pdl').forEach(function(b){b.style.display=isAdmin?'flex':'none'});
@@ -1338,7 +1364,7 @@ function doLogin(){
   }else{document.getElementById('admErr').style.display='block'}
 }
 function doLogout(){
-  isAdmin=false;sessionStorage.removeItem('atr_admin');
+  isAdmin=(curUser&&curUser.admin===true);sessionStorage.removeItem('atr_admin');
   document.getElementById('admLogin').style.display='block';
   document.getElementById('admPanel').style.display='none';
   document.getElementById('admTitle').textContent='Iniciar Sesión';
