@@ -11,6 +11,7 @@
 <title>Tenis ATR 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
 <style>
 :root{--bg:#f5f0e6;--card:#ffffff;--card-h:#ede8de;--acc:#722F37;--acc-d:rgba(114,47,55,.12);--acc-g:rgba(114,47,55,.25);--t1:#2d1f1f;--t2:#6b5c5c;--tm:#9a8a8a;--brd:rgba(114,47,55,.1);--r:16px;--rs:10px;--nav-h:72px;--sig:#a855f7;--oro:#d4a017;--pla:#8a8a8a;--bro:#c47a20;--mad:#7a5a30;--muj:#d44a7a;--hdr-bg:rgba(245,240,230,.92);--nav-bg:rgba(245,240,230,.95);--mdl-bg:#f5f0e6;--input-bg:#fff;--tbl-hdr:#ede8de;--win-bg:rgba(22,163,74,.12);--win-c:#16a34a;--loss-bg:rgba(220,38,38,.08);--loss-c:#dc2626}
 body.dark{--bg:#0d0d0d;--card:#1a1a1a;--card-h:#252525;--acc:#c4575f;--acc-d:rgba(196,87,95,.15);--acc-g:rgba(196,87,95,.25);--t1:#e8e0e0;--t2:#9a8a8a;--tm:#6b5c5c;--brd:rgba(255,255,255,.08);--hdr-bg:rgba(13,13,13,.92);--nav-bg:rgba(13,13,13,.95);--mdl-bg:#1a1a1a;--input-bg:#111;--tbl-hdr:#1a1a1a;--win-bg:rgba(22,163,74,.15);--win-c:#4ade80;--loss-bg:rgba(220,38,38,.12);--loss-c:#f87171}
@@ -331,6 +332,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
   <!-- Entrada (admin) -->
   <div id="sub-entrada" style="display:none">
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Entradas</span></div>
+    <button class="fb" onclick="openScanner()" style="margin-bottom:16px">📷 Escanear QR de entrada</button>
     <div class="slbl">Estado de Entradas</div>
     <div id="entList"></div>
   </div>
@@ -476,6 +478,21 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
   <div class="fr"><select class="fs" id="epG"><option value="">Grupo...</option><option value="A">Grupo A</option><option value="B">Grupo B</option><option value="C">Grupo C</option><option value="D">Grupo D</option></select></div>
   <button class="fb" onclick="saveEditP()">Guardar Cambios</button>
 </div></div>
+
+<!-- Escáner QR (admin) -->
+<div class="mbg" id="scanBg" style="align-items:center" onclick="if(event.target===this)closeScanner()">
+  <div style="width:100%;max-width:420px;padding:16px">
+    <div style="background:var(--mdl-bg);border-radius:var(--r);overflow:hidden;border:1px solid var(--brd)">
+      <div class="mh" style="padding:16px 18px 0;margin-bottom:12px"><span class="mt">📷 Escanear Entrada</span><button class="mx" onclick="closeScanner()">✕</button></div>
+      <div style="position:relative;background:#000;min-height:200px">
+        <video id="scanVid" playsinline muted style="width:100%;display:block;max-height:55vh;object-fit:cover"></video>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"><div style="width:60%;aspect-ratio:1;border:3px solid rgba(255,255,255,.7);border-radius:16px;box-shadow:0 0 0 999px rgba(0,0,0,.35)"></div></div>
+      </div>
+      <div id="scanResult" style="padding:16px 18px 20px"></div>
+    </div>
+  </div>
+</div>
+<canvas id="scanCv" style="display:none"></canvas>
 
 <nav class="bnav"><div class="nits">
   <button class="ni" onclick="nav('cuadros')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="nl">Cuadros</span></button>
@@ -1291,6 +1308,69 @@ function rEntradas(){
 function toggleQR(uid,val){
   var u=usuarios.find(function(x){return x.uid===uid});
   if(u){u.qrUsed=val;db.ref('usuarios').set(usuarios);rEntradas();toast(val?'Entrada marcada como usada':'Entrada reactivada')}
+}
+
+// ═══ ESCÁNER QR (admin) ═══
+var scanStream=null,scanActive=false,scanLock=false;
+function openScanner(){
+  if(typeof jsQR==='undefined'){toast('Escáner no disponible — revisá tu conexión');return}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){toast('Este navegador no soporta cámara');return}
+  document.getElementById('scanBg').classList.add('show');
+  rescan();
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(function(st){
+    scanStream=st;
+    var v=document.getElementById('scanVid');
+    v.srcObject=st;v.play();
+    scanActive=true;requestAnimationFrame(scanLoop);
+  }).catch(function(){
+    document.getElementById('scanResult').innerHTML='<div style="text-align:center;color:#f87171;font-size:.82rem;font-weight:600">No se pudo acceder a la cámara.<br>Revisá los permisos del navegador.</div>';
+  });
+}
+function closeScanner(){
+  scanActive=false;
+  if(scanStream){scanStream.getTracks().forEach(function(t){t.stop()});scanStream=null}
+  var v=document.getElementById('scanVid');v.srcObject=null;
+  document.getElementById('scanBg').classList.remove('show');
+}
+function rescan(){
+  document.getElementById('scanResult').innerHTML='<div style="text-align:center;color:var(--tm);font-size:.82rem">Apuntá la cámara al código QR del jugador…</div>';
+  scanLock=false;
+}
+function scanLoop(){
+  if(!scanActive)return;
+  var v=document.getElementById('scanVid');
+  if(v.readyState===v.HAVE_ENOUGH_DATA&&!scanLock){
+    var cv=document.getElementById('scanCv');
+    cv.width=v.videoWidth;cv.height=v.videoHeight;
+    var ctx=cv.getContext('2d',{willReadFrequently:true});
+    ctx.drawImage(v,0,0,cv.width,cv.height);
+    var img=ctx.getImageData(0,0,cv.width,cv.height);
+    var code=jsQR(img.data,img.width,img.height,{inversionAttempts:'dontInvert'});
+    if(code&&code.data)handleScan(code.data);
+  }
+  requestAnimationFrame(scanLoop);
+}
+function handleScan(data){
+  scanLock=true;
+  if(data.indexOf('ATR2026-')!==0){showScanRes('err','✕ QR no válido','Este código no pertenece al torneo');return}
+  var rest=data.slice(8);
+  var u=usuarios.find(function(x){return x.uid+'-'+x.pid===rest});
+  if(!u){showScanRes('err','✕ Entrada no encontrada','No corresponde a ningún usuario registrado');return}
+  if(u.qrUsed===true){
+    if(navigator.vibrate)navigator.vibrate([100,50,100]);
+    showScanRes('warn','⚠ ENTRADA YA UTILIZADA',u.nombre+' — '+CL[u.cat],u);
+  }else{
+    u.qrUsed=true;db.ref('usuarios').set(usuarios);rEntradas();
+    if(navigator.vibrate)navigator.vibrate(80);
+    showScanRes('ok','✓ ENTRADA VÁLIDA — Registrada',u.nombre+' — '+CL[u.cat],u);
+  }
+}
+function showScanRes(type,title,sub,u){
+  var c={ok:['rgba(22,163,74,.12)','#16a34a'],warn:['rgba(245,158,11,.12)','#d97706'],err:['rgba(239,68,68,.12)','#ef4444']}[type];
+  var html='<div style="background:'+c[0]+';border:1.5px solid '+c[1]+';border-radius:12px;padding:14px;text-align:center"><div style="font-weight:800;color:'+c[1]+';font-size:.95rem">'+title+'</div>'+(sub?'<div style="font-size:.85rem;margin-top:4px;font-weight:600">'+sub+'</div>':'')+'</div>';
+  if(u)html+='<button onclick="toggleQR(\''+u.uid+'\',false);rescan()" style="width:100%;margin-top:10px;padding:10px;border-radius:10px;border:1px solid var(--brd);background:transparent;color:var(--t2);font-family:Outfit,sans-serif;font-size:.8rem;font-weight:600;cursor:pointer">↩ '+(type==='ok'?'Deshacer registro':'Reactivar entrada')+'</button>';
+  html+='<button class="fb" onclick="rescan()" style="margin-top:10px">📷 Escanear otro</button>';
+  document.getElementById('scanResult').innerHTML=html;
 }
 
 // ═══ USUARIOS (admin: ver cuentas) ═══
