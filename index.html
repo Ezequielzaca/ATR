@@ -275,6 +275,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
   <div class="slbl">Más</div>
   <div id="masMain">
     <div class="mi" onclick="subPg('login')"><div class="mic" style="background:linear-gradient(135deg,#722F37,#5a1f27)">🔐</div><div><div class="mit" id="loginBtnTxt">Iniciar Sesión</div><div class="mid" id="loginBtnSub">Jugadores y administrador</div></div></div>
+    <div class="mi" id="miEntradaBtn" style="display:none" onclick="subPg('mientrada')"><div class="mic" style="background:linear-gradient(135deg,#722F37,#5a1f27)">🎟️</div><div><div class="mit">Mi Entrada</div><div class="mid">Tu QR de acceso al torneo</div></div></div>
     <div class="mi" onclick="subPg('part')"><div class="mic pa">👤</div><div><div class="mit">Participantes</div><div class="mid">Ver jugadores del torneo</div></div></div>
     <div class="mi" onclick="subPg('spo')"><div class="mic sp">⭐</div><div><div class="mit">Sponsors</div><div class="mid">Marcas del torneo</div></div></div>
     <div class="mi" onclick="subPg('info')"><div class="mic" style="background:linear-gradient(135deg,#0ea5e9,#0369a1)">📋</div><div><div class="mit">Información</div><div class="mid">Reglamento, premios y sede</div></div></div>
@@ -312,21 +313,32 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <!-- Logged in profile -->
     <div id="profilePanel" style="display:none">
       <div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--r);overflow:hidden;text-align:center;margin-bottom:16px">
-        <div style="padding:24px 20px 16px;background:linear-gradient(135deg,#722F37,#943d47)">
+        <div style="padding:24px 20px;background:linear-gradient(135deg,#722F37,#943d47)">
           <div style="font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.7);margin-bottom:4px">Tenis ATR 2026</div>
           <div id="profNombre" style="font-size:1.3rem;font-weight:800;color:#fff"></div>
           <div id="profCat" style="margin-top:6px"></div>
           <div id="profRole" style="margin-top:4px;font-size:.65rem;color:rgba(255,255,255,.6)"></div>
         </div>
-        <!-- QR for players -->
-        <div id="profQRSection" style="padding:24px;background:var(--card)">
-          <div style="font-size:.7rem;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Tu Entrada QR</div>
-          <div id="profQR" style="display:inline-block;padding:12px;background:#fff;border-radius:12px"></div>
-          <div id="profQRStatus" style="margin-top:10px"></div>
-        </div>
       </div>
       <button class="fb" onclick="nav('resultados')" style="margin-bottom:8px">Cargar mis Resultados</button>
+      <button onclick="subPg('mientrada')" style="width:100%;padding:10px;border-radius:var(--rs);border:1px solid var(--brd);background:var(--card);color:var(--acc);font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;margin-bottom:8px">🎟️ Ver mi Entrada QR</button>
       <button onclick="logoutUser()" style="width:100%;padding:10px;border-radius:var(--rs);border:1px solid var(--brd);background:var(--card);color:var(--tm);font-family:'Outfit',sans-serif;font-size:.8rem;cursor:pointer">Cerrar Sesión</button>
+    </div>
+  </div>
+  <!-- Mi Entrada (jugadores logueados) -->
+  <div id="sub-mientrada" style="display:none">
+    <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Mi Entrada</span></div>
+    <div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--r);overflow:hidden;text-align:center">
+      <div style="padding:24px 20px 16px;background:linear-gradient(135deg,#722F37,#943d47)">
+        <div style="font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.7);margin-bottom:4px">Tenis ATR 2026</div>
+        <div id="entNombre2" style="font-size:1.3rem;font-weight:800;color:#fff"></div>
+        <div id="entCat2" style="margin-top:6px"></div>
+      </div>
+      <div style="padding:24px;background:var(--card)">
+        <div style="font-size:.7rem;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Mostrá este QR en el ingreso</div>
+        <div id="miEntradaQR" style="display:inline-block;padding:12px;background:#fff;border-radius:12px"></div>
+        <div id="miEntradaStatus" style="margin-top:14px"></div>
+      </div>
     </div>
   </div>
   <!-- Entrada (admin) -->
@@ -1265,7 +1277,8 @@ function regUser(){
   usuarios.push(user);
   db.ref('usuarios').set(usuarios);
   curUser=user;sessionStorage.setItem('atr_user',JSON.stringify(user));
-  showCuentaLogged();updAdmUI();toast('Cuenta creada — Bienvenido!');
+  updAdmUI();toast('Cuenta creada — Bienvenido!');
+  nav('inicio');
 }
 function loginUser(){
   var email=document.getElementById('logEmail').value.trim(),pass=document.getElementById('logPass').value;
@@ -1275,7 +1288,8 @@ function loginUser(){
   if(!user){errEl.textContent='Email o contraseña incorrectos';errEl.style.display='block';return}
   curUser=user;sessionStorage.setItem('atr_user',JSON.stringify(user));
   if(user.admin===true)isAdmin=true;
-  showCuentaLogged();updAdmUI();toast('Sesión iniciada — '+user.nombre+(user.admin===true?' 👑':''));
+  updAdmUI();toast('Sesión iniciada — '+user.nombre+(user.admin===true?' 👑':''));
+  nav('inicio');
 }
 function logoutUser(){
   curUser=null;sessionStorage.removeItem('atr_user');
@@ -1294,11 +1308,15 @@ function showCuentaLogged(){
   if(catEl)catEl.innerHTML='<span class="lb l-'+CS[curUser.cat]+'" style="font-size:.7rem">'+CL[curUser.cat]+(curUser.grupo?' — Grupo '+curUser.grupo:'')+'</span>';
   var roleEl=document.getElementById('profRole');
   if(roleEl)roleEl.textContent=curUser.admin===true?'👑 Administrador':'Jugador';
-  // QR
-  var qrEl=document.getElementById('profQR');qrEl.innerHTML='';
+}
+function rMiEntrada(){
+  if(!curUser)return;
+  document.getElementById('entNombre2').textContent=curUser.nombre;
+  document.getElementById('entCat2').innerHTML='<span class="lb l-'+CS[curUser.cat]+'" style="font-size:.7rem">'+CL[curUser.cat]+(curUser.grupo?' — Grupo '+curUser.grupo:'')+'</span>';
+  var qrEl=document.getElementById('miEntradaQR');qrEl.innerHTML='';
   var qrData='ATR2026-'+curUser.uid+'-'+curUser.pid;
   try{new QRCode(qrEl,{text:qrData,width:180,height:180,colorDark:'#722F37',colorLight:'#ffffff'})}catch(e){qrEl.textContent='Error QR'}
-  var stEl=document.getElementById('profQRStatus');
+  var stEl=document.getElementById('miEntradaStatus');
   var freshUser=usuarios.find(function(u){return u.uid===curUser.uid});
   var used=freshUser?freshUser.qrUsed:curUser.qrUsed;
   if(used){
@@ -1440,6 +1458,8 @@ function updAdmUI(){
   if(usrBtn)usrBtn.style.display=isAdmin?'flex':'none';
   var admMBtn=document.getElementById('admMenuBtn');
   if(admMBtn)admMBtn.style.display=isAdmin?'flex':'none';
+  var miEntBtn=document.getElementById('miEntradaBtn');
+  if(miEntBtn)miEntBtn.style.display=curUser?'flex':'none';
   // Update login button text
   var cBtn=document.getElementById('loginBtnTxt'),cSub=document.getElementById('loginBtnSub');
   if(cBtn&&curUser){cBtn.textContent=curUser.nombre;cSub.textContent='Sesión activa — '+CL[curUser.cat]}
@@ -1521,6 +1541,7 @@ subPg=function(s){
   if(s==='balance'){balView='ingresos';rBalance()}
   if(s==='entrada')rEntradas();
   if(s==='users')rUsers();
+  if(s==='mientrada')rMiEntrada();
   if(s==='login'){
     if(curUser){showCuentaLogged()}
     else{
