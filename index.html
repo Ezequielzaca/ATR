@@ -134,7 +134,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 .fb:hover{transform:translateY(-1px);box-shadow:0 4px 16px var(--acc-g)}
 
 /* FAB */
-.fab{position:fixed;bottom:calc(var(--nav-h)+16px);right:16px;width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#722F37,#5a1f27);border:0;color:#fff;font-size:1.5rem;font-weight:700;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 4px 20px var(--acc-g);z-index:150;transition:.3s}
+.fab{position:fixed;bottom:calc(var(--nav-h)+16px);right:max(16px,calc(50vw - 234px));width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#722F37,#5a1f27);border:0;color:#fff;font-size:1.5rem;font-weight:700;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 4px 20px var(--acc-g);z-index:150;transition:.3s}
 .fab:hover{transform:scale(1.1)}.fab.show{display:flex}
 
 /* Modal */
@@ -460,7 +460,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 <!-- Modal: Schedule -->
 <div class="mbg" id="mSch" onclick="if(event.target===this)clMod('mSch')"><div class="mdl">
   <div class="mh"><span class="mt">Programar Partido</span><button class="mx" onclick="clMod('mSch')">✕</button></div>
-  <div class="fr"><select class="fs" id="sCat" onchange="sPickCat()"><option value="">Categoría...</option></select></div>
+  <div class="fr"><select class="fs" id="sCat" onchange="sPickCat()"><option value="">Categoría...</option></select><select class="fs" id="sGrp" onchange="sPickGrp()"><option value="">Grupo...</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
   <div class="fr"><select class="fs" id="sP1"><option value="">J1...</option></select><span style="color:var(--tm);align-self:center;font-weight:700">VS</span><select class="fs" id="sP2"><option value="">J2...</option></select></div>
   <div class="fr"><input type="date" class="fi" id="sDt"/><input type="time" class="fi" id="sTm"/></div>
   <div class="fr"><select class="fs" id="sCo"><option value="">Cancha...</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option></select></div>
@@ -1029,20 +1029,28 @@ function openResFromMatch(idx){
 }
 function openSchMod(){
   document.getElementById('mSch').classList.add('show');fillCatSel(document.getElementById('sCat'));
+  document.getElementById('sGrp').value='';
   document.getElementById('sP1').innerHTML='<option value="">J1...</option>';document.getElementById('sP2').innerHTML='<option value="">J2...</option>';
   document.getElementById('sDt').value=todayStr;document.getElementById('sTm').value='';document.getElementById('sCo').value='';
   // Pre-fill for logged-in player
   if(curUser&&!isAdmin){
     document.getElementById('sCat').value=curUser.cat;
-    sPickCat();
-    document.getElementById('sP1').value=curUser.pid;
+    if(curUser.grupo){
+      document.getElementById('sGrp').value=curUser.grupo;
+      fillPlByGrp(curUser.cat,curUser.grupo,document.getElementById('sP1'),document.getElementById('sP2'));
+      document.getElementById('sP1').value=curUser.pid;
+    }
   }
 }
 function sPickCat(){
-  var cat=document.getElementById('sCat').value;
-  var pl=parts.filter(function(p){return p.cat===cat}).sort(function(a,b){return a.apellido.localeCompare(b.apellido)});
-  var o='<option value="">Jugador...</option>';pl.forEach(function(p){o+='<option value="'+p.id+'">'+p.apellido+' '+p.nombre+'</option>'});
-  document.getElementById('sP1').innerHTML=o;document.getElementById('sP2').innerHTML=o;
+  document.getElementById('sGrp').value='';
+  document.getElementById('sP1').innerHTML='<option value="">J1...</option>';
+  document.getElementById('sP2').innerHTML='<option value="">J2...</option>';
+}
+function sPickGrp(){
+  var cat=document.getElementById('sCat').value,grp=document.getElementById('sGrp').value;
+  if(cat&&grp)fillPlByGrp(cat,grp,document.getElementById('sP1'),document.getElementById('sP2'));
+  else{document.getElementById('sP1').innerHTML='<option value="">J1...</option>';document.getElementById('sP2').innerHTML='<option value="">J2...</option>'}
 }
 function saveSch(){
   var cat=document.getElementById('sCat').value,p1id=document.getElementById('sP1').value,p2id=document.getElementById('sP2').value;
