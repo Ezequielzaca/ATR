@@ -965,6 +965,7 @@ function fillPlByCat(cat,s1,s2){
   s1.innerHTML=o;s2.innerHTML=o;
 }
 function openResMod(){
+  window._schedMatchToRemove=null;
   document.getElementById('mRes').classList.add('show');
   fillCatSel(document.getElementById('rCat'));
   document.getElementById('rFase').value='grupos';
@@ -1017,11 +1018,21 @@ function saveRes(){
   var p1=parts.find(function(p){return p.id===p1id}),p2=parts.find(function(p){return p.id===p2id});
   var grp=fase==='grupos'?document.getElementById('rGrp').value:'';
   results.push({fecha:fecha,cat:cat,grupo:grp,fase:fase,p1id:p1id,p2id:p2id,p1:p1.apellido+' '+p1.nombre,p2:p2.apellido+' '+p2.nombre,score:score,winner:winner});
-  db.ref('resultados').set(results);clMod('mRes');rRes();toast('Resultado guardado'+(fase!=='grupos'?' — '+FASE_L[fase]:''));
+  db.ref('resultados').set(results);
+  // Si el resultado viene de un partido programado, lo sacamos de Próximos Partidos
+  if(window._schedMatchToRemove){
+    var rm=window._schedMatchToRemove;
+    schedule=schedule.filter(function(s){return!(s.p1id===rm.p1id&&s.p2id===rm.p2id&&s.date===rm.date&&s.time===rm.time&&s.court===rm.court&&s.cat===rm.cat)});
+    db.ref('programacion').set(schedule);
+    window._schedMatchToRemove=null;
+    rCal();rUp();
+  }
+  clMod('mRes');rRes();toast('Resultado guardado'+(fase!=='grupos'?' — '+FASE_L[fase]:''));
 }
 // Quick result from upcoming match
 function openResFromMatch(idx){
   var m=window._upMatches[idx];if(!m)return;
+  window._schedMatchToRemove={p1id:m.p1id,p2id:m.p2id,date:m.date,time:m.time,court:m.court,cat:m.cat};
   document.getElementById('mRes').classList.add('show');
   fillCatSel(document.getElementById('rCat'));
   document.getElementById('rFase').value='grupos';
