@@ -450,7 +450,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
   <div class="mh"><span class="mt">Cargar Resultado</span><button class="mx" onclick="clMod('mRes')">✕</button></div>
   <div class="fr"><select class="fs" id="rCat" onchange="rPickCat()"><option value="">Categoría...</option></select><select class="fs" id="rFase" onchange="rPickFase()"><option value="grupos">Fase: Grupos</option><option value="cuartos">Cuartos de Final</option><option value="semis">Semifinal</option><option value="final">Final</option></select></div>
   <div class="fr" id="rGrpRow"><select class="fs" id="rGrp" onchange="rPickGrp()"><option value="">Grupo...</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
-  <div class="fr"><select class="fs" id="rP1"><option value="">J1...</option></select><span style="color:var(--tm);align-self:center;font-weight:700">VS</span><select class="fs" id="rP2"><option value="">J2...</option></select></div>
+  <div class="fr"><select class="fs" id="rP1" onchange="syncOpp('rP1','rP2')"><option value="">J1...</option></select><span style="color:var(--tm);align-self:center;font-weight:700">VS</span><select class="fs" id="rP2"><option value="">J2...</option></select></div>
   <div class="fr"><input class="fi" id="rSc" placeholder="Score (ej: 6-3 6-4)"/></div>
   <div class="fr"><select class="fs" id="rW"><option value="">Ganador...</option><option value="1">Jugador 1</option><option value="2">Jugador 2</option></select></div>
   <div class="fr"><input type="date" class="fi" id="rDt"/></div>
@@ -461,7 +461,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 <div class="mbg" id="mSch" onclick="if(event.target===this)clMod('mSch')"><div class="mdl">
   <div class="mh"><span class="mt">Programar Partido</span><button class="mx" onclick="clMod('mSch')">✕</button></div>
   <div class="fr"><select class="fs" id="sCat" onchange="sPickCat()"><option value="">Categoría...</option></select><select class="fs" id="sGrp" onchange="sPickGrp()"><option value="">Grupo...</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
-  <div class="fr"><select class="fs" id="sP1"><option value="">J1...</option></select><span style="color:var(--tm);align-self:center;font-weight:700">VS</span><select class="fs" id="sP2"><option value="">J2...</option></select></div>
+  <div class="fr"><select class="fs" id="sP1" onchange="syncOpp('sP1','sP2')"><option value="">J1...</option></select><span style="color:var(--tm);align-self:center;font-weight:700">VS</span><select class="fs" id="sP2"><option value="">J2...</option></select></div>
   <div class="fr"><input type="date" class="fi" id="sDt"/><input type="time" class="fi" id="sTm"/></div>
   <div class="fr"><select class="fs" id="sCo"><option value="">Cancha...</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option></select></div>
   <button class="fb" onclick="saveSch()">Programar</button>
@@ -946,6 +946,14 @@ function rRes(){
 // ═══ MODALS ═══
 function clMod(id){document.getElementById(id).classList.remove('show')}
 function fillCatSel(sel){sel.innerHTML='<option value="">Categoría...</option>';CATS.forEach(function(c){if(parts.some(function(p){return p.cat===c}))sel.innerHTML+='<option value="'+c+'">'+CL[c]+'</option>'})}
+function syncOpp(s1Id,s2Id){
+  var s1=document.getElementById(s1Id),s2=document.getElementById(s2Id);
+  var val=s1.value;
+  Array.prototype.forEach.call(s2.options,function(opt){
+    if(opt.value){var hide=opt.value===val;opt.hidden=hide;opt.disabled=hide}
+  });
+  if(s2.value===val)s2.value='';
+}
 function fillPlByGrp(cat,grp,s1,s2){
   var pl=parts.filter(function(p){return p.cat===cat&&p.grupo===grp}).sort(function(a,b){return a.apellido.localeCompare(b.apellido)});
   var o='<option value="">Jugador...</option>';pl.forEach(function(p){o+='<option value="'+p.id+'">'+p.apellido+' '+p.nombre+'</option>'});
@@ -968,7 +976,7 @@ function openResMod(){
   // Pre-fill for logged-in player
   if(curUser&&!isAdmin){
     document.getElementById('rCat').value=curUser.cat;
-    if(curUser.grupo){document.getElementById('rGrp').value=curUser.grupo;fillPlByGrp(curUser.cat,curUser.grupo,document.getElementById('rP1'),document.getElementById('rP2'));document.getElementById('rP1').value=curUser.pid}
+    if(curUser.grupo){document.getElementById('rGrp').value=curUser.grupo;fillPlByGrp(curUser.cat,curUser.grupo,document.getElementById('rP1'),document.getElementById('rP2'));document.getElementById('rP1').value=curUser.pid;syncOpp('rP1','rP2')}
   }
 }
 function rPickFase(){
@@ -1025,6 +1033,7 @@ function openResFromMatch(idx){
   document.getElementById('rGrp').value=grp;
   if(grp)fillPlByGrp(m.cat,grp,document.getElementById('rP1'),document.getElementById('rP2'));
   document.getElementById('rP1').value=m.p1id;document.getElementById('rP2').value=m.p2id;
+  syncOpp('rP1','rP2');
   document.getElementById('rSc').value='';document.getElementById('rW').value='';document.getElementById('rDt').value=m.date;
 }
 function openSchMod(){
@@ -1039,6 +1048,7 @@ function openSchMod(){
       document.getElementById('sGrp').value=curUser.grupo;
       fillPlByGrp(curUser.cat,curUser.grupo,document.getElementById('sP1'),document.getElementById('sP2'));
       document.getElementById('sP1').value=curUser.pid;
+      syncOpp('sP1','sP2');
     }
   }
 }
