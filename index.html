@@ -1247,8 +1247,8 @@ function delBal(tipo,idx){
 }
 
 // ═══ ADMIN ═══
-var isAdmin=sessionStorage.getItem('atr_admin')==='1';
-var curUser=JSON.parse(sessionStorage.getItem('atr_user')||'null');
+var isAdmin=localStorage.getItem('atr_admin')==='1';
+var curUser=JSON.parse(localStorage.getItem('atr_user')||'null');
 if(!isAdmin&&curUser&&curUser.admin===true)isAdmin=true;
 var usuarios=[];
 db.ref('usuarios').on('value',function(s){
@@ -1261,10 +1261,10 @@ db.ref('usuarios').on('value',function(s){
   var se=document.getElementById('sub-entrada');
   if(se&&se.style.display!=='none'&&typeof rEntradas==='function')rEntradas();
   // Sincronizar rol admin del usuario logueado (alta/baja en vivo)
-  if(curUser&&sessionStorage.getItem('atr_admin')!=='1'){
+  if(curUser&&localStorage.getItem('atr_admin')!=='1'){
     var fu=usuarios.find(function(u){return u.uid===curUser.uid});
     if(fu){
-      curUser=fu;sessionStorage.setItem('atr_user',JSON.stringify(fu));
+      curUser=fu;localStorage.setItem('atr_user',JSON.stringify(fu));
       var nowAdm=fu.admin===true;
       if(nowAdm!==isAdmin){isAdmin=nowAdm;if(typeof updAdmUI==='function')updAdmUI()}
     }
@@ -1297,7 +1297,7 @@ function regUser(){
   var user={uid:uid,pid:pid,nombre:p.apellido+' '+p.nombre,cat:p.cat,grupo:p.grupo||'',email:email,pass:pass,qrUsed:false};
   usuarios.push(user);
   db.ref('usuarios').set(usuarios);
-  curUser=user;sessionStorage.setItem('atr_user',JSON.stringify(user));
+  curUser=user;localStorage.setItem('atr_user',JSON.stringify(user));
   updAdmUI();toast('Cuenta creada — Bienvenido!');
   nav('inicio');
 }
@@ -1307,14 +1307,14 @@ function loginUser(){
   if(!email||!pass){errEl.textContent='Completá email y contraseña';errEl.style.display='block';return}
   var user=usuarios.find(function(u){return u.email===email&&u.pass===pass});
   if(!user){errEl.textContent='Email o contraseña incorrectos';errEl.style.display='block';return}
-  curUser=user;sessionStorage.setItem('atr_user',JSON.stringify(user));
+  curUser=user;localStorage.setItem('atr_user',JSON.stringify(user));
   if(user.admin===true)isAdmin=true;
   updAdmUI();toast('Sesión iniciada — '+user.nombre+(user.admin===true?' 👑':''));
   nav('inicio');
 }
 function logoutUser(){
-  curUser=null;sessionStorage.removeItem('atr_user');
-  if(sessionStorage.getItem('atr_admin')!=='1')isAdmin=false;
+  curUser=null;localStorage.removeItem('atr_user');
+  if(localStorage.getItem('atr_admin')!=='1')isAdmin=false;
   document.getElementById('authForms').style.display='block';
   document.getElementById('profilePanel').style.display='none';
   document.getElementById('loginTitle').textContent='Iniciar Sesión';
@@ -1494,7 +1494,7 @@ function updAdmUI(){
 function doLogin(){
   var u=document.getElementById('admUser').value.trim(),p=document.getElementById('admPass').value;
   if(u==='ATR2026'&&p==='2026atrctes'){
-    isAdmin=true;sessionStorage.setItem('atr_admin','1');
+    isAdmin=true;localStorage.setItem('atr_admin','1');
     document.getElementById('admLogin').style.display='none';
     document.getElementById('admPanel').style.display='block';
     document.getElementById('admTitle').textContent='Panel Administrador';
@@ -1503,7 +1503,7 @@ function doLogin(){
   }else{document.getElementById('admErr').style.display='block'}
 }
 function doLogout(){
-  isAdmin=(curUser&&curUser.admin===true);sessionStorage.removeItem('atr_admin');
+  isAdmin=(curUser&&curUser.admin===true);localStorage.removeItem('atr_admin');
   document.getElementById('admLogin').style.display='block';
   document.getElementById('admPanel').style.display='none';
   document.getElementById('admTitle').textContent='Iniciar Sesión';
