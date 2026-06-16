@@ -628,7 +628,7 @@ function rUp(){
   var el=document.getElementById('upList');if(!el)return;
   var up=schedule.filter(function(s){return s.date>=todayStr}).sort(function(a,b){return(a.date+a.time).localeCompare(b.date+b.time)});
   window._upMatches=up;
-  if(!up.length){el.innerHTML='<div class="es"><div class="es-i">🎾</div><div class="es-t">No hay partidos programados</div><div class="es-s">'+(isAdmin?'Usá el + para programar':'')+'</div></div>';return}
+  if(!up.length){el.innerHTML='<div class="es"><div class="es-i">🎾</div><div class="es-t">No hay partidos programados</div><div class="es-s">'+((isAdmin||curUser)?'Usá el + para programar':'')+'</div></div>';return}
   var html='';var cd='';
   up.forEach(function(m,idx){
     if(m.date!==cd){
@@ -636,7 +636,8 @@ function rUp(){
       var dn=DN[dO.getDay()],isT=cd===todayStr;
       html+='<div class="up-dh">'+(isT?'Hoy — ':'')+dn+' '+dp[2]+' de '+MN[dO.getMonth()]+'</div>';
     }
-    var admPlus=isAdmin?'<button onclick="openResFromMatch('+idx+')" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;flex-shrink:0;transition:.2s" title="Cargar resultado">+</button>':'';
+    var soyJugador=curUser&&(m.p1id===curUser.pid||m.p2id===curUser.pid);
+    var admPlus=(isAdmin||soyJugador)?'<button onclick="openResFromMatch('+idx+')" style="width:30px;height:30px;border-radius:8px;border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;flex-shrink:0;transition:.2s" title="Cargar resultado">+</button>':'';
     html+='<div class="up-card"><div class="up-time">'+m.time+'</div><div class="crt c'+m.court+'"><span>'+m.court+'</span><small>cancha</small></div><div style="flex:1;min-width:0"><div class="up-pl">'+m.p1+' vs '+m.p2+'</div><div><span class="lb l-'+CS[m.cat]+'">'+CL[m.cat]+'</span></div></div>'+admPlus+'</div>';
   });
   el.innerHTML=html;
@@ -1015,6 +1016,8 @@ function openResFromMatch(idx){
   var m=window._upMatches[idx];if(!m)return;
   document.getElementById('mRes').classList.add('show');
   fillCatSel(document.getElementById('rCat'));
+  document.getElementById('rFase').value='grupos';
+  document.getElementById('rGrpRow').style.display='flex';
   document.getElementById('rCat').value=m.cat;
   var grp='';
   var p1p=parts.find(function(p){return p.id===m.p1id});
