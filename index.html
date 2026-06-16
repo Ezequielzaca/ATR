@@ -1012,7 +1012,17 @@ function openResFromMatch(idx){
   document.getElementById('rP1').value=m.p1id;document.getElementById('rP2').value=m.p2id;
   document.getElementById('rSc').value='';document.getElementById('rW').value='';document.getElementById('rDt').value=m.date;
 }
-function openSchMod(){document.getElementById('mSch').classList.add('show');fillCatSel(document.getElementById('sCat'));document.getElementById('sP1').innerHTML='<option value="">J1...</option>';document.getElementById('sP2').innerHTML='<option value="">J2...</option>';document.getElementById('sDt').value=todayStr;document.getElementById('sTm').value='';document.getElementById('sCo').value=''}
+function openSchMod(){
+  document.getElementById('mSch').classList.add('show');fillCatSel(document.getElementById('sCat'));
+  document.getElementById('sP1').innerHTML='<option value="">J1...</option>';document.getElementById('sP2').innerHTML='<option value="">J2...</option>';
+  document.getElementById('sDt').value=todayStr;document.getElementById('sTm').value='';document.getElementById('sCo').value='';
+  // Pre-fill for logged-in player
+  if(curUser&&!isAdmin){
+    document.getElementById('sCat').value=curUser.cat;
+    sPickCat();
+    document.getElementById('sP1').value=curUser.pid;
+  }
+}
 function sPickCat(){
   var cat=document.getElementById('sCat').value;
   var pl=parts.filter(function(p){return p.cat===cat}).sort(function(a,b){return a.apellido.localeCompare(b.apellido)});
