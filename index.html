@@ -147,23 +147,28 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 .mx:hover{background:rgba(239,68,68,.15);color:#ef4444}
 
 /* FIFA Card */
-.cbg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:350;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.cbg.show{display:flex}
-.fc{width:280px;border-radius:20px;overflow:hidden;animation:ci .4s cubic-bezier(.16,1,.3,1) both}
-@keyframes ci{from{opacity:0;transform:scale(.8) translateY(30px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.fc-top{padding:28px 20px 18px;text-align:center;position:relative}
-.fc-x{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.3);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;z-index:2}
-.fc-r{font-family:'Space Mono',monospace;font-size:3.5rem;font-weight:800;line-height:1;margin-bottom:2px}
-.fc-pos{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;opacity:.8;margin-bottom:8px}
-.fc-nm{font-size:1.2rem;font-weight:800;letter-spacing:-.5px;margin-bottom:2px}
-.fc-cat{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;opacity:.7}
+.cbg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:350;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px)}.cbg.show{display:flex}
+.fc{width:290px;border-radius:22px;overflow:hidden;animation:ci .45s cubic-bezier(.16,1,.3,1) both;box-shadow:0 25px 70px -10px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08)}
+@keyframes ci{from{opacity:0;transform:scale(.82) translateY(34px) rotateX(8deg)}to{opacity:1;transform:scale(1) translateY(0) rotateX(0)}}
+.fc-top{padding:30px 20px 20px;text-align:center;position:relative;overflow:hidden}
+.fc-top::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.04) 0px,rgba(255,255,255,.04) 1px,transparent 1px,transparent 14px);pointer-events:none}
+.fc-top::after{content:'';position:absolute;top:-60%;left:-20%;width:140%;height:140%;background:radial-gradient(circle,rgba(255,255,255,.12) 0%,transparent 60%);pointer-events:none}
+.fc-x{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;z-index:2;transition:.2s}
+.fc-x:hover{background:rgba(0,0,0,.55);transform:rotate(90deg)}
+.fc-rwrap{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;width:92px;height:92px;border-radius:50%;border:3px solid rgba(255,255,255,.25);background:rgba(0,0,0,.18);margin-bottom:6px;box-shadow:0 4px 18px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.15)}
+.fc-r{font-family:'Space Mono',monospace;font-size:2.6rem;font-weight:800;line-height:1;position:relative;z-index:1}
+.fc-medal{font-size:1.9rem;line-height:1;margin-bottom:8px;filter:drop-shadow(0 3px 8px rgba(0,0,0,.4));position:relative;z-index:1}
+.fc-pos{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;opacity:.85;margin-bottom:10px;position:relative;z-index:1}
+.fc-nm{font-size:1.25rem;font-weight:800;letter-spacing:-.5px;margin-bottom:3px;position:relative;z-index:1;text-shadow:0 2px 8px rgba(0,0,0,.25)}
+.fc-cat{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;opacity:.75;position:relative;z-index:1}
 .fc-div{height:1px;background:rgba(255,255,255,.15);margin:0 20px}
 .fc-sts{padding:16px 20px 22px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.fst{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,.06)}
-.fst-l{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;opacity:.6}
-.fst-v{font-family:'Space Mono',monospace;font-weight:800;font-size:.85rem}
+.fst{display:flex;align-items:center;justify-content:space-between;padding:7px 11px;border-radius:9px;background:rgba(255,255,255,.07);transition:.2s}
+.fst-l{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;opacity:.65}
+.fst-v{font-family:'Space Mono',monospace;font-weight:800;font-size:.87rem}
 .fst-f{grid-column:1/-1}
-.fbar{height:4px;border-radius:2px;background:rgba(255,255,255,.1);margin-top:6px;overflow:hidden}
-.fbar-f{height:100%;border-radius:2px;transition:width .6s ease}
+.fbar{height:5px;border-radius:3px;background:rgba(255,255,255,.12);margin-top:6px;overflow:hidden}
+.fbar-f{height:100%;border-radius:3px;transition:width .8s cubic-bezier(.16,1,.3,1);box-shadow:0 0 8px currentColor}
 
 /* Más */
 .mi{background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.25s;margin-bottom:10px}
@@ -181,7 +186,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 .pdl{width:30px;height:30px;border-radius:8px;border:1px solid var(--brd);background:0;color:var(--tm);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0}
 .pdl:hover{background:rgba(239,68,68,.15);color:#ef4444;border-color:#ef4444}
 .spc{background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:20px;margin-bottom:10px;display:flex;align-items:center;gap:16px}
-.spl{width:56px;height:56px;border-radius:14px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0}
+.spl{width:56px;height:56px;border-radius:14px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;overflow:hidden}
 .spn{font-weight:600;font-size:.95rem;margin-bottom:2px}.spt{font-size:.72rem;color:var(--acc);font-weight:600;text-transform:uppercase;letter-spacing:1px}
 .ctc{background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:20px;margin-bottom:10px;display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--t1);transition:.25s}
 .ctc:hover{background:var(--card-h);transform:translateY(-1px)}
@@ -368,6 +373,11 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div id="spoAddForm" style="display:none">
       <div class="af">
         <div class="af-t">Agregar Sponsor</div>
+        <div class="fr">
+          <div id="spoLogoPreview" style="width:48px;height:48px;border-radius:10px;background:var(--card-h);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;font-size:1.3rem">⭐</div>
+          <label for="spoLogo" style="flex:1;padding:10px;border-radius:var(--rs);border:1px dashed var(--brd);background:transparent;color:var(--tm);font-size:.78rem;text-align:center;cursor:pointer">📷 Subir logo (opcional)</label>
+          <input type="file" id="spoLogo" accept="image/*" style="display:none" onchange="previewSpoLogo()"/>
+        </div>
         <div class="fr"><input class="fi" id="spoN" placeholder="Nombre del sponsor"/></div>
         <div class="fr"><input class="fi" id="spoT" placeholder="Tipo (ej: Sponsor Oro)"/><input class="fi" id="spoM" placeholder="Monto $" type="number" style="max-width:100px"/></div>
         <div class="fr"><input class="fi" id="spoTel" placeholder="Teléfono (opcional)"/></div>
@@ -450,9 +460,10 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
   <div class="mh"><span class="mt">Cargar Resultado</span><button class="mx" onclick="clMod('mRes')">✕</button></div>
   <div class="fr"><select class="fs" id="rCat" onchange="rPickCat()"><option value="">Categoría...</option></select><select class="fs" id="rFase" onchange="rPickFase()"><option value="grupos">Fase: Grupos</option><option value="cuartos">Cuartos de Final</option><option value="semis">Semifinal</option><option value="final">Final</option></select></div>
   <div class="fr" id="rGrpRow"><select class="fs" id="rGrp" onchange="rPickGrp()"><option value="">Grupo...</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
-  <div class="fr"><select class="fs" id="rP1" onchange="syncOpp('rP1','rP2')"><option value="">J1...</option></select><span style="color:var(--tm);align-self:center;font-weight:700">VS</span><select class="fs" id="rP2"><option value="">J2...</option></select></div>
-  <div class="fr"><input class="fi" id="rSc" placeholder="Score (ej: 6-3 6-4)"/></div>
-  <div class="fr"><select class="fs" id="rW"><option value="">Ganador...</option><option value="1">Jugador 1</option><option value="2">Jugador 2</option></select></div>
+  <div class="fr"><select class="fs" id="rP1" onchange="syncOpp('rP1','rP2');rAutoWinner()"><option value="">J1...</option></select><span style="color:var(--tm);align-self:center;font-weight:700">VS</span><select class="fs" id="rP2" onchange="rAutoWinner()"><option value="">J2...</option></select></div>
+  <div class="fr"><input class="fi" id="rSc" placeholder="Score J1-J2 (ej: 6-3 6-4)" oninput="rAutoWinner()"/></div>
+  <div id="rWinnerDisplay" style="margin-bottom:12px"></div>
+  <input type="hidden" id="rW"/>
   <div class="fr"><input type="date" class="fi" id="rDt"/></div>
   <button class="fb" onclick="saveRes()">Guardar</button>
 </div></div>
@@ -489,6 +500,20 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
   <div class="fr"><select class="fs" id="epC"><option value="">Categoría...</option><option value="signature">Signature</option><option value="oro">Oro</option><option value="plata">Plata</option><option value="bronce">Bronce</option><option value="madera">Madera</option><option value="mujeres">Mujeres</option></select></div>
   <div class="fr"><select class="fs" id="epG"><option value="">Grupo...</option><option value="A">Grupo A</option><option value="B">Grupo B</option><option value="C">Grupo C</option><option value="D">Grupo D</option></select></div>
   <button class="fb" onclick="saveEditP()">Guardar Cambios</button>
+</div></div>
+
+<!-- Modal: Edit Sponsor -->
+<div class="mbg" id="mEditSpo" onclick="if(event.target===this)clMod('mEditSpo')"><div class="mdl">
+  <div class="mh"><span class="mt">Editar Sponsor</span><button class="mx" onclick="clMod('mEditSpo')">✕</button></div>
+  <div style="text-align:center;margin-bottom:14px">
+    <div id="espoLogoPreview" style="width:80px;height:80px;border-radius:16px;background:var(--card-h);display:inline-flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:10px;font-size:2rem"></div>
+    <div><label for="espoLogo" style="display:inline-block;padding:8px 16px;border-radius:8px;border:1px solid var(--brd);background:var(--card);color:var(--acc);font-size:.78rem;font-weight:600;cursor:pointer">📷 Cambiar logo</label><input type="file" id="espoLogo" accept="image/*" style="display:none" onchange="previewEspoLogo()"/></div>
+  </div>
+  <div class="fr"><input class="fi" id="espoN" placeholder="Nombre del sponsor"/></div>
+  <div class="fr"><input class="fi" id="espoT" placeholder="Tipo"/><input class="fi" id="espoM" placeholder="Monto $" type="number" style="max-width:100px"/></div>
+  <div class="fr"><input class="fi" id="espoTel" placeholder="Teléfono"/></div>
+  <div class="fr"><input class="fi" id="espoIg" placeholder="Instagram o Web"/></div>
+  <button class="fb" onclick="saveEditSpo()">Guardar Cambios</button>
 </div></div>
 
 <!-- Escáner QR (admin) -->
@@ -687,7 +712,7 @@ function buildGrid(players,title){
       var k=p.id+'_'+q.id,r=rM[k];
       if(r){
         var w=r.flip?r.winner===2:r.winner===1;
-        var sc=w?r.score:flipScore(r.score);
+        var sc=r.flip?flipScore(r.score):r.score;
         html+='<td class="'+(w?'win':'loss')+'">'+sc+'</td>';
       }
       else html+='<td></td>';
@@ -798,6 +823,24 @@ function parseScore(sc){
   });
   return{s1:s1,s2:s2,g1:g1,g2:g2};
 }
+function rAutoWinner(){
+  var sc=document.getElementById('rSc').value.trim();
+  var disp=document.getElementById('rWinnerDisplay');
+  var p1Sel=document.getElementById('rP1'),p2Sel=document.getElementById('rP2');
+  var p1Name=(p1Sel.selectedIndex>0)?p1Sel.options[p1Sel.selectedIndex].text:'Jugador 1';
+  var p2Name=(p2Sel.selectedIndex>0)?p2Sel.options[p2Sel.selectedIndex].text:'Jugador 2';
+  if(!sc){document.getElementById('rW').value='';disp.innerHTML='';return}
+  var parsed=parseScore(sc);
+  if(parsed.s1===parsed.s2){
+    document.getElementById('rW').value='';
+    disp.innerHTML='<div style="font-size:.78rem;color:#f87171;padding:8px 12px;border-radius:8px;background:rgba(239,68,68,.08)">⚠ Revisá el score, no se puede determinar un ganador</div>';
+    return;
+  }
+  var winner=parsed.s1>parsed.s2?1:2;
+  document.getElementById('rW').value=winner;
+  var winnerName=winner===1?p1Name:p2Name;
+  disp.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;background:var(--acc-d);color:var(--acc);font-size:.8rem;font-weight:700">🏆 Ganador: '+winnerName+'</div>';
+}
 function rPts(){
   var el=document.getElementById('pTbl');
   
@@ -813,8 +856,9 @@ function rPts(){
     return true;
   }).forEach(function(r){
     var sc=parseScore(r.score),wid=r.winner===1?r.p1id:r.p2id,lid=r.winner===1?r.p2id:r.p1id;
-    // El score siempre se carga desde la perspectiva del GANADOR
-    var wS=sc.s1,lS=sc.s2,wG=sc.g1,lG=sc.g2;
+    // El score se carga siempre en orden Jugador1-Jugador2 (sc.s1=J1, sc.s2=J2); usamos el campo winner para saber de quién son los puntos
+    var wS=r.winner===1?sc.s1:sc.s2,lS=r.winner===1?sc.s2:sc.s1;
+    var wG=r.winner===1?sc.g1:sc.g2,lG=r.winner===1?sc.g2:sc.g1;
     var isPO=r.fase&&r.fase!=='grupos';
     var wPts=isPO?(FASE_PTS[r.fase]||1):1;
     var lPts=isPO?0:-1; // En playoffs el perdedor no resta
@@ -878,8 +922,10 @@ function searchPlayer(){
       var isPO=r.fase&&r.fase!=='grupos';
       var wPts=isPO?(FASE_PTS[r.fase]||1):1;
       var lPts=isPO?0:-1;
-      if(wid===p.id){tPj++;tPg++;tPts+=wPts;tSg+=sc.s1;tSp+=sc.s2;tGg+=sc.g1;tGp+=sc.g2}
-      if(lid===p.id){tPj++;tPp++;tPts+=lPts;tSg+=sc.s2;tSp+=sc.s1;tGg+=sc.g2;tGp+=sc.g1}
+      var wS=r.winner===1?sc.s1:sc.s2,lS=r.winner===1?sc.s2:sc.s1;
+      var wG=r.winner===1?sc.g1:sc.g2,lG=r.winner===1?sc.g2:sc.g1;
+      if(wid===p.id){tPj++;tPg++;tPts+=wPts;tSg+=wS;tSp+=lS;tGg+=wG;tGp+=lG}
+      if(lid===p.id){tPj++;tPp++;tPts+=lPts;tSg+=lS;tSp+=wS;tGg+=lG;tGp+=wG}
     });
     var totalPts=tPts;
     function vc(v){return v>0?'pos':v<0?'neg':'zer'}
@@ -913,6 +959,7 @@ function openCard(i){
   function gr(p,r){if(p===1)return'linear-gradient(145deg,#4a1520,#722F37)';if(p===2)return'linear-gradient(145deg,#78350f,#a16207)';if(p===3)return'linear-gradient(145deg,#7c2d12,#c2410c)';return r>=50?'linear-gradient(145deg,#1e3a5f,#2563eb)':'linear-gradient(145deg,#450a0a,#991b1b)'}
   function ac(p,r){if(p===1)return'#f5c6cb';if(p===2)return'#fbbf24';if(p===3)return'#fb923c';return r>=50?'#60a5fa':'#f87171'}
   var g=gr(s.pos,s.rat),a=ac(s.pos,s.rat);
+  var medal=s.pos===1?'🥇':s.pos===2?'🥈':s.pos===3?'🥉':'';
   var pl=s.pos===1?'1ER PUESTO':s.pos===2?'2DO PUESTO':s.pos===3?'3ER PUESTO':s.pos+'° PUESTO';
   var wp=s.pj>0?Math.round(s.pg/s.pj*100):0,sp=s.pj>0?Math.round(s.sg/Math.max(s.sg+s.sp,1)*100):0,gp=s.pj>0?Math.round(s.gg/Math.max(s.gg+s.gp,1)*100):0;
   var paid=pagos[s.id]===true;
@@ -921,9 +968,10 @@ function openCard(i){
     var msg=encodeURIComponent('Hola! Soy '+s.nm+' y quiero pagar la inscripción del Torneo ATR 2026 ($60.000). ¿Cómo puedo hacer el pago?');
     pagoBtn='<div style="padding:12px 20px 20px;background:'+g+'"><a href="https://mpago.la/2cTi1G5" target="_blank" style="display:block;width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#009ee3,#007eb5);color:#fff;text-align:center;font-weight:800;font-size:.95rem;text-decoration:none;letter-spacing:.5px">💳 Pagar Inscripción — $60.000</a></div>';
   }else{
-    pagoBtn='<div style="padding:12px 20px 20px;background:'+g+';text-align:center"><div style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;background:rgba(114,47,55,.15);color:var(--acc);font-weight:700;font-size:.85rem">✓ Inscripción pagada</div></div>';
+    pagoBtn='<div style="padding:12px 20px 20px;background:'+g+';text-align:center"><div style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;background:rgba(255,255,255,.12);color:#fff;font-weight:700;font-size:.85rem">✓ Inscripción pagada</div></div>';
   }
-  c.innerHTML='<div class="fc-top" style="background:'+g+';color:#fff"><button class="fc-x" onclick="clCard()">✕</button><div class="fc-r" style="color:'+a+'">'+s.rat+'</div><div class="fc-pos" style="color:'+a+'">'+pl+'</div><div class="fc-nm">'+s.nm+'</div><div class="fc-cat">'+CL[s.cat]+'</div></div><div class="fc-div"></div><div class="fc-sts" style="background:'+g+';color:#fff"><div class="fst"><span class="fst-l">PJ</span><span class="fst-v">'+s.pj+'</span></div><div class="fst"><span class="fst-l">Pts</span><span class="fst-v" style="color:'+(s.pts>=0?a:'#f87171')+'">'+(s.pts>0?'+':'')+s.pts+'</span></div><div class="fst"><span class="fst-l">PG</span><span class="fst-v" style="color:var(--acc)">'+s.pg+'</span></div><div class="fst"><span class="fst-l">PP</span><span class="fst-v" style="color:#f87171">'+s.pp+'</span></div><div class="fst fst-f"><span class="fst-l">Victorias</span><span class="fst-v">'+wp+'%</span></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Sets '+s.sg+'G / '+s.sp+'P</span><span class="fst-v" style="color:'+(s.sd>=0?a:'#f87171')+'">'+(s.sd>0?'+':'')+s.sd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+sp+'%;background:'+a+'"></div></div></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Games '+s.gg+'G / '+s.gp+'P</span><span class="fst-v" style="color:'+(s.gd>=0?a:'#f87171')+'">'+(s.gd>0?'+':'')+s.gd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+gp+'%;background:'+a+'"></div></div></div></div>'+pagoBtn;
+  var medalHtml=medal?'<div class="fc-medal">'+medal+'</div>':'';
+  c.innerHTML='<div class="fc-top" style="background:'+g+';color:#fff"><button class="fc-x" onclick="clCard()">✕</button>'+medalHtml+'<div class="fc-rwrap" style="border-color:'+a+'66"><div class="fc-r" style="color:'+a+'">'+s.rat+'</div></div><div class="fc-pos" style="color:'+a+'">'+pl+'</div><div class="fc-nm">'+s.nm+'</div><div class="fc-cat">'+CL[s.cat]+'</div></div><div class="fc-div"></div><div class="fc-sts" style="background:'+g+';color:#fff"><div class="fst"><span class="fst-l">PJ</span><span class="fst-v">'+s.pj+'</span></div><div class="fst"><span class="fst-l">Pts</span><span class="fst-v" style="color:'+(s.pts>=0?a:'#f87171')+'">'+(s.pts>0?'+':'')+s.pts+'</span></div><div class="fst"><span class="fst-l">PG</span><span class="fst-v" style="color:var(--acc)">'+s.pg+'</span></div><div class="fst"><span class="fst-l">PP</span><span class="fst-v" style="color:#f87171">'+s.pp+'</span></div><div class="fst fst-f"><span class="fst-l">Victorias</span><span class="fst-v">'+wp+'%</span></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Sets '+s.sg+'G / '+s.sp+'P</span><span class="fst-v" style="color:'+(s.sd>=0?a:'#f87171')+'">'+(s.sd>0?'+':'')+s.sd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+sp+'%;background:'+a+';color:'+a+'"></div></div></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Games '+s.gg+'G / '+s.gp+'P</span><span class="fst-v" style="color:'+(s.gd>=0?a:'#f87171')+'">'+(s.gd>0?'+':'')+s.gd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+gp+'%;background:'+a+';color:'+a+'"></div></div></div></div>'+pagoBtn;
   bg.classList.add('show');
 }
 function clCard(){document.getElementById('cardBg').classList.remove('show')}
@@ -974,6 +1022,7 @@ function openResMod(){
   document.getElementById('rP1').innerHTML='<option value="">J1...</option>';
   document.getElementById('rP2').innerHTML='<option value="">J2...</option>';
   document.getElementById('rSc').value='';document.getElementById('rW').value='';document.getElementById('rDt').value=todayStr;
+  document.getElementById('rWinnerDisplay').innerHTML='';
   // Pre-fill for logged-in player
   if(curUser&&!isAdmin){
     document.getElementById('rCat').value=curUser.cat;
@@ -983,6 +1032,7 @@ function openResMod(){
 function rPickFase(){
   var fase=document.getElementById('rFase').value;
   var cat=document.getElementById('rCat').value;
+  document.getElementById('rW').value='';document.getElementById('rWinnerDisplay').innerHTML='';
   if(fase==='grupos'){
     document.getElementById('rGrpRow').style.display='flex';
     document.getElementById('rGrp').value='';
@@ -997,6 +1047,7 @@ function rPickFase(){
 function rPickCat(){
   var fase=document.getElementById('rFase').value;
   document.getElementById('rGrp').value='';
+  document.getElementById('rW').value='';document.getElementById('rWinnerDisplay').innerHTML='';
   if(fase!=='grupos'){
     var cat=document.getElementById('rCat').value;
     if(cat){fillPlByCat(cat,document.getElementById('rP1'),document.getElementById('rP2'));return}
@@ -1006,6 +1057,7 @@ function rPickCat(){
 }
 function rPickGrp(){
   var cat=document.getElementById('rCat').value,grp=document.getElementById('rGrp').value;
+  document.getElementById('rW').value='';document.getElementById('rWinnerDisplay').innerHTML='';
   if(cat&&grp)fillPlByGrp(cat,grp,document.getElementById('rP1'),document.getElementById('rP2'));
   else{document.getElementById('rP1').innerHTML='<option value="">J1...</option>';document.getElementById('rP2').innerHTML='<option value="">J2...</option>'}
 }
@@ -1013,7 +1065,8 @@ function saveRes(){
   var cat=document.getElementById('rCat').value,p1id=document.getElementById('rP1').value,p2id=document.getElementById('rP2').value;
   var score=document.getElementById('rSc').value.trim(),winner=parseInt(document.getElementById('rW').value),fecha=document.getElementById('rDt').value;
   var fase=document.getElementById('rFase').value||'grupos';
-  if(!cat||!p1id||!p2id||!score||!winner||!fecha||p1id===p2id){toast('Completá todos los campos');return}
+  if(!cat||!p1id||!p2id||!fecha||p1id===p2id){toast('Completá todos los campos');return}
+  if(!score||!winner){toast('Cargá un score válido para detectar el ganador');return}
   if(fase==='grupos'&&!document.getElementById('rGrp').value){toast('Seleccioná el grupo');return}
   var p1=parts.find(function(p){return p.id===p1id}),p2=parts.find(function(p){return p.id===p2id});
   var grp=fase==='grupos'?document.getElementById('rGrp').value:'';
@@ -1046,6 +1099,7 @@ function openResFromMatch(idx){
   document.getElementById('rP1').value=m.p1id;document.getElementById('rP2').value=m.p2id;
   syncOpp('rP1','rP2');
   document.getElementById('rSc').value='';document.getElementById('rW').value='';document.getElementById('rDt').value=m.date;
+  document.getElementById('rWinnerDisplay').innerHTML='';
 }
 function openSchMod(){
   document.getElementById('mSch').classList.add('show');fillCatSel(document.getElementById('sCat'));
@@ -1137,6 +1191,24 @@ function saveEditP(){
   db.ref('participantes').set(parts);clMod('mEditP');rPList();toast('Participante actualizado');editPId='';
 }
 function delP(id){if(!confirm('Eliminar participante?'))return;parts=parts.filter(function(p){return p.id!==id});db.ref('participantes').set(parts);rPList();toast('Eliminado')}
+function compressImageFile(file,maxDim,quality,cb){
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var w=img.width,h=img.height;
+      if(w>h){if(w>maxDim){h=Math.round(h*maxDim/w);w=maxDim}}
+      else{if(h>maxDim){w=Math.round(w*maxDim/h);h=maxDim}}
+      var canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+      var ctx=canvas.getContext('2d');
+      ctx.fillStyle='#ffffff';ctx.fillRect(0,0,w,h);
+      ctx.drawImage(img,0,0,w,h);
+      cb(canvas.toDataURL('image/jpeg',quality));
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 function rSpo(){
   var el=document.getElementById('sList');
   if(!sponsors.length){el.innerHTML='<div class="es"><div class="es-i">⭐</div><div class="es-t">Sin sponsors cargados</div></div>';return}
@@ -1155,18 +1227,31 @@ function rSpo(){
       var label=s.ig.length>25?s.ig.substring(0,25)+'…':s.ig;
       contacto+='<a href="'+link+'" target="_blank" style="color:var(--acc);text-decoration:none;font-size:.7rem">🔗 '+label+'</a>';
     }
-    html+='<div class="spc" style="flex-wrap:wrap"><div class="spl">'+(s.e||'⭐')+'</div><div style="flex:1;min-width:0"><div class="spn">'+s.n+'</div><div class="spt">'+s.t+montoTxt+'</div>'+(contacto?'<div style="margin-top:6px">'+contacto+'</div>':'')+'</div>'+btns+'</div>';
+    var logoHtml=s.logo?'<img src="'+s.logo+'" style="width:100%;height:100%;object-fit:cover"/>':(s.e||'⭐');
+    html+='<div class="spc" style="flex-wrap:wrap"><div class="spl">'+logoHtml+'</div><div style="flex:1;min-width:0"><div class="spn">'+s.n+'</div><div class="spt">'+s.t+montoTxt+'</div>'+(contacto?'<div style="margin-top:6px">'+contacto+'</div>':'')+'</div>'+btns+'</div>';
   });
   el.innerHTML=html;
+}
+var _spoLogoData=null;
+function previewSpoLogo(){
+  var f=document.getElementById('spoLogo').files[0];if(!f)return;
+  compressImageFile(f,240,.85,function(dataUrl){
+    _spoLogoData=dataUrl;
+    document.getElementById('spoLogoPreview').innerHTML='<img src="'+dataUrl+'" style="width:100%;height:100%;object-fit:cover"/>';
+  });
 }
 function addSpo(){
   var n=document.getElementById('spoN').value.trim(),t=document.getElementById('spoT').value.trim(),m=document.getElementById('spoM').value;
   var tel=document.getElementById('spoTel').value.trim(),ig=document.getElementById('spoIg').value.trim();
   if(!n||!t){toast('Completá nombre y tipo');return}
-  sponsors.push({n:n,t:t,e:'⭐',m:parseFloat(m)||0,tel:tel||'',ig:ig||''});
+  var sp={n:n,t:t,e:'⭐',m:parseFloat(m)||0,tel:tel||'',ig:ig||''};
+  if(_spoLogoData)sp.logo=_spoLogoData;
+  sponsors.push(sp);
   db.ref('sponsors').set(sponsors);
   document.getElementById('spoN').value='';document.getElementById('spoT').value='';document.getElementById('spoM').value='';
   document.getElementById('spoTel').value='';document.getElementById('spoIg').value='';
+  document.getElementById('spoLogo').value='';document.getElementById('spoLogoPreview').innerHTML='⭐';
+  _spoLogoData=null;
   if(parseFloat(m)>0){
     balIngresos.push({desc:'Sponsor: '+n,monto:parseFloat(m),fecha:todayStr,tipo:'sponsor'});
     db.ref('balIngresos').set(balIngresos);
@@ -1174,15 +1259,38 @@ function addSpo(){
   rSpo();toast('Sponsor agregado');
 }
 var editSpoIdx=-1;
+var _espoLogoData=null;
 function editSpo(i){
   var s=sponsors[i];if(!s)return;
-  var nn=prompt('Nombre:',s.n);if(nn===null)return;
-  var tt=prompt('Tipo:',s.t);if(tt===null)return;
-  var mm=prompt('Monto $:',s.m||0);if(mm===null)return;
-  var tel=prompt('Teléfono:',s.tel||'');if(tel===null)return;
-  var ig=prompt('Instagram o Web:',s.ig||'');if(ig===null)return;
-  sponsors[i].n=nn;sponsors[i].t=tt;sponsors[i].m=parseFloat(mm)||0;sponsors[i].tel=tel;sponsors[i].ig=ig;
-  db.ref('sponsors').set(sponsors);rSpo();toast('Sponsor actualizado');
+  editSpoIdx=i;_espoLogoData=s.logo||null;
+  document.getElementById('espoN').value=s.n;
+  document.getElementById('espoT').value=s.t;
+  document.getElementById('espoM').value=s.m||0;
+  document.getElementById('espoTel').value=s.tel||'';
+  document.getElementById('espoIg').value=s.ig||'';
+  document.getElementById('espoLogo').value='';
+  var prev=document.getElementById('espoLogoPreview');
+  prev.innerHTML=s.logo?'<img src="'+s.logo+'" style="width:100%;height:100%;object-fit:cover"/>':(s.e||'⭐');
+  document.getElementById('mEditSpo').classList.add('show');
+}
+function previewEspoLogo(){
+  var f=document.getElementById('espoLogo').files[0];if(!f)return;
+  compressImageFile(f,240,.85,function(dataUrl){
+    _espoLogoData=dataUrl;
+    document.getElementById('espoLogoPreview').innerHTML='<img src="'+dataUrl+'" style="width:100%;height:100%;object-fit:cover"/>';
+  });
+}
+function saveEditSpo(){
+  if(editSpoIdx<0||!sponsors[editSpoIdx])return;
+  var nn=document.getElementById('espoN').value.trim(),tt=document.getElementById('espoT').value.trim();
+  var mm=document.getElementById('espoM').value,tel=document.getElementById('espoTel').value.trim(),ig=document.getElementById('espoIg').value.trim();
+  if(!nn||!tt){toast('Completá nombre y tipo');return}
+  sponsors[editSpoIdx].n=nn;sponsors[editSpoIdx].t=tt;sponsors[editSpoIdx].m=parseFloat(mm)||0;
+  sponsors[editSpoIdx].tel=tel;sponsors[editSpoIdx].ig=ig;
+  if(_espoLogoData)sponsors[editSpoIdx].logo=_espoLogoData;
+  db.ref('sponsors').set(sponsors);
+  clMod('mEditSpo');rSpo();toast('Sponsor actualizado');
+  editSpoIdx=-1;_espoLogoData=null;
 }
 function delSpo(i){if(!confirm('Eliminar sponsor?'))return;sponsors.splice(i,1);db.ref('sponsors').set(sponsors);rSpo();toast('Eliminado')}
 
