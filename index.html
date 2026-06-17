@@ -289,6 +289,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div class="mi" id="balanceBtn" style="display:none" onclick="subPg('balance')"><div class="mic" style="background:linear-gradient(135deg,#6366f1,#4f46e5)">📊</div><div><div class="mit">Balance</div><div class="mid">Ingresos y gastos</div></div></div>
     <div class="mi" id="entradaBtn" style="display:none" onclick="subPg('entrada')"><div class="mic" style="background:linear-gradient(135deg,#722F37,#5a1f27)">🎟️</div><div><div class="mit">Entradas</div><div class="mid">QR y verificación</div></div></div>
     <div class="mi" id="usersBtn" style="display:none" onclick="subPg('users')"><div class="mic" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">🗂️</div><div><div class="mit">Usuarios</div><div class="mid">Cuentas de jugadores</div></div></div>
+    <div class="mi" id="insigBtn" style="display:none" onclick="subPg('insignias')"><div class="mic" style="background:linear-gradient(135deg,#d4a017,#a16207)">🏅</div><div><div class="mit">Insignias</div><div class="mid">Logros y apodos de jugadores</div></div></div>
     <div class="mi" id="admMenuBtn" style="display:none" onclick="subPg('admin')"><div class="mic" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">⚙️</div><div><div class="mit">Panel Admin</div><div class="mid">Gestionar torneo</div></div></div>
   </div>
   <!-- LOGIN / REGISTER / PROFILE -->
@@ -357,6 +358,25 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
   <div id="sub-users" style="display:none">
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Usuarios Registrados</span></div>
     <div id="usersList"></div>
+  </div>
+  <!-- Insignias (admin) -->
+  <div id="sub-insignias" style="display:none">
+    <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Insignias</span></div>
+    <div class="af" style="margin-bottom:16px">
+      <div class="af-t">Elegí el jugador</div>
+      <div class="fr"><select class="fs" id="insigCat" onchange="insigFillPlayers()"><option value="">Categoría...</option></select></div>
+      <div class="fr"><select class="fs" id="insigPid" onchange="insigLoadPlayer()"><option value="">Jugador...</option></select></div>
+    </div>
+    <div id="insigEditor" style="display:none">
+      <div class="slbl">Insignias de personalidad</div>
+      <div id="insigBadgeGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:20px"></div>
+      <div class="slbl">Logros históricos</div>
+      <div class="af" style="margin-bottom:12px">
+        <div class="fr"><input class="fi" id="insigLogroTxt" placeholder="Ej: Campeón Oro 2024"/></div>
+        <button class="fb" onclick="addLogro()">Agregar Logro</button>
+      </div>
+      <div id="insigLogrosList"></div>
+    </div>
   </div>
   <div id="sub-part" style="display:none">
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Participantes</span></div>
@@ -569,6 +589,13 @@ var DN=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 var CATS=['signature','oro','plata','bronce','madera','mujeres'];
 var FASE_L={grupos:'Grupos',cuartos:'Cuartos de Final',semis:'Semifinal',final:'Final'};
 var FASE_PTS={cuartos:2,semis:3,final:5};
+var BADGE_TYPES={
+  trebol:{emoji:'🍀',label:'Más Suerte'},
+  calavera:{emoji:'💀',label:'Más Difícil'},
+  estrella:{emoji:'⭐',label:'Revelación'},
+  luna:{emoji:'🌙',label:'El que Más Sale'},
+  reloj:{emoji:'⏰',label:'El Más Veterano'}
+};
 var CL={signature:'Signature',oro:'Oro',plata:'Plata',bronce:'Bronce',madera:'Madera',mujeres:'Mujeres'};
 var CS={signature:'sig',oro:'oro',plata:'pla',bronce:'bro',madera:'mad',mujeres:'muj'};
 var sponsors=[];
@@ -847,7 +874,7 @@ function rPts(){
   if(!ptsCat){el.innerHTML='';return}
   var pl=parts.filter(function(p){return p.cat===ptsCat&&(ptsGrp===null||p.grupo===ptsGrp)});
   if(!pl.length){el.innerHTML='<div class="es"><div class="es-i">📋</div><div class="es-t">Sin participantes'+(ptsGrp?' en Grupo '+ptsGrp:'')+'</div></div>';return}
-  var st={};pl.forEach(function(p){st[p.id]={id:p.id,nm:p.apellido+' '+p.nombre,cat:p.cat,grp:p.grupo||'',pj:0,pg:0,pp:0,pts:0,sg:0,sp:0,gg:0,gp:0}});
+  var st={};pl.forEach(function(p){st[p.id]={id:p.id,nm:p.apellido+' '+p.nombre,cat:p.cat,grp:p.grupo||'',pj:0,pg:0,pp:0,pts:0,sg:0,sp:0,gg:0,gp:0,badges:p.badges||[],logros:p.logros||[]}});
   results.filter(function(r){
     if(r.cat!==ptsCat)return false;
     var isPO=r.fase&&r.fase!=='grupos';
@@ -887,7 +914,8 @@ function rPts(){
   arr.forEach(function(s,i){
     var pC=i===0?'p1c':i===1?'p2c':i===2?'p3c':'';
     h+='<tr><td class="pp '+pC+'">'+s.pos+'</td>';
-    h+='<td class="pn" onclick="openCard('+i+')">'+s.nm+'</td>';
+    var badgeIcons=(s.badges&&s.badges.length)?' '+s.badges.map(function(k){var b=BADGE_TYPES[k];return b?b.emoji:''}).join(''):'';
+    h+='<td class="pn" onclick="openCard('+i+')">'+s.nm+badgeIcons+'</td>';
     if(showGrpCol)h+='<td style="font-size:.6rem;color:var(--tm);font-weight:600">'+(s.grp||'—')+'</td>';
     h+='<td>'+s.pj+'</td><td class="pos">'+s.pg+'</td><td class="neg">'+s.pp+'</td><td class="pv '+vc(s.pts)+'">'+vs(s.pts)+'</td>';
     h+='<td class="sep">'+s.sg+'</td><td>'+s.sp+'</td><td class="'+vc(s.sd)+'">'+vs(s.sd)+'</td>';
@@ -971,7 +999,15 @@ function openCard(i){
     pagoBtn='<div style="padding:12px 20px 20px;background:'+g+';text-align:center"><div style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;background:rgba(255,255,255,.12);color:#fff;font-weight:700;font-size:.85rem">✓ Inscripción pagada</div></div>';
   }
   var medalHtml=medal?'<div class="fc-medal">'+medal+'</div>':'';
-  c.innerHTML='<div class="fc-top" style="background:'+g+';color:#fff"><button class="fc-x" onclick="clCard()">✕</button>'+medalHtml+'<div class="fc-rwrap" style="border-color:'+a+'66"><div class="fc-r" style="color:'+a+'">'+s.rat+'</div></div><div class="fc-pos" style="color:'+a+'">'+pl+'</div><div class="fc-nm">'+s.nm+'</div><div class="fc-cat">'+CL[s.cat]+'</div></div><div class="fc-div"></div><div class="fc-sts" style="background:'+g+';color:#fff"><div class="fst"><span class="fst-l">PJ</span><span class="fst-v">'+s.pj+'</span></div><div class="fst"><span class="fst-l">Pts</span><span class="fst-v" style="color:'+(s.pts>=0?a:'#f87171')+'">'+(s.pts>0?'+':'')+s.pts+'</span></div><div class="fst"><span class="fst-l">PG</span><span class="fst-v" style="color:var(--acc)">'+s.pg+'</span></div><div class="fst"><span class="fst-l">PP</span><span class="fst-v" style="color:#f87171">'+s.pp+'</span></div><div class="fst fst-f"><span class="fst-l">Victorias</span><span class="fst-v">'+wp+'%</span></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Sets '+s.sg+'G / '+s.sp+'P</span><span class="fst-v" style="color:'+(s.sd>=0?a:'#f87171')+'">'+(s.sd>0?'+':'')+s.sd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+sp+'%;background:'+a+';color:'+a+'"></div></div></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Games '+s.gg+'G / '+s.gp+'P</span><span class="fst-v" style="color:'+(s.gd>=0?a:'#f87171')+'">'+(s.gd>0?'+':'')+s.gd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+gp+'%;background:'+a+';color:'+a+'"></div></div></div></div>'+pagoBtn;
+  var badgesHtml='';
+  if(s.badges&&s.badges.length){
+    badgesHtml='<div style="display:flex;justify-content:center;gap:6px;margin-top:8px;position:relative;z-index:1">'+s.badges.map(function(k){var b=BADGE_TYPES[k];return b?'<span title="'+b.label+'" style="font-size:1rem;background:rgba(255,255,255,.15);border-radius:50%;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center">'+b.emoji+'</span>':''}).join('')+'</div>';
+  }
+  var logrosHtml='';
+  if(s.logros&&s.logros.length){
+    logrosHtml='<div style="padding:14px 20px;background:'+g+';border-top:1px solid rgba(255,255,255,.12)"><div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.6);margin-bottom:8px">🏅 Historial</div>'+s.logros.map(function(l){return'<div style="font-size:.78rem;color:#fff;padding:5px 0;opacity:.92">'+l+'</div>'}).join('')+'</div>';
+  }
+  c.innerHTML='<div class="fc-top" style="background:'+g+';color:#fff"><button class="fc-x" onclick="clCard()">✕</button>'+medalHtml+'<div class="fc-rwrap" style="border-color:'+a+'66"><div class="fc-r" style="color:'+a+'">'+s.rat+'</div></div><div class="fc-pos" style="color:'+a+'">'+pl+'</div><div class="fc-nm">'+s.nm+'</div><div class="fc-cat">'+CL[s.cat]+'</div>'+badgesHtml+'</div><div class="fc-div"></div><div class="fc-sts" style="background:'+g+';color:#fff"><div class="fst"><span class="fst-l">PJ</span><span class="fst-v">'+s.pj+'</span></div><div class="fst"><span class="fst-l">Pts</span><span class="fst-v" style="color:'+(s.pts>=0?a:'#f87171')+'">'+(s.pts>0?'+':'')+s.pts+'</span></div><div class="fst"><span class="fst-l">PG</span><span class="fst-v" style="color:var(--acc)">'+s.pg+'</span></div><div class="fst"><span class="fst-l">PP</span><span class="fst-v" style="color:#f87171">'+s.pp+'</span></div><div class="fst fst-f"><span class="fst-l">Victorias</span><span class="fst-v">'+wp+'%</span></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Sets '+s.sg+'G / '+s.sp+'P</span><span class="fst-v" style="color:'+(s.sd>=0?a:'#f87171')+'">'+(s.sd>0?'+':'')+s.sd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+sp+'%;background:'+a+';color:'+a+'"></div></div></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Games '+s.gg+'G / '+s.gp+'P</span><span class="fst-v" style="color:'+(s.gd>=0?a:'#f87171')+'">'+(s.gd>0?'+':'')+s.gd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+gp+'%;background:'+a+';color:'+a+'"></div></div></div></div>'+logrosHtml+pagoBtn;
   bg.classList.add('show');
 }
 function clCard(){document.getElementById('cardBg').classList.remove('show')}
@@ -1139,6 +1175,82 @@ function saveSch(){
 // ═══ MÁS ═══
 function subPg(s){document.getElementById('masMain').style.display='none';document.querySelectorAll('[id^="sub-"]').forEach(function(e){e.style.display='none'});var t=document.getElementById('sub-'+s);if(t)t.style.display='block';if(s==='part')rPList();if(s==='spo')rSpo()}
 function backMas(){document.querySelectorAll('[id^="sub-"]').forEach(function(e){e.style.display='none'});document.getElementById('masMain').style.display='block'}
+// ═══ INSIGNIAS ═══
+function insigInit(){
+  var sel=document.getElementById('insigCat');sel.innerHTML='<option value="">Categoría...</option>';
+  CATS.forEach(function(c){if(parts.some(function(p){return p.cat===c}))sel.innerHTML+='<option value="'+c+'">'+CL[c]+'</option>'});
+  document.getElementById('insigPid').innerHTML='<option value="">Jugador...</option>';
+  document.getElementById('insigEditor').style.display='none';
+}
+function insigFillPlayers(){
+  var cat=document.getElementById('insigCat').value;
+  var sel=document.getElementById('insigPid');sel.innerHTML='<option value="">Jugador...</option>';
+  document.getElementById('insigEditor').style.display='none';
+  if(!cat)return;
+  var pl=parts.filter(function(p){return p.cat===cat}).sort(function(a,b){return a.apellido.localeCompare(b.apellido)});
+  pl.forEach(function(p){sel.innerHTML+='<option value="'+p.id+'">'+p.apellido+' '+p.nombre+'</option>'});
+}
+var insigCurPid=null;
+function insigLoadPlayer(){
+  var pid=document.getElementById('insigPid').value;
+  insigCurPid=pid||null;
+  if(!pid){document.getElementById('insigEditor').style.display='none';return}
+  document.getElementById('insigEditor').style.display='block';
+  renderBadgeGrid();
+  renderLogrosList();
+}
+function renderBadgeGrid(){
+  var p=parts.find(function(x){return x.id===insigCurPid});if(!p)return;
+  var current=p.badges||[];
+  var el=document.getElementById('insigBadgeGrid');el.innerHTML='';
+  Object.keys(BADGE_TYPES).forEach(function(key){
+    var b=BADGE_TYPES[key];
+    var active=current.indexOf(key)!==-1;
+    var d=document.createElement('div');
+    d.style.cssText='display:flex;align-items:center;gap:8px;padding:12px;border-radius:var(--rs);border:1.5px solid '+(active?'var(--acc)':'var(--brd)')+';background:'+(active?'var(--acc-d)':'var(--card)')+';cursor:pointer;transition:.2s';
+    d.innerHTML='<span style="font-size:1.3rem">'+b.emoji+'</span><span style="font-size:.78rem;font-weight:600;color:'+(active?'var(--acc)':'var(--t2)')+'">'+b.label+'</span>';
+    d.onclick=function(){toggleBadge(key)};
+    el.appendChild(d);
+  });
+}
+function toggleBadge(key){
+  var p=parts.find(function(x){return x.id===insigCurPid});if(!p)return;
+  if(!p.badges)p.badges=[];
+  var idx=p.badges.indexOf(key);
+  if(idx===-1){p.badges.push(key);toast(BADGE_TYPES[key].emoji+' '+BADGE_TYPES[key].label+' asignada')}
+  else{p.badges.splice(idx,1);toast('Insignia quitada')}
+  db.ref('participantes').set(parts);
+  renderBadgeGrid();
+}
+function renderLogrosList(){
+  var p=parts.find(function(x){return x.id===insigCurPid});if(!p)return;
+  var logros=p.logros||[];
+  var el=document.getElementById('insigLogrosList');
+  if(!logros.length){el.innerHTML='<div style="font-size:.78rem;color:var(--tm);padding:10px;text-align:center">Sin logros cargados todavía</div>';return}
+  var html='';
+  logros.forEach(function(l,i){
+    html+='<div class="pc"><span class="pnm" style="flex:1">'+l+'</span><button class="adm-del" onclick="delLogro('+i+')" style="width:28px;height:28px;font-size:.7rem">✕</button></div>';
+  });
+  el.innerHTML=html;
+}
+function addLogro(){
+  var p=parts.find(function(x){return x.id===insigCurPid});if(!p)return;
+  var txt=document.getElementById('insigLogroTxt').value.trim();
+  if(!txt){toast('Escribí el logro primero');return}
+  if(!p.logros)p.logros=[];
+  p.logros.push(txt);
+  db.ref('participantes').set(parts);
+  document.getElementById('insigLogroTxt').value='';
+  renderLogrosList();toast('Logro agregado');
+}
+function delLogro(i){
+  var p=parts.find(function(x){return x.id===insigCurPid});if(!p)return;
+  if(!confirm('Eliminar este logro?'))return;
+  p.logros.splice(i,1);
+  db.ref('participantes').set(parts);
+  renderLogrosList();toast('Eliminado');
+}
+
 function rPList(){
   var el=document.getElementById('pList');
   var s=parts.slice().sort(function(a,b){return(a.cat+a.apellido).localeCompare(b.cat+b.apellido)});
@@ -1596,6 +1708,8 @@ function updAdmUI(){
   if(spoForm)spoForm.style.display=isAdmin?'block':'none';
   var usrBtn=document.getElementById('usersBtn');
   if(usrBtn)usrBtn.style.display=isAdmin?'flex':'none';
+  var insigBtn=document.getElementById('insigBtn');
+  if(insigBtn)insigBtn.style.display=isAdmin?'flex':'none';
   var admMBtn=document.getElementById('admMenuBtn');
   if(admMBtn)admMBtn.style.display=isAdmin?'flex':'none';
   var miEntBtn=document.getElementById('miEntradaBtn');
@@ -1681,6 +1795,7 @@ subPg=function(s){
   if(s==='balance'){balView='ingresos';rBalance()}
   if(s==='entrada')rEntradas();
   if(s==='users')rUsers();
+  if(s==='insignias')insigInit();
   if(s==='mientrada')rMiEntrada();
   if(s==='login'){
     if(curUser){showCuentaLogged()}
