@@ -293,7 +293,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
   <div id="masMain">
     <div class="mi" onclick="subPg('login')"><div class="mic" style="background:linear-gradient(135deg,#722F37,#5a1f27)">🔐</div><div><div class="mit" id="loginBtnTxt">Iniciar Sesión</div><div class="mid" id="loginBtnSub">Jugadores y administrador</div></div></div>
     <div class="mi" id="miEntradaBtn" style="display:none" onclick="subPg('mientrada')"><div class="mic" style="background:linear-gradient(135deg,#722F37,#5a1f27)">🎟️</div><div><div class="mit">Mi Entrada</div><div class="mid">Tu QR de acceso al torneo</div></div></div>
-    <div class="mi" onclick="subPg('part')"><div class="mic pa">👤</div><div><div class="mit">Participantes</div><div class="mid">Ver jugadores del torneo</div></div></div>
+    <div class="mi" id="partBtn" style="display:none" onclick="subPg('part')"><div class="mic pa">👤</div><div><div class="mit">Participantes</div><div class="mid">Ver jugadores del torneo</div></div></div>
     <div class="mi" onclick="subPg('spo')"><div class="mic sp">⭐</div><div><div class="mit">Sponsors</div><div class="mid">Marcas del torneo</div></div></div>
     <div class="mi" onclick="subPg('info')"><div class="mic" style="background:linear-gradient(135deg,#0ea5e9,#0369a1)">📋</div><div><div class="mit">Información</div><div class="mid">Reglamento, premios y sede</div></div></div>
     <div class="mi" onclick="subPg('cont')"><div class="mic co">💬</div><div><div class="mit">Contacto</div><div class="mid">Escribinos</div></div></div>
@@ -303,6 +303,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div class="mi" id="usersBtn" style="display:none" onclick="subPg('users')"><div class="mic" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">🗂️</div><div><div class="mit">Usuarios</div><div class="mid">Cuentas de jugadores</div></div></div>
     <div class="mi" id="insigBtn" style="display:none" onclick="subPg('insignias')"><div class="mic" style="background:linear-gradient(135deg,#d4a017,#a16207)">🏅</div><div><div class="mit">Insignias</div><div class="mid">Logros y apodos de jugadores</div></div></div>
     <div class="mi" id="admMenuBtn" style="display:none" onclick="subPg('admin')"><div class="mic" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">⚙️</div><div><div class="mit">Panel Admin</div><div class="mid">Gestionar torneo</div></div></div>
+    <div class="mi" id="tallesBtn" style="display:none" onclick="subPg('talles')"><div class="mic" style="background:linear-gradient(135deg,#0d9488,#0f766e)">👕</div><div><div class="mit">Talles</div><div class="mid">Carga de talles de remeras</div></div></div>
   </div>
   <!-- LOGIN / REGISTER / PROFILE -->
   <div id="sub-login" style="display:none">
@@ -442,6 +443,23 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <a class="ctc" href="https://www.instagram.com/tenis_atr" target="_blank"><div class="ctic ig">📸</div><div><div style="font-weight:600">Instagram</div><div style="font-size:.78rem;color:var(--tm)">@tenis_atr</div></div></a>
     <a class="ctc" href="https://wa.me/5493794825167" target="_blank"><div class="ctic wp">📱</div><div><div style="font-weight:600">WhatsApp</div><div style="font-size:.78rem;color:var(--tm)">+54 9 379 482-5167</div></div></a>
     <a class="ctc" href="mailto:tenisatr@gmail.com"><div class="ctic em">✉️</div><div><div style="font-weight:600">Email</div><div style="font-size:.78rem;color:var(--tm)">tenisatr@gmail.com</div></div></a>
+  </div>
+  <!-- Talles -->
+  <div id="sub-talles" style="display:none">
+    <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Talles de Remeras</span></div>
+    <div id="tallesStats" style="display:flex;gap:8px;margin-bottom:12px"></div>
+    <div class="ctabs" id="tallesFilter" style="margin-bottom:12px"></div>
+    <div style="position:relative;margin-bottom:12px"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:.9rem;opacity:.5;pointer-events:none">🔍</span><input class="fi" id="tallesSearch" type="text" placeholder="Buscar jugador..." oninput="rTalles()" style="width:100%;padding-left:40px"/><button id="tallesSearchX" onclick="document.getElementById('tallesSearch').value='';rTalles()" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:8px;border:0;background:var(--acc-d);color:var(--acc);cursor:pointer;font-size:.75rem;font-weight:700">✕</button></div>
+    <div id="tallesList"></div>
+  </div>
+  <!-- Modal: Asignar Talle -->
+  <div class="mbg" id="mTalle">
+    <div class="mdl">
+      <div class="mh"><span class="mt">Asignar Talle</span><button class="mx" onclick="clMod('mTalle')">✕</button></div>
+      <div id="mTalleNm" style="font-weight:600;font-size:.95rem;margin-bottom:14px;text-align:center;color:var(--t1)"></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px" id="mTalleOpts"></div>
+      <button onclick="setTalle(mTalleId,'')" style="width:100%;padding:10px;border-radius:var(--rs);border:1px solid var(--brd);background:var(--card);color:var(--tm);font-family:'Outfit',sans-serif;font-size:.82rem;cursor:pointer">Borrar talle</button>
+    </div>
   </div>
   <!-- Información -->
   <div id="sub-info" style="display:none">
@@ -1726,6 +1744,10 @@ function updAdmUI(){
   if(insigBtn)insigBtn.style.display=isAdmin?'flex':'none';
   var admMBtn=document.getElementById('admMenuBtn');
   if(admMBtn)admMBtn.style.display=isAdmin?'flex':'none';
+  var tallesB=document.getElementById('tallesBtn');
+  if(tallesB)tallesB.style.display=isAdmin?'flex':'none';
+  var partB=document.getElementById('partBtn');
+  if(partB)partB.style.display=(isAdmin||curUser)?'flex':'none';
   var miEntBtn=document.getElementById('miEntradaBtn');
   if(miEntBtn)miEntBtn.style.display=curUser?'flex':'none';
   // Update login button text
@@ -1805,6 +1827,7 @@ subPg=function(s){
   if(s==='part'){rPList();updAdmUI()}
   if(s==='spo'){rSpo();updAdmUI()}
   if(s==='pagos')rPagos();
+  if(s==='talles')rTalles();
   if(s==='info')rInfo();
   if(s==='balance'){balView='ingresos';rBalance()}
   if(s==='entrada')rEntradas();
@@ -1831,6 +1854,88 @@ var pagos={};// {playerId: true/false}
 db.ref('pagos').on('value',function(s){pagos=s.val()||{}});
 var entregas={};// {playerId: true/false} - indumentaria entregada
 db.ref('entregas').on('value',function(s){entregas=s.val()||{}});
+var talles={};// {playerId: 'S'|'M'|'L'|'XL'|'XXL'}
+db.ref('talles').on('value',function(s){talles=s.val()||{};if(curPg==='mas'&&document.getElementById('sub-talles')&&document.getElementById('sub-talles').style.display==='block')rTalles()});
+
+// ═══ TALLES ═══
+var tallesView='todos';// 'todos','sin','S','M','L','XL','XXL'
+var mTalleId='';
+function openTalle(id){
+  mTalleId=id;
+  var p=parts.find(function(x){return x.id===id});
+  if(!p)return;
+  document.getElementById('mTalleNm').textContent=p.apellido+', '+p.nombre;
+  var actual=talles[id]||'';
+  var opts=document.getElementById('mTalleOpts');
+  opts.innerHTML='';
+  ['S','M','L','XL','XXL','XXXL'].forEach(function(t){
+    var b=document.createElement('button');
+    var sel=actual===t;
+    b.style.cssText='padding:14px 6px;border-radius:var(--rs);border:1.5px solid '+(sel?'var(--acc)':'var(--brd)')+';background:'+(sel?'var(--acc)':'var(--card)')+';color:'+(sel?'#fff':'var(--t1)')+';font-family:Outfit,sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:.2s';
+    b.textContent=t;
+    b.onclick=function(){setTalle(mTalleId,t)};
+    opts.appendChild(b);
+  });
+  document.getElementById('mTalle').classList.add('show');
+}
+function setTalle(id,val){
+  if(!id)return;
+  if(val)talles[id]=val;else delete talles[id];
+  db.ref('talles').set(talles);
+  var p=parts.find(function(x){return x.id===id});
+  var nombre=p?p.apellido+' '+p.nombre:'Jugador';
+  clMod('mTalle');
+  rTalles();
+  toast(val?'👕 '+nombre+' → talle '+val:nombre+' — talle borrado');
+}
+function rTalles(){
+  // Stats
+  var totalConT=parts.filter(function(p){return!!talles[p.id]}).length;
+  var totalSinT=parts.length-totalConT;
+  document.getElementById('tallesStats').innerHTML=
+    '<div style="flex:1;background:rgba(13,148,136,.1);border:1px solid rgba(13,148,136,.25);border-radius:var(--rs);padding:10px;text-align:center"><div style="font-size:1.2rem;font-weight:800;color:#0d9488">'+totalConT+'</div><div style="font-size:.6rem;color:#0d9488;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Con talle</div></div>'+
+    '<div style="flex:1;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:var(--rs);padding:10px;text-align:center"><div style="font-size:1.2rem;font-weight:800;color:#d97706">'+totalSinT+'</div><div style="font-size:.6rem;color:#d97706;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Sin talle</div></div>';
+
+  // Filter tabs
+  var ft=document.getElementById('tallesFilter');ft.innerHTML='';
+  var labels=['Todos','Sin talle','S','M','L','XL','XXL'];
+  var vals=['todos','sin','S','M','L','XL','XXL'];
+  labels.forEach(function(label,i){
+    var val=vals[i];
+    var d=document.createElement('div');d.className='ct';
+    if(tallesView===val){d.style.background='var(--acc-d)';d.style.color='var(--acc)';d.style.borderColor='var(--acc)'}
+    d.textContent=label;
+    d.onclick=function(){tallesView=val;rTalles()};
+    ft.appendChild(d);
+  });
+
+  var el=document.getElementById('tallesList');
+  var sorted=parts.slice().sort(function(a,b){return(a.cat+a.apellido).localeCompare(b.cat+b.apellido)});
+
+  // Filter
+  if(tallesView==='sin')sorted=sorted.filter(function(p){return!talles[p.id]});
+  else if(tallesView!=='todos')sorted=sorted.filter(function(p){return talles[p.id]===tallesView});
+
+  // Search
+  var sIn=document.getElementById('tallesSearch');
+  var q=sIn?norm(sIn.value.trim()):'';
+  var sX=document.getElementById('tallesSearchX');
+  if(sX)sX.style.display=q?'block':'none';
+  if(q)sorted=sorted.filter(function(p){return norm(p.nombre+' '+p.apellido).indexOf(q)>-1});
+
+  if(!sorted.length){el.innerHTML='<div class="es"><div class="es-i">'+(q?'🔍':'👕')+'</div><div class="es-t">'+(q?'No se encontró "'+(sIn?sIn.value:'')+'"':'Sin participantes en esta lista')+'</div></div>';return}
+
+  var html='';var cc='';
+  sorted.forEach(function(p){
+    if(p.cat!==cc){cc=p.cat;html+='<div class="slbl" style="margin-top:14px">'+CL[p.cat]+'</div>'}
+    var t=talles[p.id]||'';
+    var tBtn=t
+      ? '<button onclick="openTalle(\''+p.id+'\')" style="min-width:48px;height:34px;padding:0 12px;border-radius:8px;border:1.5px solid var(--acc);background:var(--acc);color:#fff;cursor:pointer;font-size:.82rem;font-weight:800;font-family:Outfit,sans-serif;flex-shrink:0">'+t+'</button>'
+      : '<button onclick="openTalle(\''+p.id+'\')" style="min-width:48px;height:34px;padding:0 12px;border-radius:8px;border:1.5px dashed var(--brd);background:transparent;color:var(--tm);cursor:pointer;font-size:.7rem;font-weight:600;font-family:Outfit,sans-serif;flex-shrink:0">+ talle</button>';
+    html+='<div class="pc"><div class="pav">'+(p.nombre[0]||'')+(p.apellido[0]||'')+'</div><span class="pnm" style="flex:1">'+p.apellido+', '+p.nombre+'</span><span class="lb l-'+CS[p.cat]+'" style="font-size:.5rem;margin-right:4px">'+(p.grupo?'G'+p.grupo:'')+'</span>'+tBtn+'</div>';
+  });
+  el.innerHTML=html;
+}
 
 // ═══ ANUNCIO (banner editable por admin) ═══
 var anuncio={texto:'',activo:false};
@@ -1946,7 +2051,7 @@ function rPagos(){
     }else{
       btns='<div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;'+(paid?'background:var(--acc);color:#fff':'background:rgba(239,68,68,.15);color:#f87171')+'">'+(paid?'✓':'✗')+'</div>';
     }
-    html+='<div class="pc"><div class="pav">'+(p.nombre[0]||'')+(p.apellido[0]||'')+'</div><span class="pnm" style="flex:1">'+p.apellido+', '+p.nombre+'</span><span class="lb l-'+CS[p.cat]+'" style="font-size:.5rem;margin-right:4px">'+(p.grupo?'G'+p.grupo:'')+'</span><div style="display:flex;gap:5px">'+btns+'</div></div>';
+    html+='<div class="pc"><div class="pav">'+(p.nombre[0]||'')+(p.apellido[0]||'')+'</div><span class="pnm" style="flex:1">'+p.apellido+', '+p.nombre+'</span>'+(talles[p.id]?'<span style="font-family:Space Mono,monospace;font-size:.6rem;font-weight:800;background:rgba(13,148,136,.15);color:#0d9488;padding:2px 7px;border-radius:6px;margin-right:4px">'+talles[p.id]+'</span>':'')+'<span class="lb l-'+CS[p.cat]+'" style="font-size:.5rem;margin-right:4px">'+(p.grupo?'G'+p.grupo:'')+'</span><div style="display:flex;gap:5px">'+btns+'</div></div>';
   });
   el.innerHTML=html;
 }
@@ -1958,7 +2063,7 @@ function setEntrega(id,val){
   rPagos();
   toast(val?'👕 '+nombre+' — Indumentaria entregada':nombre+' — Entrega desmarcada');
 }
-var INSCRIPCION=60000;
+var INSCRIPCION=70000;
 function setPago(id,val){
   pagos[id]=val;
   db.ref('pagos').set(pagos);
