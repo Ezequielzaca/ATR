@@ -810,34 +810,6 @@ function computeGroupStandings(cat,grp){
   arr.sort(function(a,b){return b.pts-a.pts||b.sd-a.sd||b.gd-a.gd});
   return arr;
 }
-function rGenerarCuartos(){
-  if(!isAdmin)return;
-  var cat=selCat;if(!cat)return;
-  var yaJugados=results.some(function(r){return r.cat===cat&&r.fase==='cuartos'});
-  if(yaJugados){toast('Ya hay resultados de Cuartos cargados para esta categoría');return}
-  var groups=['A','B','C','D'];
-  var standings={},missing=[];
-  groups.forEach(function(g){
-    var arr=computeGroupStandings(cat,g);
-    if(arr.length<2)missing.push('Grupo '+g);
-    standings[g]=arr;
-  });
-  if(missing.length){toast('Faltan jugadores o resultados en: '+missing.join(', '));return}
-  if(!confirm('¿Generar los 4 cruces de Cuartos según posiciones actuales?\n\n1°A vs 2°B · 1°B vs 2°A · 1°C vs 2°D · 1°D vs 2°C'))return;
-  // Sacar cruces pendientes previos de esta categoría (no jugados) para no duplicar
-  schedule=schedule.filter(function(s){return!(s.cat===cat&&s.fase==='cuartos')});
-  var pairs=[['A',1,'B',2],['B',1,'A',2],['C',1,'D',2],['D',1,'C',2]];
-  var created=0;
-  pairs.forEach(function(pair){
-    var p1=standings[pair[0]][pair[1]-1],p2=standings[pair[2]][pair[3]-1];
-    if(!p1||!p2)return;
-    schedule.push({date:todayStr,time:'',court:0,cat:cat,p1id:p1.id,p2id:p2.id,p1:p1.nm,p2:p2.nm,fase:'cuartos'});
-    created++;
-  });
-  db.ref('programacion').set(schedule);
-  rCal();rUp();rGrid();
-  toast('¡Listo! Se generaron '+created+' cruces de Cuartos');
-}
 function openResForPlayoffMatch(cat,p1id,p2id,fase,date,time,court){
   window._schedMatchToRemove={p1id:p1id,p2id:p2id,date:date,time:time,court:court,cat:cat};
   document.getElementById('mRes').classList.add('show');
@@ -851,14 +823,64 @@ function openResForPlayoffMatch(cat,p1id,p2id,fase,date,time,court){
   document.getElementById('rSc').value='';document.getElementById('rW').value='';document.getElementById('rDt').value=date||todayStr;
   document.getElementById('rWinnerDisplay').innerHTML='';
 }
+function renderGroupStandingsSummary(cat){
+  var groups=['A','B','C','D'];
+  var html='<div class="slbl" style="margin-top:4px">📊 Posiciones actuales por grupo</div>';
+  html+='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px">';
+  groups.forEach(function(g){
+    var arr=computeGroupStandings(cat,g);
+    html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:10px 12px">';
+    html+='<div style="font-size:.7rem;font-weight:700;color:var(--acc);margin-bottom:6px">GRUPO '+g+'</div>';
+    if(!arr.length){
+      html+='<div style="font-size:.7rem;color:var(--tm)">Sin jugadores</div>';
+    }else{
+      arr.forEach(function(s,i){
+        var pos=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'°';
+        html+='<div style="display:flex;justify-content:space-between;gap:6px;font-size:.72rem;padding:2px 0;'+(i<2?'font-weight:700':'color:var(--tm)')+'"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+pos+' '+s.nm+'</span><span style="flex-shrink:0">'+s.pts+'pts</span></div>';
+      });
+    }
+    html+='</div>';
+  });
+  html+='</div>';
+  return html;
+}
+function renderProjectedQuarters(cat){
+  var groups=['A','B','C','D'];
+  var standings={},incomplete=false;
+  groups.forEach(function(g){
+    var arr=computeGroupStandings(cat,g);
+    standings[g]=arr;
+    if(arr.length<2)incomplete=true;
+  });
+  var html='<div class="slbl">⚡ Cruces Proyectados de Cuartos</div>';
+  if(incomplete){
+    html+='<div style="background:var(--card);border:1px dashed var(--brd);border-radius:var(--rs);padding:14px;text-align:center;font-size:.75rem;color:var(--tm);margin-bottom:16px">Todavía faltan jugadores en algún grupo para proyectar los cruces</div>';
+    return html;
+  }
+  html+='<div style="font-size:.68rem;color:var(--tm);margin-bottom:10px">Se actualiza solo según las posiciones actuales. Puede cambiar hasta que termine la fase de grupos.</div>';
+  var pairs=[['A',1,'B',2],['B',1,'A',2],['C',1,'D',2],['D',1,'C',2]];
+  pairs.forEach(function(pair){
+    var g1=pair[0],pos1=pair[1],g2=pair[2],pos2=pair[3];
+    var p1=standings[g1][pos1-1],p2=standings[g2][pos2-1];
+    if(!p1||!p2)return;
+    var already=schedule.some(function(s){return s.cat===cat&&s.fase==='cuartos'&&((s.p1id===p1.id&&s.p2id===p2.id)||(s.p1id===p2.id&&s.p2id===p1.id))})
+              ||results.some(function(r){return r.cat===cat&&r.fase==='cuartos'&&((r.p1id===p1.id&&r.p2id===p2.id)||(r.p1id===p2.id&&r.p2id===p1.id))});
+    var btn=(isAdmin&&!already)?'<button onclick="openPlayoffSchedule(\''+cat+'\',\''+p1.id+'\',\''+p2.id+'\',\'cuartos\')" style="padding:6px 12px;border-radius:8px;border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);font-size:.7rem;font-weight:700;cursor:pointer;flex-shrink:0">📅 Programar</button>':(already?'<span style="font-size:.65rem;color:var(--tm);font-weight:600;flex-shrink:0">✓ Ya definido</span>':'');
+    html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">';
+    html+='<span style="font-size:.82rem"><b>'+pos1+'°'+g1+'</b> '+p1.nm+' <span style="color:var(--tm)">vs</span> <b>'+pos2+'°'+g2+'</b> '+p2.nm+'</span>';
+    html+=btn;
+    html+='</div>';
+  });
+  return html;
+}
 function rPlayoffsPanel(){
-  var adminBtn=isAdmin?'<button class="fb" onclick="rGenerarCuartos()" style="margin-bottom:14px">⚡ Generar Cruces de Cuartos (1° vs 2°)</button>':'';
+  var html=renderGroupStandingsSummary(selCat)+renderProjectedQuarters(selCat);
   var pendFases=['cuartos','semis','final'];
   var pendHtml='';
   pendFases.forEach(function(f){
     var pend=schedule.filter(function(s){return s.cat===selCat&&s.fase===f});
     if(!pend.length)return;
-    pendHtml+='<div class="slbl" style="margin-top:10px">⏳ '+FASE_L[f]+' — Pendientes de jugar</div>';
+    pendHtml+='<div class="slbl" style="margin-top:10px">⏳ '+FASE_L[f]+' — Programados</div>';
     pend.forEach(function(s){
       pendHtml+='<div style="background:var(--card);border:1.5px dashed var(--acc);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">';
       pendHtml+='<span style="font-size:.82rem;font-weight:700">'+s.p1+' <span style="color:var(--tm);font-weight:400">vs</span> '+s.p2+'</span>';
@@ -866,7 +888,7 @@ function rPlayoffsPanel(){
       pendHtml+='</div>';
     });
   });
-  return adminBtn+pendHtml+rPlayoffs();
+  return html+pendHtml+rPlayoffs();
 }
 function rPlayoffs(){
   var fases=['cuartos','semis','final'];
@@ -1265,8 +1287,11 @@ function openResFromMatch(idx){
   document.getElementById('rSc').value='';document.getElementById('rW').value='';document.getElementById('rDt').value=m.date;
   document.getElementById('rWinnerDisplay').innerHTML='';
 }
+var _schedFase='grupos';
 function openSchMod(){
+  _schedFase='grupos';
   document.getElementById('mSch').classList.add('show');fillCatSel(document.getElementById('sCat'));
+  document.getElementById('sGrp').style.display='inline-block';
   document.getElementById('sGrp').value='';
   document.getElementById('sP1').innerHTML='<option value="">J1...</option>';document.getElementById('sP2').innerHTML='<option value="">J2...</option>';
   document.getElementById('sDt').value=todayStr;document.getElementById('sTm').value='';document.getElementById('sCo').value='';
@@ -1280,6 +1305,18 @@ function openSchMod(){
       syncOpp('sP1','sP2');
     }
   }
+}
+function openPlayoffSchedule(cat,p1id,p2id,fase){
+  _schedFase=fase;
+  document.getElementById('mSch').classList.add('show');
+  fillCatSel(document.getElementById('sCat'));
+  document.getElementById('sCat').value=cat;
+  document.getElementById('sGrp').style.display='none';
+  document.getElementById('sGrp').value='';
+  fillPlByCat(cat,document.getElementById('sP1'),document.getElementById('sP2'));
+  document.getElementById('sP1').value=p1id;document.getElementById('sP2').value=p2id;
+  syncOpp('sP1','sP2');
+  document.getElementById('sDt').value=todayStr;document.getElementById('sTm').value='';document.getElementById('sCo').value='';
 }
 function sPickCat(){
   document.getElementById('sGrp').value='';
@@ -1296,8 +1333,12 @@ function saveSch(){
   var date=document.getElementById('sDt').value,time=document.getElementById('sTm').value,court=document.getElementById('sCo').value;
   if(!cat||!p1id||!p2id||!date||!time||!court||p1id===p2id){toast('Completá todos los campos');return}
   var p1=parts.find(function(p){return p.id===p1id}),p2=parts.find(function(p){return p.id===p2id});
-  schedule.push({date:date,time:time,court:parseInt(court),cat:cat,p1id:p1id,p2id:p2id,p1:p1.apellido+' '+p1.nombre,p2:p2.apellido+' '+p2.nombre});
-  db.ref('programacion').set(schedule);clMod('mSch');rCal();rUp();toast('Partido programado');
+  var entry={date:date,time:time,court:parseInt(court),cat:cat,p1id:p1id,p2id:p2id,p1:p1.apellido+' '+p1.nombre,p2:p2.apellido+' '+p2.nombre};
+  if(_schedFase&&_schedFase!=='grupos')entry.fase=_schedFase;
+  schedule.push(entry);
+  db.ref('programacion').set(schedule);clMod('mSch');rCal();rUp();
+  toast(_schedFase!=='grupos'?'Cruce de '+FASE_L[_schedFase]+' programado':'Partido programado');
+  _schedFase='grupos';
 }
 
 // ═══ MÁS ═══
