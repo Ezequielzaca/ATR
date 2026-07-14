@@ -15,6 +15,7 @@
 <style>
 :root{--bg:#f5f0e6;--card:#ffffff;--card-h:#ede8de;--acc:#722F37;--acc-d:rgba(114,47,55,.12);--acc-g:rgba(114,47,55,.25);--t1:#2d1f1f;--t2:#6b5c5c;--tm:#9a8a8a;--brd:rgba(114,47,55,.1);--r:16px;--rs:10px;--nav-h:72px;--sig:#a855f7;--oro:#d4a017;--pla:#8a8a8a;--bro:#c47a20;--mad:#7a5a30;--muj:#d44a7a;--hdr-bg:rgba(245,240,230,.92);--nav-bg:rgba(245,240,230,.95);--mdl-bg:#f5f0e6;--input-bg:#fff;--tbl-hdr:#ede8de;--win-bg:rgba(22,163,74,.12);--win-c:#16a34a;--loss-bg:rgba(220,38,38,.08);--loss-c:#dc2626;--shadow-sm:0 2px 10px rgba(114,47,55,.07),0 1px 2px rgba(0,0,0,.04);--shadow-md:0 6px 22px rgba(114,47,55,.1),0 2px 6px rgba(0,0,0,.05)}
 body.dark{--bg:#0d0d0d;--card:#1a1a1a;--card-h:#252525;--acc:#c4575f;--acc-d:rgba(196,87,95,.15);--acc-g:rgba(196,87,95,.25);--t1:#e8e0e0;--t2:#9a8a8a;--tm:#6b5c5c;--brd:rgba(255,255,255,.08);--hdr-bg:rgba(13,13,13,.92);--nav-bg:rgba(13,13,13,.95);--mdl-bg:#1a1a1a;--input-bg:#111;--tbl-hdr:#1a1a1a;--win-bg:rgba(22,163,74,.15);--win-c:#4ade80;--loss-bg:rgba(220,38,38,.12);--loss-c:#f87171;--shadow-sm:0 2px 12px rgba(0,0,0,.45),0 1px 2px rgba(0,0,0,.3);--shadow-md:0 6px 24px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.35)}
+body.dark .catsel{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c4575f' stroke-width='2.5'><path d='M6 9l6 6 6-6'/></svg>")}
 /* Theme toggle */
 .theme-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--brd);background:var(--card);color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:.2s;flex-shrink:0;box-shadow:var(--shadow-sm)}
 .theme-btn:active{transform:scale(.9) rotate(15deg)}
@@ -85,6 +86,9 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 
 /* Cat tabs */
 .ctabs{display:flex;gap:6px;flex-wrap:nowrap;margin-bottom:18px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;justify-content:center}
+.selrow{display:flex;gap:8px;margin-bottom:18px}
+.catsel{flex:1;padding:12px 14px;border-radius:var(--rs);border:1.5px solid var(--brd);background:var(--card);color:var(--t1);font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:700;outline:0;cursor:pointer;box-shadow:var(--shadow-sm);-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23722F37' stroke-width='2.5'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 12px center;background-size:16px;padding-right:36px}
+.catsel:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-d)}
 .ctabs::-webkit-scrollbar{display:none}
 .ct{padding:6px 14px;border-radius:20px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;border:1.5px solid transparent;transition:.2s;background:var(--card);color:var(--tm);flex-shrink:0;box-shadow:var(--shadow-sm)}
 .ct:active{transform:scale(.94)}
@@ -264,8 +268,10 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 <!-- CUADROS -->
 <div class="page" id="pg-cuadros">
   <div class="slbl">Cuadros por Categoría</div>
-  <div class="ctabs" id="cTabs"></div>
-  <div class="ctabs" id="cGrpTabs" style="margin-top:-10px"></div>
+  <div class="selrow">
+    <select class="fs catsel" id="cCatSel"></select>
+    <select class="fs catsel" id="cGrpSel" style="display:none"></select>
+  </div>
   <div id="cGrid"></div>
 </div>
 
@@ -275,8 +281,10 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
   <div style="margin-bottom:14px"><input class="fi" id="pSearch" placeholder="🔍 Buscar jugador..." oninput="searchPlayer()" style="width:100%"/></div>
   <div id="pSearchResult" style="display:none;margin-bottom:16px"></div>
   <div id="pNormal">
-    <div class="ctabs" id="pTabs"></div>
-    <div class="ctabs" id="pGrpTabs" style="margin-top:-10px"></div>
+    <div class="selrow">
+      <select class="fs catsel" id="pCatSel"></select>
+      <select class="fs catsel" id="pGrpSel" style="display:none"></select>
+    </div>
     <div id="pTbl"></div>
   </div>
 </div>
@@ -293,7 +301,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
   <div id="masMain">
     <div class="mi" onclick="subPg('login')"><div class="mic" style="background:linear-gradient(135deg,#722F37,#5a1f27)">🔐</div><div><div class="mit" id="loginBtnTxt">Iniciar Sesión</div><div class="mid" id="loginBtnSub">Jugadores y administrador</div></div></div>
     <div class="mi" id="miEntradaBtn" style="display:none" onclick="subPg('mientrada')"><div class="mic" style="background:linear-gradient(135deg,#722F37,#5a1f27)">🎟️</div><div><div class="mit">Mi Entrada</div><div class="mid">Tu QR de acceso al torneo</div></div></div>
-    <div class="mi" id="partBtn" style="display:none" onclick="subPg('part')"><div class="mic pa">👤</div><div><div class="mit">Participantes</div><div class="mid">Ver jugadores del torneo</div></div></div>
+    <div class="mi" onclick="subPg('part')"><div class="mic pa">👤</div><div><div class="mit">Participantes</div><div class="mid">Ver jugadores del torneo</div></div></div>
     <div class="mi" onclick="subPg('spo')"><div class="mic sp">⭐</div><div><div class="mit">Sponsors</div><div class="mid">Marcas del torneo</div></div></div>
     <div class="mi" onclick="subPg('info')"><div class="mic" style="background:linear-gradient(135deg,#0ea5e9,#0369a1)">📋</div><div><div class="mit">Información</div><div class="mid">Reglamento, premios y sede</div></div></div>
     <div class="mi" onclick="subPg('cont')"><div class="mic co">💬</div><div><div class="mit">Contacto</div><div class="mid">Escribinos</div></div></div>
@@ -303,7 +311,6 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div class="mi" id="usersBtn" style="display:none" onclick="subPg('users')"><div class="mic" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">🗂️</div><div><div class="mit">Usuarios</div><div class="mid">Cuentas de jugadores</div></div></div>
     <div class="mi" id="insigBtn" style="display:none" onclick="subPg('insignias')"><div class="mic" style="background:linear-gradient(135deg,#d4a017,#a16207)">🏅</div><div><div class="mit">Insignias</div><div class="mid">Logros y apodos de jugadores</div></div></div>
     <div class="mi" id="admMenuBtn" style="display:none" onclick="subPg('admin')"><div class="mic" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">⚙️</div><div><div class="mit">Panel Admin</div><div class="mid">Gestionar torneo</div></div></div>
-    <div class="mi" id="tallesBtn" style="display:none" onclick="subPg('talles')"><div class="mic" style="background:linear-gradient(135deg,#0d9488,#0f766e)">👕</div><div><div class="mit">Talles</div><div class="mid">Carga de talles de remeras</div></div></div>
   </div>
   <!-- LOGIN / REGISTER / PROFILE -->
   <div id="sub-login" style="display:none">
@@ -393,6 +400,10 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
       <div class="fr"><select class="fs" id="iC"><option value="">Categoría...</option><option value="signature">Signature</option><option value="oro">Oro</option><option value="plata">Plata</option><option value="bronce">Bronce</option><option value="madera">Madera</option><option value="mujeres">Mujeres</option></select><select class="fs" id="iG"><option value="">Grupo...</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
       <div class="fr"><button class="fb" onclick="addP()" style="flex:1">Agregar al Cuadro</button><button onclick="quickAddP()" style="width:48px;border-radius:var(--rs);border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);cursor:pointer;font-size:1.3rem;font-weight:700;flex-shrink:0" title="Agregar rápido (mantiene categoría y grupo)">+</button></div>
     </div>
+    <div id="pSearchWrap" style="display:none;margin-bottom:14px;position:relative">
+      <input class="fi" id="pSearchAdm" placeholder="🔍 Buscar participante..." oninput="rPList()" style="width:100%;padding-right:36px"/>
+      <button id="pSearchClear" onclick="document.getElementById('pSearchAdm').value='';rPList()" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--tm);font-size:1rem;cursor:pointer;padding:4px">✕</button>
+    </div>
     <div id="pList"></div>
   </div>
   <div id="sub-spo" style="display:none">
@@ -443,23 +454,6 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <a class="ctc" href="https://www.instagram.com/tenis_atr" target="_blank"><div class="ctic ig">📸</div><div><div style="font-weight:600">Instagram</div><div style="font-size:.78rem;color:var(--tm)">@tenis_atr</div></div></a>
     <a class="ctc" href="https://wa.me/5493794825167" target="_blank"><div class="ctic wp">📱</div><div><div style="font-weight:600">WhatsApp</div><div style="font-size:.78rem;color:var(--tm)">+54 9 379 482-5167</div></div></a>
     <a class="ctc" href="mailto:tenisatr@gmail.com"><div class="ctic em">✉️</div><div><div style="font-weight:600">Email</div><div style="font-size:.78rem;color:var(--tm)">tenisatr@gmail.com</div></div></a>
-  </div>
-  <!-- Talles -->
-  <div id="sub-talles" style="display:none">
-    <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Talles de Remeras</span></div>
-    <div id="tallesStats" style="display:flex;gap:8px;margin-bottom:12px"></div>
-    <div class="ctabs" id="tallesFilter" style="margin-bottom:12px"></div>
-    <div style="position:relative;margin-bottom:12px"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:.9rem;opacity:.5;pointer-events:none">🔍</span><input class="fi" id="tallesSearch" type="text" placeholder="Buscar jugador..." oninput="rTalles()" style="width:100%;padding-left:40px"/><button id="tallesSearchX" onclick="document.getElementById('tallesSearch').value='';rTalles()" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:8px;border:0;background:var(--acc-d);color:var(--acc);cursor:pointer;font-size:.75rem;font-weight:700">✕</button></div>
-    <div id="tallesList"></div>
-  </div>
-  <!-- Modal: Asignar Talle -->
-  <div class="mbg" id="mTalle">
-    <div class="mdl">
-      <div class="mh"><span class="mt">Asignar Talle</span><button class="mx" onclick="clMod('mTalle')">✕</button></div>
-      <div id="mTalleNm" style="font-weight:600;font-size:.95rem;margin-bottom:14px;text-align:center;color:var(--t1)"></div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px" id="mTalleOpts"></div>
-      <button onclick="setTalle(mTalleId,'')" style="width:100%;padding:10px;border-radius:var(--rs);border:1px solid var(--brd);background:var(--card);color:var(--tm);font-family:'Outfit',sans-serif;font-size:.82rem;cursor:pointer">Borrar talle</button>
-    </div>
   </div>
   <!-- Información -->
   <div id="sub-info" style="display:none">
@@ -722,25 +716,28 @@ function rUp(){
 // ═══ CUADROS ═══
 var selGrp=null; // null=all groups, 'A','B','C','D'
 function rCTabs(){
-  var t=document.getElementById('cTabs');t.innerHTML='';
+  var sel=document.getElementById('cCatSel');
+  var opts='<option value="">Elegí categoría...</option>';
   CATS.forEach(function(cat){
     var n=parts.filter(function(p){return p.cat===cat}).length;if(!n)return;
-    t.innerHTML+='<div class="ct'+(selCat===cat?' a-'+CS[cat]:'')+'" onclick="togCat(\''+cat+'\')">'+CL[cat]+' ('+n+')</div>';
+    opts+='<option value="'+cat+'"'+(selCat===cat?' selected':'')+'>'+CL[cat]+' ('+n+')</option>';
   });
+  sel.innerHTML=opts;
+  sel.onchange=function(){selCat=sel.value||null;selGrp=null;rCTabs();rGrid()};
   rCGrpTabs();
 }
 function rCGrpTabs(){
-  var gt=document.getElementById('cGrpTabs');gt.innerHTML='';
-  if(!selCat)return;
+  var gsel=document.getElementById('cGrpSel');
+  if(!selCat){gsel.style.display='none';return}
+  gsel.style.display='block';
   var grps=[null,'A','B','C','D','PO'];
-  var labels=['General','A','B','C','D','🏆 Playoffs'];
+  var labels=['General','Grupo A','Grupo B','Grupo C','Grupo D','🏆 Playoffs'];
+  var opts='';
   grps.forEach(function(val,i){
-    var d=document.createElement('div');d.className='ct';
-    if(selGrp===val){d.style.background='var(--acc-d)';d.style.color='var(--acc)';d.style.borderColor='var(--acc)'}
-    d.textContent=labels[i];
-    d.onclick=function(){selGrp=val;rCGrpTabs();rGrid()};
-    gt.appendChild(d);
+    opts+='<option value="'+(val||'')+'"'+(selGrp===val?' selected':'')+'>'+labels[i]+'</option>';
   });
+  gsel.innerHTML=opts;
+  gsel.onchange=function(){selGrp=gsel.value||null;rGrid()};
 }
 function togCat(cat){selCat=selCat===cat?null:cat;selGrp=null;rCTabs();rGrid()}
 function setSelGrp(g){selGrp=g;rCGrpTabs();rGrid()}
@@ -836,25 +833,28 @@ function rGrid(){
 // ═══ PUNTOS ═══
 var ptsGrp=null;
 function rPTabs(){
-  var t=document.getElementById('pTabs');t.innerHTML='';
+  var sel=document.getElementById('pCatSel');
+  var opts='<option value="">Elegí categoría...</option>';
   CATS.forEach(function(cat){
     var n=parts.filter(function(p){return p.cat===cat}).length;if(!n)return;
-    t.innerHTML+='<div class="ct'+(ptsCat===cat?' a-'+CS[cat]:'')+'" onclick="togPCat(\''+cat+'\')">'+CL[cat]+' ('+n+')</div>';
+    opts+='<option value="'+cat+'"'+(ptsCat===cat?' selected':'')+'>'+CL[cat]+' ('+n+')</option>';
   });
+  sel.innerHTML=opts;
+  sel.onchange=function(){ptsCat=sel.value||null;ptsGrp=null;rPTabs();rPts()};
   rPGrpTabs();
 }
 function rPGrpTabs(){
-  var gt=document.getElementById('pGrpTabs');gt.innerHTML='';
-  if(!ptsCat)return;
+  var gsel=document.getElementById('pGrpSel');
+  if(!ptsCat){gsel.style.display='none';return}
+  gsel.style.display='block';
   var grps=[null,'A','B','C','D'];
-  var labels=['General','A','B','C','D'];
+  var labels=['General','Grupo A','Grupo B','Grupo C','Grupo D'];
+  var opts='';
   grps.forEach(function(val,i){
-    var d=document.createElement('div');d.className='ct';
-    if(ptsGrp===val){d.style.background='var(--acc-d)';d.style.color='var(--acc)';d.style.borderColor='var(--acc)'}
-    d.textContent=labels[i];
-    d.onclick=function(){ptsGrp=val;rPGrpTabs();rPts()};
-    gt.appendChild(d);
+    opts+='<option value="'+(val||'')+'"'+(ptsGrp===val?' selected':'')+'>'+labels[i]+'</option>';
   });
+  gsel.innerHTML=opts;
+  gsel.onchange=function(){ptsGrp=gsel.value||null;rPts()};
 }
 function togPCat(cat){ptsCat=ptsCat===cat?null:cat;ptsGrp=null;rPTabs();rPts()}
 function setPtsGrp(g){ptsGrp=g;rPGrpTabs();rPts()}
@@ -1285,8 +1285,14 @@ function delLogro(pid,idx){
 
 function rPList(){
   var el=document.getElementById('pList');
+  var searchWrap=document.getElementById('pSearchWrap');
+  if(searchWrap)searchWrap.style.display=isAdmin?'block':'none';
+  var q=isAdmin?norm((document.getElementById('pSearchAdm')||{}).value||''):'';
+  var clearBtn=document.getElementById('pSearchClear');
+  if(clearBtn)clearBtn.style.display=q?'block':'none';
   var s=parts.slice().sort(function(a,b){return(a.cat+a.apellido).localeCompare(b.cat+b.apellido)});
-  if(!s.length){el.innerHTML='<div class="es"><div class="es-i">👤</div><div class="es-t">Sin participantes</div></div>';return}
+  if(q)s=s.filter(function(p){return norm(p.nombre+' '+p.apellido).indexOf(q)!==-1});
+  if(!s.length){el.innerHTML='<div class="es"><div class="es-i">👤</div><div class="es-t">'+(q?'Sin resultados para "'+q+'"':'Sin participantes')+'</div></div>';return}
   var html='';var cc='';s.forEach(function(p){
     if(p.cat!==cc){cc=p.cat;html+='<div class="slbl" style="margin-top:16px">'+CL[p.cat]+'</div>'}
     var btns='';
@@ -1744,10 +1750,6 @@ function updAdmUI(){
   if(insigBtn)insigBtn.style.display=isAdmin?'flex':'none';
   var admMBtn=document.getElementById('admMenuBtn');
   if(admMBtn)admMBtn.style.display=isAdmin?'flex':'none';
-  var tallesB=document.getElementById('tallesBtn');
-  if(tallesB)tallesB.style.display=isAdmin?'flex':'none';
-  var partB=document.getElementById('partBtn');
-  if(partB)partB.style.display=(isAdmin||curUser)?'flex':'none';
   var miEntBtn=document.getElementById('miEntradaBtn');
   if(miEntBtn)miEntBtn.style.display=curUser?'flex':'none';
   // Update login button text
@@ -1827,7 +1829,6 @@ subPg=function(s){
   if(s==='part'){rPList();updAdmUI()}
   if(s==='spo'){rSpo();updAdmUI()}
   if(s==='pagos')rPagos();
-  if(s==='talles')rTalles();
   if(s==='info')rInfo();
   if(s==='balance'){balView='ingresos';rBalance()}
   if(s==='entrada')rEntradas();
@@ -1854,88 +1855,6 @@ var pagos={};// {playerId: true/false}
 db.ref('pagos').on('value',function(s){pagos=s.val()||{}});
 var entregas={};// {playerId: true/false} - indumentaria entregada
 db.ref('entregas').on('value',function(s){entregas=s.val()||{}});
-var talles={};// {playerId: 'S'|'M'|'L'|'XL'|'XXL'}
-db.ref('talles').on('value',function(s){talles=s.val()||{};if(curPg==='mas'&&document.getElementById('sub-talles')&&document.getElementById('sub-talles').style.display==='block')rTalles()});
-
-// ═══ TALLES ═══
-var tallesView='todos';// 'todos','sin','S','M','L','XL','XXL'
-var mTalleId='';
-function openTalle(id){
-  mTalleId=id;
-  var p=parts.find(function(x){return x.id===id});
-  if(!p)return;
-  document.getElementById('mTalleNm').textContent=p.apellido+', '+p.nombre;
-  var actual=talles[id]||'';
-  var opts=document.getElementById('mTalleOpts');
-  opts.innerHTML='';
-  ['S','M','L','XL','XXL','XXXL'].forEach(function(t){
-    var b=document.createElement('button');
-    var sel=actual===t;
-    b.style.cssText='padding:14px 6px;border-radius:var(--rs);border:1.5px solid '+(sel?'var(--acc)':'var(--brd)')+';background:'+(sel?'var(--acc)':'var(--card)')+';color:'+(sel?'#fff':'var(--t1)')+';font-family:Outfit,sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:.2s';
-    b.textContent=t;
-    b.onclick=function(){setTalle(mTalleId,t)};
-    opts.appendChild(b);
-  });
-  document.getElementById('mTalle').classList.add('show');
-}
-function setTalle(id,val){
-  if(!id)return;
-  if(val)talles[id]=val;else delete talles[id];
-  db.ref('talles').set(talles);
-  var p=parts.find(function(x){return x.id===id});
-  var nombre=p?p.apellido+' '+p.nombre:'Jugador';
-  clMod('mTalle');
-  rTalles();
-  toast(val?'👕 '+nombre+' → talle '+val:nombre+' — talle borrado');
-}
-function rTalles(){
-  // Stats
-  var totalConT=parts.filter(function(p){return!!talles[p.id]}).length;
-  var totalSinT=parts.length-totalConT;
-  document.getElementById('tallesStats').innerHTML=
-    '<div style="flex:1;background:rgba(13,148,136,.1);border:1px solid rgba(13,148,136,.25);border-radius:var(--rs);padding:10px;text-align:center"><div style="font-size:1.2rem;font-weight:800;color:#0d9488">'+totalConT+'</div><div style="font-size:.6rem;color:#0d9488;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Con talle</div></div>'+
-    '<div style="flex:1;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:var(--rs);padding:10px;text-align:center"><div style="font-size:1.2rem;font-weight:800;color:#d97706">'+totalSinT+'</div><div style="font-size:.6rem;color:#d97706;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Sin talle</div></div>';
-
-  // Filter tabs
-  var ft=document.getElementById('tallesFilter');ft.innerHTML='';
-  var labels=['Todos','Sin talle','S','M','L','XL','XXL'];
-  var vals=['todos','sin','S','M','L','XL','XXL'];
-  labels.forEach(function(label,i){
-    var val=vals[i];
-    var d=document.createElement('div');d.className='ct';
-    if(tallesView===val){d.style.background='var(--acc-d)';d.style.color='var(--acc)';d.style.borderColor='var(--acc)'}
-    d.textContent=label;
-    d.onclick=function(){tallesView=val;rTalles()};
-    ft.appendChild(d);
-  });
-
-  var el=document.getElementById('tallesList');
-  var sorted=parts.slice().sort(function(a,b){return(a.cat+a.apellido).localeCompare(b.cat+b.apellido)});
-
-  // Filter
-  if(tallesView==='sin')sorted=sorted.filter(function(p){return!talles[p.id]});
-  else if(tallesView!=='todos')sorted=sorted.filter(function(p){return talles[p.id]===tallesView});
-
-  // Search
-  var sIn=document.getElementById('tallesSearch');
-  var q=sIn?norm(sIn.value.trim()):'';
-  var sX=document.getElementById('tallesSearchX');
-  if(sX)sX.style.display=q?'block':'none';
-  if(q)sorted=sorted.filter(function(p){return norm(p.nombre+' '+p.apellido).indexOf(q)>-1});
-
-  if(!sorted.length){el.innerHTML='<div class="es"><div class="es-i">'+(q?'🔍':'👕')+'</div><div class="es-t">'+(q?'No se encontró "'+(sIn?sIn.value:'')+'"':'Sin participantes en esta lista')+'</div></div>';return}
-
-  var html='';var cc='';
-  sorted.forEach(function(p){
-    if(p.cat!==cc){cc=p.cat;html+='<div class="slbl" style="margin-top:14px">'+CL[p.cat]+'</div>'}
-    var t=talles[p.id]||'';
-    var tBtn=t
-      ? '<button onclick="openTalle(\''+p.id+'\')" style="min-width:48px;height:34px;padding:0 12px;border-radius:8px;border:1.5px solid var(--acc);background:var(--acc);color:#fff;cursor:pointer;font-size:.82rem;font-weight:800;font-family:Outfit,sans-serif;flex-shrink:0">'+t+'</button>'
-      : '<button onclick="openTalle(\''+p.id+'\')" style="min-width:48px;height:34px;padding:0 12px;border-radius:8px;border:1.5px dashed var(--brd);background:transparent;color:var(--tm);cursor:pointer;font-size:.7rem;font-weight:600;font-family:Outfit,sans-serif;flex-shrink:0">+ talle</button>';
-    html+='<div class="pc"><div class="pav">'+(p.nombre[0]||'')+(p.apellido[0]||'')+'</div><span class="pnm" style="flex:1">'+p.apellido+', '+p.nombre+'</span><span class="lb l-'+CS[p.cat]+'" style="font-size:.5rem;margin-right:4px">'+(p.grupo?'G'+p.grupo:'')+'</span>'+tBtn+'</div>';
-  });
-  el.innerHTML=html;
-}
 
 // ═══ ANUNCIO (banner editable por admin) ═══
 var anuncio={texto:'',activo:false};
@@ -2051,7 +1970,7 @@ function rPagos(){
     }else{
       btns='<div style="width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;'+(paid?'background:var(--acc);color:#fff':'background:rgba(239,68,68,.15);color:#f87171')+'">'+(paid?'✓':'✗')+'</div>';
     }
-    html+='<div class="pc"><div class="pav">'+(p.nombre[0]||'')+(p.apellido[0]||'')+'</div><span class="pnm" style="flex:1">'+p.apellido+', '+p.nombre+'</span>'+(talles[p.id]?'<span style="font-family:Space Mono,monospace;font-size:.6rem;font-weight:800;background:rgba(13,148,136,.15);color:#0d9488;padding:2px 7px;border-radius:6px;margin-right:4px">'+talles[p.id]+'</span>':'')+'<span class="lb l-'+CS[p.cat]+'" style="font-size:.5rem;margin-right:4px">'+(p.grupo?'G'+p.grupo:'')+'</span><div style="display:flex;gap:5px">'+btns+'</div></div>';
+    html+='<div class="pc"><div class="pav">'+(p.nombre[0]||'')+(p.apellido[0]||'')+'</div><span class="pnm" style="flex:1">'+p.apellido+', '+p.nombre+'</span><span class="lb l-'+CS[p.cat]+'" style="font-size:.5rem;margin-right:4px">'+(p.grupo?'G'+p.grupo:'')+'</span><div style="display:flex;gap:5px">'+btns+'</div></div>';
   });
   el.innerHTML=html;
 }
@@ -2063,7 +1982,7 @@ function setEntrega(id,val){
   rPagos();
   toast(val?'👕 '+nombre+' — Indumentaria entregada':nombre+' — Entrega desmarcada');
 }
-var INSCRIPCION=70000;
+var INSCRIPCION=60000;
 function setPago(id,val){
   pagos[id]=val;
   db.ref('pagos').set(pagos);
