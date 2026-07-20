@@ -141,7 +141,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 .fb:hover{transform:translateY(-1px);box-shadow:0 4px 16px var(--acc-g)}
 
 /* FAB */
-.fab{position:fixed;bottom:calc(var(--nav-h)+16px);right:max(16px,calc(50vw - 234px));width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#7dd3fc,#c4b5fd);border:0;color:#0a0e24;font-size:1.5rem;font-weight:700;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 4px 20px var(--acc-g);z-index:250;transition:.3s;animation:fabPulse 2.5s ease-in-out infinite}
+.fab{position:absolute;top:-68px;right:max(16px,calc(50vw - 234px));width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#7dd3fc,#c4b5fd);border:0;color:#0a0e24;font-size:1.5rem;font-weight:700;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 4px 20px var(--acc-g);z-index:250;transition:.3s;animation:fabPulse 2.5s ease-in-out infinite}
 .fab:active{transform:scale(.92)}
 @keyframes fabPulse{0%,100%{box-shadow:0 4px 20px var(--acc-g)}50%{box-shadow:0 4px 28px var(--acc-g),0 0 0 6px var(--acc-d)}}
 .fab:hover{transform:scale(1.1)}.fab.show{display:flex}
@@ -488,7 +488,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 </main>
 
 <!-- FAB -->
-<button class="fab" id="fab" onclick="fabAct()">+</button>
+<!-- FAB movido dentro de bnav para heredar su estabilidad en iOS -->
 
 <!-- Modal: Result -->
 <div class="mbg" id="mRes" onclick="if(event.target===this)clMod('mRes')"><div class="mdl">
@@ -566,7 +566,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 </div>
 <canvas id="scanCv" style="display:none"></canvas>
 
-<nav class="bnav"><div class="nits">
+<nav class="bnav"><button class="fab" id="fab" onclick="fabAct()">+</button><div class="nits">
   <button class="ni" onclick="nav('cuadros')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="nl">Cuadros</span></button>
   <button class="ni" onclick="nav('puntos')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span class="nl">Puntos</span></button>
   <button class="ni nih active" onclick="nav('inicio')"><div class="niw"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span class="nl" style="color:var(--acc)">Inicio</span></button>
