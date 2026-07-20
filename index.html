@@ -141,7 +141,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 .fb:hover{transform:translateY(-1px);box-shadow:0 4px 16px var(--acc-g)}
 
 /* FAB */
-.fab{position:fixed;bottom:calc(var(--nav-h)+16px);right:max(16px,calc(50vw - 234px));width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#7dd3fc,#c4b5fd);border:0;color:#0a0e24;font-size:1.5rem;font-weight:700;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 4px 20px var(--acc-g);z-index:150;transition:.3s;animation:fabPulse 2.5s ease-in-out infinite;-webkit-transform:translateZ(0);transform:translateZ(0);will-change:transform}
+.fab{position:fixed;bottom:calc(var(--nav-h)+16px);right:max(16px,calc(50vw - 234px));width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#7dd3fc,#c4b5fd);border:0;color:#0a0e24;font-size:1.5rem;font-weight:700;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 4px 20px var(--acc-g);z-index:250;transition:.3s;animation:fabPulse 2.5s ease-in-out infinite}
 .fab:active{transform:scale(.92)}
 @keyframes fabPulse{0%,100%{box-shadow:0 4px 20px var(--acc-g)}50%{box-shadow:0 4px 28px var(--acc-g),0 0 0 6px var(--acc-d)}}
 .fab:hover{transform:scale(1.1)}.fab.show{display:flex}
@@ -999,6 +999,12 @@ function rAutoWinner(){
   var winnerName=winner===1?p1Name:p2Name;
   disp.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;background:var(--acc-d);color:var(--acc);font-size:.8rem;font-weight:700">🏆 Ganador: '+winnerName+'</div>';
 }
+window._ptsInfoOpen=false;
+function togPtsInfo(){
+  window._ptsInfoOpen=!window._ptsInfoOpen;
+  var p=document.getElementById('ptsInfoPanel');
+  if(p)p.style.display=window._ptsInfoOpen?'block':'none';
+}
 function rPts(){
   var el=document.getElementById('pTbl');
   
@@ -1040,7 +1046,15 @@ function rPts(){
   function rb(p,r){if(p===1)return'rgba(2,132,199,.2)';if(p===2)return'rgba(251,191,36,.2)';if(p===3)return'rgba(245,158,11,.2)';return r>=50?'rgba(2,132,199,.15)':'rgba(239,68,68,.15)'}
   var showGrpCol=ptsGrp===null;
   var title=ptsGrp===null?'General — '+CL[ptsCat]:'Grupo '+ptsGrp+' — '+CL[ptsCat];
-  var h='<div style="font-weight:600;font-size:.85rem;margin-bottom:10px;text-align:center">'+title+'</div>';
+  var h='<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px"><span style="font-weight:600;font-size:.85rem">'+title+'</span><button onclick="togPtsInfo()" title="¿Qué significa cada columna?" style="width:22px;height:22px;border-radius:50%;border:1.5px solid var(--acc);background:var(--acc-d);color:var(--acc);font-size:.72rem;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-family:Georgia,serif;font-style:italic">i</button></div>';
+  h+='<div id="ptsInfoPanel" style="display:'+(window._ptsInfoOpen?'block':'none')+';background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:14px 16px;margin-bottom:12px;font-size:.75rem;line-height:1.9;color:var(--t2)">'
+    +'<div style="font-weight:700;color:var(--acc);font-size:.7rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">¿Qué significa cada columna?</div>'
+    +'<b>PJ</b> Partidos Jugados &nbsp;·&nbsp; <b>PG</b> Ganados &nbsp;·&nbsp; <b>PP</b> Perdidos<br>'
+    +'<b>Pts</b> Puntos: <span style="color:var(--win-c)">+1 por victoria</span>, <span style="color:#f87171">-1 por derrota</span>. En playoffs: Cuartos +2, Semi +3, Final +5 (perder no resta)<br>'
+    +'<b>SG / SP</b> Sets Ganados / Perdidos &nbsp;·&nbsp; <b>Dif</b> diferencia entre ambos<br>'
+    +'<b>GG / GP</b> Games Ganados / Perdidos &nbsp;·&nbsp; <b>Dif</b> diferencia entre ambos<br>'
+    +'<div style="margin-top:6px;padding-top:8px;border-top:1px solid var(--brd);font-size:.7rem;color:var(--tm)">En caso de empate en puntos, desempata primero la diferencia de sets y luego la de games. Tocá el nombre de un jugador para ver su ficha completa.</div>'
+    +'</div>';
   h+='<div class="pw"><table class="pt"><thead><tr><th>#</th><th>Jugador</th>'+(showGrpCol?'<th>Grp</th>':'')+'<th>PJ</th><th>PG</th><th>PP</th><th>Pts</th><th class="sep">SG</th><th>SP</th><th>Dif</th><th class="sep">GG</th><th>GP</th><th>Dif</th></tr></thead><tbody>';
   arr.forEach(function(s,i){
     var pC=i===0?'p1c':i===1?'p2c':i===2?'p3c':'';
