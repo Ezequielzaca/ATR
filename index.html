@@ -307,6 +307,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div class="mi" id="entradaBtn" style="display:none" onclick="subPg('entrada')"><div class="mic" style="background:linear-gradient(135deg,#0284c7,#1e3a8a)">🎟️</div><div><div class="mit">Entradas</div><div class="mid">QR y verificación</div></div></div>
     <div class="mi" id="usersBtn" style="display:none" onclick="subPg('users')"><div class="mic" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">🗂️</div><div><div class="mit">Usuarios</div><div class="mid">Cuentas de jugadores</div></div></div>
     <div class="mi" id="insigBtn" style="display:none" onclick="subPg('insignias')"><div class="mic" style="background:linear-gradient(135deg,#d4a017,#a16207)">🏅</div><div><div class="mit">Insignias</div><div class="mid">Logros y apodos de jugadores</div></div></div>
+    <div class="mi" id="partidosBtn" style="display:none" onclick="subPg('partidos')"><div class="mic" style="background:linear-gradient(135deg,#0284c7,#1e3a8a)">🎾</div><div><div class="mit">Partidos</div><div class="mid">Por jugar y jugados por grupo</div></div></div>
     <div class="mi" id="admMenuBtn" style="display:none" onclick="subPg('admin')"><div class="mic" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">⚙️</div><div><div class="mit">Panel Admin</div><div class="mid">Gestionar torneo</div></div></div>
   </div>
   <!-- LOGIN / REGISTER / PROFILE -->
@@ -388,6 +389,16 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
       <button class="fb" onclick="addLogro()">Agregar Logro</button>
     </div>
     <div id="insigLogrosList"></div>
+  </div>
+  <!-- Partidos (admin) -->
+  <div id="sub-partidos" style="display:none">
+    <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Partidos</span></div>
+    <div class="selrow">
+      <select class="fs catsel" id="mtchCatSel" onchange="rPartidos()"></select>
+      <select class="fs catsel" id="mtchGrpSel" onchange="rPartidos()"></select>
+    </div>
+    <div class="ctabs" id="mtchFilter" style="margin-bottom:14px"></div>
+    <div id="mtchList"></div>
   </div>
   <div id="sub-part" style="display:none">
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Participantes</span></div>
@@ -1261,7 +1272,11 @@ function saveRes(){
     window._schedMatchToRemove=null;
     rCal();rUp();
   }
-  clMod('mRes');rRes();toast('Resultado guardado'+(fase!=='grupos'?' — '+FASE_L[fase]:''));
+  clMod('mRes');rRes();
+  // Si estamos en la gestión de Partidos, refrescar esa lista
+  var subP=document.getElementById('sub-partidos');
+  if(subP&&subP.style.display!=='none')rPartidos();
+  toast('Resultado guardado'+(fase!=='grupos'?' — '+FASE_L[fase]:''));
 }
 // Quick result from upcoming match
 function openResFromMatch(idx){
@@ -1346,6 +1361,111 @@ function saveSch(){
 function subPg(s){document.getElementById('masMain').style.display='none';document.querySelectorAll('[id^="sub-"]').forEach(function(e){e.style.display='none'});var t=document.getElementById('sub-'+s);if(t)t.style.display='block';if(s==='part')rPList();if(s==='spo')rSpo()}
 function backMas(){document.querySelectorAll('[id^="sub-"]').forEach(function(e){e.style.display='none'});document.getElementById('masMain').style.display='block'}
 // ═══ INSIGNIAS ═══
+// ═══ GESTIÓN DE PARTIDOS (admin) ═══
+var mtchFilter='pendientes'; // 'pendientes' | 'jugados' | 'todos'
+function partidosInit(){
+  var cs=document.getElementById('mtchCatSel');
+  var copts='';
+  CATS.forEach(function(cat){
+    var n=parts.filter(function(p){return p.cat===cat}).length;if(!n)return;
+    copts+='<option value="'+cat+'">'+CL[cat]+'</option>';
+  });
+  cs.innerHTML=copts;
+  var gs=document.getElementById('mtchGrpSel');
+  gs.innerHTML='<option value="A">Grupo A</option><option value="B">Grupo B</option><option value="C">Grupo C</option><option value="D">Grupo D</option>';
+  rPartidos();
+}
+function rPartidos(){
+  // Filter tabs
+  var ft=document.getElementById('mtchFilter');ft.innerHTML='';
+  [['pendientes','⏳ Por jugar'],['jugados','✓ Jugados'],['todos','Todos']].forEach(function(pair){
+    var val=pair[0],label=pair[1];
+    var d=document.createElement('div');d.className='ct';
+    if(mtchFilter===val){d.style.background='var(--acc-d)';d.style.color='var(--acc)';d.style.borderColor='var(--acc)'}
+    d.textContent=label;
+    d.onclick=function(){mtchFilter=val;rPartidos()};
+    ft.appendChild(d);
+  });
+
+  var cat=document.getElementById('mtchCatSel').value;
+  var grp=document.getElementById('mtchGrpSel').value;
+  var el=document.getElementById('mtchList');
+  if(!cat||!grp){el.innerHTML='';return}
+
+  var pl=parts.filter(function(p){return p.cat===cat&&p.grupo===grp}).sort(function(a,b){return(a.apellido+a.nombre).localeCompare(b.apellido+b.nombre)});
+  if(pl.length<2){el.innerHTML='<div class="es"><div class="es-i">🎾</div><div class="es-t">Faltan jugadores en este grupo</div></div>';return}
+
+  // Generar todos los cruces posibles (round robin)
+  var cruces=[];
+  for(var i=0;i<pl.length;i++){
+    for(var j=i+1;j<pl.length;j++){
+      var a=pl[i],b=pl[j];
+      // Buscar si ya hay resultado de grupo entre estos dos
+      var res=results.find(function(r){
+        return r.cat===cat&&(!r.fase||r.fase==='grupos')&&
+          ((r.p1id===a.id&&r.p2id===b.id)||(r.p1id===b.id&&r.p2id===a.id));
+      });
+      cruces.push({a:a,b:b,res:res});
+    }
+  }
+
+  // Contadores
+  var jugados=cruces.filter(function(c){return c.res}).length;
+  var total=cruces.length;
+  var pend=total-jugados;
+
+  // Filtrar según tab
+  var shown=cruces;
+  if(mtchFilter==='pendientes')shown=cruces.filter(function(c){return!c.res});
+  if(mtchFilter==='jugados')shown=cruces.filter(function(c){return c.res});
+
+  // Resumen
+  var html='<div style="display:flex;gap:8px;margin-bottom:14px">';
+  html+='<div style="flex:1;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:var(--rs);padding:10px;text-align:center"><div style="font-size:1.2rem;font-weight:800;color:#d97706">'+pend+'</div><div style="font-size:.6rem;color:#d97706;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Por jugar</div></div>';
+  html+='<div style="flex:1;background:var(--win-bg);border:1px solid rgba(22,163,74,.2);border-radius:var(--rs);padding:10px;text-align:center"><div style="font-size:1.2rem;font-weight:800;color:var(--win-c)">'+jugados+'</div><div style="font-size:.6rem;color:var(--win-c);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Jugados</div></div>';
+  html+='<div style="flex:1;background:var(--acc-d);border:1px solid var(--brd);border-radius:var(--rs);padding:10px;text-align:center"><div style="font-size:1.2rem;font-weight:800;color:var(--acc)">'+total+'</div><div style="font-size:.6rem;color:var(--acc);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Total</div></div>';
+  html+='</div>';
+
+  if(!shown.length){
+    html+='<div class="es" style="padding:30px"><div class="es-t">'+(mtchFilter==='pendientes'?'¡Todos los partidos de este grupo se jugaron! 🎉':'Sin partidos en esta lista')+'</div></div>';
+    el.innerHTML=html;return;
+  }
+
+  shown.forEach(function(c){
+    var nmA=c.a.apellido+' '+c.a.nombre, nmB=c.b.apellido+' '+c.b.nombre;
+    if(c.res){
+      // Jugado - mostrar resultado con ganador
+      var wN=c.res.winner===1?c.res.p1:c.res.p2;
+      html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px">';
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">';
+      html+='<span style="font-size:.82rem;flex:1;min-width:0"><span style="color:'+(wN===c.res.p1?'var(--win-c);font-weight:700':'var(--tm)')+'">'+c.res.p1+'</span> <span style="color:var(--tm);font-size:.7rem">vs</span> <span style="color:'+(wN===c.res.p2?'var(--win-c);font-weight:700':'var(--tm)')+'">'+c.res.p2+'</span></span>';
+      html+='<span style="font-family:Space Mono,monospace;font-weight:700;font-size:.78rem;color:var(--acc);flex-shrink:0">'+c.res.score+'</span>';
+      html+='</div></div>';
+    }else{
+      // Pendiente - botón cargar
+      html+='<div style="background:var(--card);border:1.5px dashed var(--brd);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">';
+      html+='<span style="font-size:.82rem;font-weight:600">'+nmA+' <span style="color:var(--tm);font-weight:400">vs</span> '+nmB+'</span>';
+      html+='<button onclick="openResForGroupMatch(\''+cat+'\',\''+grp+'\',\''+c.a.id+'\',\''+c.b.id+'\')" style="padding:7px 14px;border-radius:8px;border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);font-size:.72rem;font-weight:700;cursor:pointer;flex-shrink:0">Cargar resultado</button>';
+      html+='</div>';
+    }
+  });
+  el.innerHTML=html;
+}
+function openResForGroupMatch(cat,grp,p1id,p2id){
+  window._schedMatchToRemove=null;
+  document.getElementById('mRes').classList.add('show');
+  fillCatSel(document.getElementById('rCat'));
+  document.getElementById('rFase').value='grupos';
+  document.getElementById('rGrpRow').style.display='flex';
+  document.getElementById('rCat').value=cat;
+  document.getElementById('rGrp').value=grp;
+  fillPlByGrp(cat,grp,document.getElementById('rP1'),document.getElementById('rP2'));
+  document.getElementById('rP1').value=p1id;document.getElementById('rP2').value=p2id;
+  syncOpp('rP1','rP2');
+  document.getElementById('rSc').value='';document.getElementById('rW').value='';document.getElementById('rDt').value=todayStr;
+  document.getElementById('rWinnerDisplay').innerHTML='';
+}
+
 function insigInit(){
   rBadgeGroups();
   rLogroPicker();
@@ -1894,6 +2014,8 @@ function updAdmUI(){
   if(usrBtn)usrBtn.style.display=isAdmin?'flex':'none';
   var insigBtn=document.getElementById('insigBtn');
   if(insigBtn)insigBtn.style.display=isAdmin?'flex':'none';
+  var partidosBtn=document.getElementById('partidosBtn');
+  if(partidosBtn)partidosBtn.style.display=isAdmin?'flex':'none';
   var admMBtn=document.getElementById('admMenuBtn');
   if(admMBtn)admMBtn.style.display=isAdmin?'flex':'none';
   var miEntBtn=document.getElementById('miEntradaBtn');
@@ -1980,6 +2102,7 @@ subPg=function(s){
   if(s==='entrada')rEntradas();
   if(s==='users')rUsers();
   if(s==='insignias')insigInit();
+  if(s==='partidos')partidosInit();
   if(s==='mientrada')rMiEntrada();
   if(s==='login'){
     if(curUser){showCuentaLogged()}
