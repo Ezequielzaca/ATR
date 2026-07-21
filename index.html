@@ -393,6 +393,9 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
   <!-- Partidos (admin) -->
   <div id="sub-partidos" style="display:none">
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Partidos</span></div>
+    <div class="slbl">Resumen del Torneo</div>
+    <div id="mtchGlobal" style="margin-bottom:20px"></div>
+    <div class="slbl">Ver por Grupo</div>
     <div class="selrow">
       <select class="fs catsel" id="mtchCatSel" onchange="rPartidos()"></select>
       <select class="fs catsel" id="mtchGrpSel" onchange="rPartidos()"></select>
@@ -1275,7 +1278,7 @@ function saveRes(){
   clMod('mRes');rRes();
   // Si estamos en la gestión de Partidos, refrescar esa lista
   var subP=document.getElementById('sub-partidos');
-  if(subP&&subP.style.display!=='none')rPartidos();
+  if(subP&&subP.style.display!=='none'){rGlobalMatchStats();rPartidos()}
   toast('Resultado guardado'+(fase!=='grupos'?' — '+FASE_L[fase]:''));
 }
 // Quick result from upcoming match
@@ -1363,6 +1366,56 @@ function backMas(){document.querySelectorAll('[id^="sub-"]').forEach(function(e)
 // ═══ INSIGNIAS ═══
 // ═══ GESTIÓN DE PARTIDOS (admin) ═══
 var mtchFilter='pendientes'; // 'pendientes' | 'jugados' | 'todos'
+function computeGlobalMatchStats(){
+  var totalCruces=0,totalJugados=0;
+  var byCat={};
+  CATS.forEach(function(cat){
+    var catTotal=0,catJugados=0;
+    ['A','B','C','D'].forEach(function(grp){
+      var pl=parts.filter(function(p){return p.cat===cat&&p.grupo===grp});
+      if(pl.length<2)return;
+      var cruces=pl.length*(pl.length-1)/2; // combinaciones round-robin
+      catTotal+=cruces;
+      // contar jugados de grupo entre estos jugadores
+      var ids={};pl.forEach(function(p){ids[p.id]=true});
+      var jug=results.filter(function(r){
+        return r.cat===cat&&(!r.fase||r.fase==='grupos')&&r.grupo===grp&&ids[r.p1id]&&ids[r.p2id];
+      }).length;
+      catJugados+=jug;
+    });
+    if(catTotal>0)byCat[cat]={total:catTotal,jugados:catJugados};
+    totalCruces+=catTotal;totalJugados+=catJugados;
+  });
+  return {total:totalCruces,jugados:totalJugados,pend:totalCruces-totalJugados,byCat:byCat};
+}
+function rGlobalMatchStats(){
+  var el=document.getElementById('mtchGlobal');if(!el)return;
+  var g=computeGlobalMatchStats();
+  var pct=g.total>0?Math.round(g.jugados/g.total*100):0;
+  var html='<div style="display:flex;gap:8px;margin-bottom:12px">';
+  html+='<div style="flex:1;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:var(--r);padding:14px 8px;text-align:center"><div style="font-size:1.5rem;font-weight:800;color:#d97706">'+g.pend+'</div><div style="font-size:.6rem;color:#d97706;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Faltan jugar</div></div>';
+  html+='<div style="flex:1;background:var(--win-bg);border:1px solid rgba(22,163,74,.2);border-radius:var(--r);padding:14px 8px;text-align:center"><div style="font-size:1.5rem;font-weight:800;color:var(--win-c)">'+g.jugados+'</div><div style="font-size:.6rem;color:var(--win-c);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Jugados</div></div>';
+  html+='<div style="flex:1;background:var(--acc-d);border:1px solid var(--brd);border-radius:var(--r);padding:14px 8px;text-align:center"><div style="font-size:1.5rem;font-weight:800;color:var(--acc)">'+g.total+'</div><div style="font-size:.6rem;color:var(--acc);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Total</div></div>';
+  html+='</div>';
+  // Barra de progreso global
+  html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:12px 14px;margin-bottom:12px">';
+  html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:.75rem;color:var(--t2);font-weight:600">Progreso del torneo</span><span style="font-size:.85rem;font-weight:800;color:var(--acc)">'+pct+'%</span></div>';
+  html+='<div style="height:8px;background:var(--acc-d);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#7dd3fc,#c4b5fd);border-radius:4px;transition:width .6s ease"></div></div>';
+  html+='</div>';
+  // Desglose por categoría
+  html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:6px 14px">';
+  CATS.forEach(function(cat){
+    if(!g.byCat[cat])return;
+    var c=g.byCat[cat];var cpend=c.total-c.jugados;
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--brd);font-size:.78rem">';
+    html+='<span class="lb l-'+CS[cat]+'" style="font-size:.55rem">'+CL[cat]+'</span>';
+    html+='<span style="flex:1;text-align:right;color:var(--tm)">'+c.jugados+'/'+c.total+' jugados';
+    html+=cpend>0?' · <span style="color:#d97706;font-weight:700">'+cpend+' faltan</span>':' · <span style="color:var(--win-c);font-weight:700">✓ completa</span>';
+    html+='</span></div>';
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
 function partidosInit(){
   var cs=document.getElementById('mtchCatSel');
   var copts='';
@@ -1373,6 +1426,7 @@ function partidosInit(){
   cs.innerHTML=copts;
   var gs=document.getElementById('mtchGrpSel');
   gs.innerHTML='<option value="A">Grupo A</option><option value="B">Grupo B</option><option value="C">Grupo C</option><option value="D">Grupo D</option>';
+  rGlobalMatchStats();
   rPartidos();
 }
 function rPartidos(){
