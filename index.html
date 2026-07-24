@@ -510,6 +510,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
   <div class="fr"><select class="fs" id="rCat" onchange="rPickCat()"><option value="">Categoría...</option></select><select class="fs" id="rFase" onchange="rPickFase()"><option value="grupos">Fase: Grupos</option><option value="cuartos">Cuartos de Final</option><option value="semis">Semifinal</option><option value="final">Final</option></select></div>
   <div class="fr" id="rGrpRow"><select class="fs" id="rGrp" onchange="rPickGrp()"><option value="">Grupo...</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
   <div class="fr"><select class="fs" id="rP1" onchange="syncOpp('rP1','rP2');rAutoWinner()"><option value="">J1...</option></select><span style="color:var(--tm);align-self:center;font-weight:700">VS</span><select class="fs" id="rP2" onchange="rAutoWinner()"><option value="">J2...</option></select></div>
+  <div id="rNoOpp" style="display:none;font-size:.72rem;color:#d97706;background:rgba(245,158,11,.1);border-radius:8px;padding:8px 12px;margin-bottom:10px"></div>
   <div class="fr"><input class="fi" id="rSc" placeholder="Score J1-J2 (ej: 6-3 6-4)" oninput="rAutoWinner()"/></div>
   <div id="rWinnerDisplay" style="margin-bottom:12px"></div>
   <input type="hidden" id="rW"/>
@@ -522,6 +523,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
   <div class="mh"><span class="mt">Programar Partido</span><button class="mx" onclick="clMod('mSch')">✕</button></div>
   <div class="fr"><select class="fs" id="sCat" onchange="sPickCat()"><option value="">Categoría...</option></select><select class="fs" id="sGrp" onchange="sPickGrp()"><option value="">Grupo...</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
   <div class="fr"><select class="fs" id="sP1" onchange="syncOpp('sP1','sP2')"><option value="">J1...</option></select><span style="color:var(--tm);align-self:center;font-weight:700">VS</span><select class="fs" id="sP2"><option value="">J2...</option></select></div>
+  <div id="sNoOpp" style="display:none;font-size:.72rem;color:#d97706;background:rgba(245,158,11,.1);border-radius:8px;padding:8px 12px;margin-bottom:10px"></div>
   <div class="fr"><input type="date" class="fi" id="sDt"/><input type="time" class="fi" id="sTm"/></div>
   <div class="fr"><select class="fs" id="sCo"><option value="">Cancha...</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option></select></div>
   <button class="fb" onclick="saveSch()">Programar</button>
@@ -995,6 +997,32 @@ function parseScore(sc){
   });
   return{s1:s1,s2:s2,g1:g1,g2:g2};
 }
+function validateScore(sc){
+  var s=(sc||'').trim();
+  if(!s)return{ok:false,error:'Escribí el score'};
+  if(!/^[0-9]{1,2}-[0-9]{1,2}( +[0-9]{1,2}-[0-9]{1,2})*$/.test(s)){
+    return{ok:false,error:'Formato inválido. Usá "6-3 6-4" (números separados por guión, sets separados por espacio)'};
+  }
+  var sets=s.split(/\s+/);
+  if(sets.length<2)return{ok:false,error:'Falta cargar el segundo set'};
+  if(sets.length>3)return{ok:false,error:'Máximo 3 sets'};
+  var warns=[];
+  for(var i=0;i<sets.length;i++){
+    var p=sets[i].split('-'),a=parseInt(p[0]),b=parseInt(p[1]);
+    if(a===b)return{ok:false,error:'El set '+(i+1)+' está empatado ('+sets[i]+'), no puede ser'};
+    var mx=Math.max(a,b),mn=Math.min(a,b);
+    if(i===2){
+      // 3er set: super tiebreak (a 10) o set normal
+      var esSTB=mx>=10&&(mx-mn)>=2;
+      var esSet=mx>=6&&mx<=7&&((mx-mn)>=2||mx===7);
+      if(!esSTB&&!esSet)warns.push('Set 3 ('+sets[i]+') no parece un super tiebreak ni un set normal');
+    }else{
+      var valido=(mx===6&&mn<=4)||(mx===7&&(mn===5||mn===6));
+      if(!valido)warns.push('Set '+(i+1)+' ('+sets[i]+') no es un resultado habitual de tenis');
+    }
+  }
+  return{ok:true,warn:warns.length?warns.join('. '):null};
+}
 function rAutoWinner(){
   var sc=document.getElementById('rSc').value.trim();
   var disp=document.getElementById('rWinnerDisplay');
@@ -1002,16 +1030,23 @@ function rAutoWinner(){
   var p1Name=(p1Sel.selectedIndex>0)?p1Sel.options[p1Sel.selectedIndex].text:'Jugador 1';
   var p2Name=(p2Sel.selectedIndex>0)?p2Sel.options[p2Sel.selectedIndex].text:'Jugador 2';
   if(!sc){document.getElementById('rW').value='';disp.innerHTML='';return}
+  var v=validateScore(sc);
+  if(!v.ok){
+    document.getElementById('rW').value='';
+    disp.innerHTML='<div style="font-size:.75rem;color:#f87171;padding:9px 12px;border-radius:8px;background:rgba(239,68,68,.08);line-height:1.5">⚠ '+v.error+'</div>';
+    return;
+  }
   var parsed=parseScore(sc);
   if(parsed.s1===parsed.s2){
     document.getElementById('rW').value='';
-    disp.innerHTML='<div style="font-size:.78rem;color:#f87171;padding:8px 12px;border-radius:8px;background:rgba(239,68,68,.08)">⚠ Revisá el score, no se puede determinar un ganador</div>';
+    disp.innerHTML='<div style="font-size:.75rem;color:#f87171;padding:9px 12px;border-radius:8px;background:rgba(239,68,68,.08)">⚠ Revisá el score, no se puede determinar un ganador</div>';
     return;
   }
   var winner=parsed.s1>parsed.s2?1:2;
   document.getElementById('rW').value=winner;
   var winnerName=winner===1?p1Name:p2Name;
-  disp.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;background:var(--acc-d);color:var(--acc);font-size:.8rem;font-weight:700">🏆 Ganador: '+winnerName+'</div>';
+  var warnHtml=v.warn?'<div style="font-size:.7rem;color:#d97706;padding:7px 12px;border-radius:8px;background:rgba(245,158,11,.1);margin-top:6px;line-height:1.5">⚠ '+v.warn+'. Revisá que esté bien.</div>':'';
+  disp.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;background:var(--acc-d);color:var(--acc);font-size:.8rem;font-weight:700">🏆 Ganador: '+winnerName+'</div>'+warnHtml;
 }
 window._ptsInfoOpen=false;
 function togPtsInfo(){
@@ -1192,10 +1227,46 @@ function fillCatSel(sel){sel.innerHTML='<option value="">Categoría...</option>'
 function syncOpp(s1Id,s2Id){
   var s1=document.getElementById(s1Id),s2=document.getElementById(s2Id);
   var val=s1.value;
+  // Contexto: modal de resultado (rP1/rP2) o de programación (sP1/sP2)
+  var esResultado=(s1Id==='rP1');
+  var cat=document.getElementById(esResultado?'rCat':'sCat').value;
+  var fase=esResultado?(document.getElementById('rFase').value||'grupos'):(_schedFase||'grupos');
+  // IDs de rivales que ya jugaron contra el J1 seleccionado (misma cat y fase)
+  var yaJugaron={};
+  if(val&&cat){
+    results.forEach(function(r){
+      if(r.cat!==cat)return;
+      if((r.fase||'grupos')!==fase)return;
+      if(r.p1id===val)yaJugaron[r.p2id]=true;
+      else if(r.p2id===val)yaJugaron[r.p1id]=true;
+    });
+    // Al programar, también ocultamos los que ya tienen partido agendado
+    if(!esResultado){
+      schedule.forEach(function(s){
+        if(s.cat!==cat)return;
+        if((s.fase||'grupos')!==fase)return;
+        if(s.p1id===val)yaJugaron[s.p2id]=true;
+        else if(s.p2id===val)yaJugaron[s.p1id]=true;
+      });
+    }
+  }
+  var ocultos=0;
   Array.prototype.forEach.call(s2.options,function(opt){
-    if(opt.value){var hide=opt.value===val;opt.hidden=hide;opt.disabled=hide}
+    if(!opt.value)return;
+    var hide=(opt.value===val)||!!yaJugaron[opt.value];
+    opt.hidden=hide;opt.disabled=hide;
+    if(hide&&opt.value!==val)ocultos++;
   });
-  if(s2.value===val)s2.value='';
+  if(s2.value===val||yaJugaron[s2.value])s2.value='';
+  // Aviso si no queda ningún rival disponible
+  var hint=document.getElementById(esResultado?'rNoOpp':'sNoOpp');
+  if(hint){
+    var quedan=Array.prototype.filter.call(s2.options,function(o){return o.value&&!o.hidden}).length;
+    if(val&&quedan===0){
+      hint.style.display='block';
+      hint.textContent=esResultado?'Ya cargaste todos los partidos de este jugador en esta fase':'Este jugador ya tiene todos sus partidos jugados o programados';
+    }else hint.style.display='none';
+  }
 }
 function fillPlByGrp(cat,grp,s1,s2){
   var pl=parts.filter(function(p){return p.cat===cat&&p.grupo===grp}).sort(function(a,b){return a.apellido.localeCompare(b.apellido)});
@@ -1209,6 +1280,7 @@ function fillPlByCat(cat,s1,s2){
 }
 function openResMod(){
   window._schedMatchToRemove=null;
+  var _h=document.getElementById('rNoOpp');if(_h)_h.style.display='none';
   document.getElementById('mRes').classList.add('show');
   fillCatSel(document.getElementById('rCat'));
   document.getElementById('rFase').value='grupos';
@@ -1251,6 +1323,7 @@ function rPickCat(){
   document.getElementById('rP2').innerHTML='<option value="">J2...</option>';
 }
 function rPickGrp(){
+  var _h=document.getElementById('rNoOpp');if(_h)_h.style.display='none';
   var cat=document.getElementById('rCat').value,grp=document.getElementById('rGrp').value;
   document.getElementById('rW').value='';document.getElementById('rWinnerDisplay').innerHTML='';
   if(cat&&grp)fillPlByGrp(cat,grp,document.getElementById('rP1'),document.getElementById('rP2'));
@@ -1262,10 +1335,35 @@ function saveRes(){
   var fase=document.getElementById('rFase').value||'grupos';
   if(!cat||!p1id||!p2id||!fecha||p1id===p2id){toast('Completá todos los campos');return}
   if(!score||!winner){toast('Cargá un score válido para detectar el ganador');return}
+  var vs=validateScore(score);
+  if(!vs.ok){toast(vs.error);return}
   if(fase==='grupos'&&!document.getElementById('rGrp').value){toast('Seleccioná el grupo');return}
+  // ── Anti-duplicado: ¿ya existe este partido cargado? ──
+  var dup=results.find(function(r){
+    if(r.cat!==cat)return false;
+    var rf=r.fase||'grupos';
+    if(rf!==fase)return false;
+    return (r.p1id===p1id&&r.p2id===p2id)||(r.p1id===p2id&&r.p2id===p1id);
+  });
+  if(dup){
+    var faseTxt=fase==='grupos'?'':' de '+FASE_L[fase];
+    alert('⚠ Este partido ya fue cargado'+faseTxt+'\n\n'+dup.p1+' vs '+dup.p2+'\nResultado: '+dup.score+' ('+dup.fecha+')\n\nSi está mal cargado, editalo desde Panel Admin → Resultados.');
+    return;
+  }
   var p1=parts.find(function(p){return p.id===p1id}),p2=parts.find(function(p){return p.id===p2id});
   var grp=fase==='grupos'?document.getElementById('rGrp').value:'';
-  results.push({fecha:fecha,cat:cat,grupo:grp,fase:fase,p1id:p1id,p2id:p2id,p1:p1.apellido+' '+p1.nombre,p2:p2.apellido+' '+p2.nombre,score:score,winner:winner});
+  // ── Confirmación: mostrar exactamente qué se va a guardar ──
+  var nm1=p1.apellido+' '+p1.nombre, nm2=p2.apellido+' '+p2.nombre;
+  var gan=winner===1?nm1:nm2, per=winner===1?nm2:nm1;
+  var resumen='¿Confirmás este resultado?\n\n'
+    +'🏆 GANÓ: '+gan+'\n'
+    +'      perdió: '+per+'\n\n'
+    +'Score: '+score+'  (leído desde '+nm1+')\n'
+    +'Fecha: '+fecha+'\n'
+    +CL[cat]+(grp?' — Grupo '+grp:'')+(fase!=='grupos'?' — '+FASE_L[fase]:'')
+    +(vs.warn?'\n\n⚠ '+vs.warn:'');
+  if(!confirm(resumen))return;
+  results.push({fecha:fecha,cat:cat,grupo:grp,fase:fase,p1id:p1id,p2id:p2id,p1:nm1,p2:nm2,score:score,winner:winner});
   db.ref('resultados').set(results);
   // Si el resultado viene de un partido programado, lo sacamos de Próximos Partidos
   if(window._schedMatchToRemove){
@@ -1309,6 +1407,7 @@ function openResFromMatch(idx){
 var _schedFase='grupos';
 function openSchMod(){
   _schedFase='grupos';
+  var _h=document.getElementById('sNoOpp');if(_h)_h.style.display='none';
   document.getElementById('mSch').classList.add('show');fillCatSel(document.getElementById('sCat'));
   document.getElementById('sGrp').style.display='inline-block';
   document.getElementById('sGrp').value='';
@@ -1327,6 +1426,7 @@ function openSchMod(){
 }
 function openPlayoffSchedule(cat,p1id,p2id,fase){
   _schedFase=fase;
+  var _h=document.getElementById('sNoOpp');if(_h)_h.style.display='none';
   document.getElementById('mSch').classList.add('show');
   fillCatSel(document.getElementById('sCat'));
   document.getElementById('sCat').value=cat;
@@ -1343,6 +1443,7 @@ function sPickCat(){
   document.getElementById('sP2').innerHTML='<option value="">J2...</option>';
 }
 function sPickGrp(){
+  var _h=document.getElementById('sNoOpp');if(_h)_h.style.display='none';
   var cat=document.getElementById('sCat').value,grp=document.getElementById('sGrp').value;
   if(cat&&grp)fillPlByGrp(cat,grp,document.getElementById('sP1'),document.getElementById('sP2'));
   else{document.getElementById('sP1').innerHTML='<option value="">J1...</option>';document.getElementById('sP2').innerHTML='<option value="">J2...</option>'}
@@ -1351,6 +1452,29 @@ function saveSch(){
   var cat=document.getElementById('sCat').value,p1id=document.getElementById('sP1').value,p2id=document.getElementById('sP2').value;
   var date=document.getElementById('sDt').value,time=document.getElementById('sTm').value,court=document.getElementById('sCo').value;
   if(!cat||!p1id||!p2id||!date||!time||!court||p1id===p2id){toast('Completá todos los campos');return}
+  var fase=_schedFase||'grupos';
+  // ── ¿Ya se jugó este partido? ──
+  var yaJugado=results.find(function(r){
+    if(r.cat!==cat)return false;
+    var rf=r.fase||'grupos';
+    if(rf!==fase)return false;
+    return (r.p1id===p1id&&r.p2id===p2id)||(r.p1id===p2id&&r.p2id===p1id);
+  });
+  if(yaJugado){
+    alert('⚠ Este partido ya se jugó\n\n'+yaJugado.p1+' vs '+yaJugado.p2+'\nResultado: '+yaJugado.score+' ('+yaJugado.fecha+')\n\nNo hace falta programarlo de nuevo.');
+    return;
+  }
+  // ── ¿Ya está programado? ──
+  var yaProgramado=schedule.find(function(s){
+    if(s.cat!==cat)return false;
+    var sf=s.fase||'grupos';
+    if(sf!==fase)return false;
+    return (s.p1id===p1id&&s.p2id===p2id)||(s.p1id===p2id&&s.p2id===p1id);
+  });
+  if(yaProgramado){
+    alert('⚠ Este partido ya está programado\n\n'+yaProgramado.p1+' vs '+yaProgramado.p2+'\n'+yaProgramado.date+(yaProgramado.time?' a las '+yaProgramado.time:'')+(yaProgramado.court?' — Cancha '+yaProgramado.court:'')+'\n\nSi querés cambiar la fecha, eliminá el anterior desde Panel Admin → Programación.');
+    return;
+  }
   var p1=parts.find(function(p){return p.id===p1id}),p2=parts.find(function(p){return p.id===p2id});
   var entry={date:date,time:time,court:parseInt(court),cat:cat,p1id:p1id,p2id:p2id,p1:p1.apellido+' '+p1.nombre,p2:p2.apellido+' '+p2.nombre};
   if(_schedFase&&_schedFase!=='grupos')entry.fase=_schedFase;
@@ -2118,11 +2242,12 @@ function rAdmPanel(){
   else{var cc='';sorted.forEach(function(p){if(p.cat!==cc){cc=p.cat;h3+='<div class="slbl" style="margin-top:12px;margin-bottom:6px">'+CL[p.cat]+'</div>'}h3+='<div class="adm-card"><div class="adm-info">'+p.apellido+', '+p.nombre+'</div><button class="adm-del" onclick="admDelPart(\''+p.id+'\')">✕</button></div>'})}
   el3.innerHTML=h3;
 }
-function admDelSch(i){if(!confirm('Eliminar partido?'))return;schedule.splice(i,1);db.ref('programacion').set(schedule);rAdmPanel();rCal();rUp();toast('Eliminado')}
-function admDelRes(i){if(!confirm('Eliminar resultado?'))return;results.splice(i,1);db.ref('resultados').set(results);rAdmPanel();toast('Eliminado')}
-function admDelPart(id){if(!confirm('Eliminar participante?'))return;parts=parts.filter(function(p){return p.id!==id});db.ref('participantes').set(parts);rAdmPanel();toast('Eliminado')}
+function admDelSch(i){if(!isAdmin){toast('Solo el administrador puede eliminar');return}if(!confirm('Eliminar partido?'))return;schedule.splice(i,1);db.ref('programacion').set(schedule);rAdmPanel();rCal();rUp();toast('Eliminado')}
+function admDelRes(i){if(!isAdmin){toast('Solo el administrador puede eliminar');return}if(!confirm('Eliminar resultado?'))return;results.splice(i,1);db.ref('resultados').set(results);rAdmPanel();toast('Eliminado')}
+function admDelPart(id){if(!isAdmin){toast('Solo el administrador puede eliminar');return}if(!confirm('Eliminar participante?'))return;parts=parts.filter(function(p){return p.id!==id});db.ref('participantes').set(parts);rAdmPanel();toast('Eliminado')}
 var editIdx=-1;
 function admEditRes(i){
+  if(!isAdmin){toast('Solo el administrador puede editar resultados');return}
   editIdx=i;var r=results[i];if(!r)return;
   document.getElementById('eMatchInfo').textContent=r.p1+' vs '+r.p2+' — '+CL[r.cat]+(r.grupo?' Grupo '+r.grupo:'');
   document.getElementById('eSc').value=r.score;
@@ -2135,9 +2260,12 @@ function admEditRes(i){
   document.getElementById('mEdit').classList.add('show');
 }
 function saveEdit(){
+  if(!isAdmin){toast('Solo el administrador puede editar resultados');return}
   if(editIdx<0||!results[editIdx])return;
   var score=document.getElementById('eSc').value.trim(),winner=parseInt(document.getElementById('eW').value),fecha=document.getElementById('eDt').value;
   if(!score||!winner||!fecha){toast('Completá todos los campos');return}
+  var ve=validateScore(score);
+  if(!ve.ok){toast(ve.error);return}
   results[editIdx].score=score;results[editIdx].winner=winner;results[editIdx].fecha=fecha;
   db.ref('resultados').set(results);clMod('mEdit');rAdmPanel();rRes();toast('Resultado actualizado');editIdx=-1;
 }
