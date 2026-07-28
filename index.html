@@ -490,6 +490,11 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
         <span style="font-weight:700;color:var(--acc)">Panel Administrador</span>
         <button style="padding:6px 14px;border-radius:8px;border:1px solid #ef4444;background:rgba(239,68,68,.1);color:#f87171;font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer" onclick="doLogout()">Cerrar Sesión</button>
       </div>
+      <div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:14px;margin-bottom:20px">
+        <div style="font-size:.82rem;font-weight:600;margin-bottom:4px">🔄 Sincronizar nombres</div>
+        <div style="font-size:.72rem;color:var(--tm);line-height:1.5;margin-bottom:10px">Si editaste el nombre de un jugador y en partidos o resultados viejos todavía aparece el nombre anterior, tocá acá para actualizarlos todos de una vez.</div>
+        <button class="fb" onclick="resyncNames()" style="margin:0">Sincronizar ahora</button>
+      </div>
       <div class="slbl">Gestionar Partidos Programados</div>
       <div id="admSch"></div>
       <div class="slbl" style="margin-top:20px">Gestionar Resultados</div>
@@ -1775,6 +1780,35 @@ function editPart(id){
   document.getElementById('epC').value=p.cat;
   document.getElementById('epG').value=p.grupo||'';
   document.getElementById('mEditP').classList.add('show');
+}
+function resyncNames(){
+  if(!isAdmin){toast('Solo el administrador');return}
+  // Mapa id -> nombre actual desde participantes
+  var nameById={},catById={},grpById={};
+  parts.forEach(function(p){nameById[p.id]=p.apellido+' '+p.nombre;catById[p.id]=p.cat;grpById[p.id]=p.grupo});
+  var schFix=0,resFix=0,huerfanos=0;
+  // Programados
+  schedule.forEach(function(s){
+    var n1=nameById[s.p1id],n2=nameById[s.p2id];
+    if(n1===undefined||n2===undefined){huerfanos++;return}
+    if(s.p1!==n1){s.p1=n1;schFix++}
+    if(s.p2!==n2){s.p2=n2;schFix++}
+  });
+  // Resultados
+  results.forEach(function(r){
+    var n1=nameById[r.p1id],n2=nameById[r.p2id];
+    if(n1===undefined||n2===undefined){huerfanos++;return}
+    if(r.p1!==n1){r.p1=n1;resFix++}
+    if(r.p2!==n2){r.p2=n2;resFix++}
+  });
+  var msg='Se corrigieron '+schFix+' nombres en programados y '+resFix+' en resultados.';
+  if(huerfanos>0)msg+='\n\n⚠ Hay '+huerfanos+' partido(s) con jugadores que ya no existen en la lista (posiblemente eliminados). Esos no se pudieron actualizar automáticamente — revisalos manualmente en Programación/Resultados.';
+  if(schFix===0&&resFix===0&&huerfanos===0){toast('Todo ya estaba sincronizado ✓');return}
+  if(!confirm(msg+'\n\n¿Aplicar los cambios?'))return;
+  if(schFix>0)db.ref('programacion').set(schedule);
+  if(resFix>0)db.ref('resultados').set(results);
+  rAdmPanel();rRes();rUp();
+  toast('Nombres sincronizados ✓');
 }
 function saveEditP(){
   if(!editPId)return;
