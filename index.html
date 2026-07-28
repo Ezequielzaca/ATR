@@ -1781,8 +1781,28 @@ function saveEditP(){
   var n=document.getElementById('epN').value.trim(),a=document.getElementById('epA').value.trim(),c=document.getElementById('epC').value,g=document.getElementById('epG').value;
   if(!n||!a||!c||!g){toast('Completá todos los campos');return}
   var p=parts.find(function(x){return x.id===editPId});
-  if(p){p.nombre=n;p.apellido=a;p.cat=c;p.grupo=g}
-  db.ref('participantes').set(parts);clMod('mEditP');rPList();toast('Participante actualizado');editPId='';
+  if(!p){clMod('mEditP');return}
+  var catChanged=(p.cat!==c), grpChanged=(p.grupo!==g);
+  p.nombre=n;p.apellido=a;p.cat=c;p.grupo=g;
+  var nombreCompleto=a+' '+n;
+  db.ref('participantes').set(parts);
+  // ── Propagar el nombre (y cat/grupo si cambió) a partidos programados ──
+  var schChanged=false;
+  schedule.forEach(function(s){
+    if(s.p1id===editPId){s.p1=nombreCompleto;if(catChanged)s.cat=c;schChanged=true}
+    if(s.p2id===editPId){s.p2=nombreCompleto;if(catChanged)s.cat=c;schChanged=true}
+  });
+  if(schChanged)db.ref('programacion').set(schedule);
+  // ── Propagar el nombre a resultados (tabla, cuadros, resultados) ──
+  var resChanged=false;
+  results.forEach(function(r){
+    if(r.p1id===editPId){r.p1=nombreCompleto;if(catChanged)r.cat=c;if(grpChanged&&(!r.fase||r.fase==='grupos'))r.grupo=g;resChanged=true}
+    if(r.p2id===editPId){r.p2=nombreCompleto;if(catChanged)r.cat=c;if(grpChanged&&(!r.fase||r.fase==='grupos'))r.grupo=g;resChanged=true}
+  });
+  if(resChanged)db.ref('resultados').set(results);
+  clMod('mEditP');rPList();
+  var extra=(schChanged||resChanged)?' (actualizado en partidos y resultados)':'';
+  toast('Participante actualizado'+extra);editPId='';
 }
 function delP(id){if(!confirm('Eliminar participante?'))return;parts=parts.filter(function(p){return p.id!==id});db.ref('participantes').set(parts);rPList();toast('Eliminado')}
 function compressImageFile(file,maxDim,quality,cb){
