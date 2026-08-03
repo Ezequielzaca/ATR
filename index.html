@@ -495,6 +495,9 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
         <div style="font-size:.72rem;color:var(--tm);line-height:1.5;margin-bottom:10px">Si editaste el nombre de un jugador y en partidos o resultados viejos todavía aparece el nombre anterior, tocá acá para actualizarlos todos de una vez.</div>
         <button class="fb" onclick="resyncNames()" style="margin:0">Sincronizar ahora</button>
       </div>
+      <div class="slbl" style="color:#d97706">⏰ Partidos Vencidos (sin resultado)</div>
+      <div style="font-size:.72rem;color:var(--tm);line-height:1.5;margin-bottom:10px">Partidos programados cuya fecha ya pasó y no tienen resultado cargado. Cargá el resultado si se jugó, reprogramá si se pasó a otro día, o eliminá si no se juega.</div>
+      <div id="admVencidos" style="margin-bottom:20px"></div>
       <div class="slbl">Gestionar Partidos Programados</div>
       <div id="admSch"></div>
       <div class="slbl" style="margin-top:20px">Gestionar Resultados</div>
@@ -2281,6 +2284,73 @@ function doLogout(){
   document.getElementById('admUser').value='';document.getElementById('admPass').value='';
   updAdmUI();toast('Sesión cerrada');
 }
+function rVencidos(){
+  var el=document.getElementById('admVencidos');if(!el)return;
+  // Programados con fecha anterior a hoy que NO tienen resultado cargado
+  var venc=schedule.filter(function(s){
+    if(s.date>=todayStr)return false; // futuros u hoy no cuentan
+    var fase=s.fase||'grupos';
+    var jugado=results.some(function(r){
+      if(r.cat!==s.cat)return false;
+      if((r.fase||'grupos')!==fase)return false;
+      return (r.p1id===s.p1id&&r.p2id===s.p2id)||(r.p1id===s.p2id&&r.p2id===s.p1id);
+    });
+    return !jugado;
+  }).sort(function(a,b){return(a.date+a.time).localeCompare(b.date+b.time)});
+  window._vencMatches=venc;
+  if(!venc.length){el.innerHTML='<div style="color:var(--tm);font-size:.8rem;padding:10px;text-align:center">✓ No hay partidos vencidos sin cargar</div>';return}
+  var html='';
+  venc.forEach(function(m,idx){
+    var dp=m.date.split('-'),dO=new Date(dp[0],dp[1]-1,dp[2]),dn=DN[dO.getDay()];
+    var fechaTxt=dn+' '+dp[2]+'/'+dp[1];
+    var faseBadge=(m.fase&&m.fase!=='grupos')?'<span class="lb" style="background:linear-gradient(135deg,#1e3a8a,#7c3aed);color:#fff;font-size:.5rem;margin-left:4px">'+(m.fase==='final'?'🏆 FINAL':m.fase==='semis'?'SEMI':'4TOS')+'</span>':'';
+    html+='<div style="background:var(--card);border:1.5px solid rgba(245,158,11,.35);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px">';
+    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:.6rem;font-weight:700;color:#d97706;background:rgba(245,158,11,.12);padding:2px 8px;border-radius:10px">⏰ '+fechaTxt+'</span><span class="lb l-'+CS[m.cat]+'" style="font-size:.5rem">'+CL[m.cat]+'</span>'+faseBadge+'</div>';
+    html+='<div style="font-size:.85rem;font-weight:600;margin-bottom:10px">'+m.p1+' <span style="color:var(--tm);font-weight:400">vs</span> '+m.p2+'</div>';
+    html+='<div style="display:flex;gap:6px">';
+    html+='<button onclick="cargarVencido('+idx+')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);font-size:.72rem;font-weight:700;cursor:pointer">✓ Cargar resultado</button>';
+    html+='<button onclick="reprogVencido('+idx+')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--brd);background:var(--card-h);color:var(--t2);font-size:.72rem;font-weight:700;cursor:pointer">📅 Reprogramar</button>';
+    html+='<button onclick="delVencido('+idx+')" title="Eliminar" style="width:36px;padding:8px;border-radius:8px;border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.08);color:#f87171;font-size:.72rem;font-weight:700;cursor:pointer">✕</button>';
+    html+='</div></div>';
+  });
+  el.innerHTML=html;
+}
+function cargarVencido(idx){
+  var m=window._vencMatches[idx];if(!m)return;
+  window._schedMatchToRemove={p1id:m.p1id,p2id:m.p2id,date:m.date,time:m.time,court:m.court,cat:m.cat};
+  document.getElementById('mRes').classList.add('show');
+  fillCatSel(document.getElementById('rCat'));
+  var fase=m.fase||'grupos';
+  document.getElementById('rFase').value=fase;
+  document.getElementById('rCat').value=m.cat;
+  if(fase==='grupos'){
+    document.getElementById('rGrpRow').style.display='flex';
+    var grp='';var p1p=parts.find(function(p){return p.id===m.p1id});if(p1p&&p1p.grupo)grp=p1p.grupo;
+    document.getElementById('rGrp').value=grp;
+    if(grp)fillPlByGrp(m.cat,grp,document.getElementById('rP1'),document.getElementById('rP2'));
+  }else{
+    document.getElementById('rGrpRow').style.display='none';
+    fillPlByCat(m.cat,document.getElementById('rP1'),document.getElementById('rP2'));
+  }
+  document.getElementById('rP1').value=m.p1id;document.getElementById('rP2').value=m.p2id;
+  syncOpp('rP1','rP2');
+  document.getElementById('rSc').value='';document.getElementById('rW').value='';document.getElementById('rDt').value=todayStr;
+  document.getElementById('rWinnerDisplay').innerHTML='';
+}
+function reprogVencido(idx){
+  var m=window._vencMatches[idx];if(!m)return;
+  var nueva=prompt('Nueva fecha para '+m.p1+' vs '+m.p2+' (formato AAAA-MM-DD):',todayStr);
+  if(!nueva)return;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(nueva)){toast('Formato inválido. Usá AAAA-MM-DD (ej: '+todayStr+')');return}
+  var real=schedule.find(function(s){return s.p1id===m.p1id&&s.p2id===m.p2id&&s.date===m.date&&s.time===m.time&&s.cat===m.cat});
+  if(real){real.date=nueva;db.ref('programacion').set(schedule);rVencidos();rUp();rCal();toast('Partido reprogramado para '+nueva)}
+}
+function delVencido(idx){
+  var m=window._vencMatches[idx];if(!m)return;
+  if(!confirm('¿Eliminar este partido programado?\n\n'+m.p1+' vs '+m.p2+'\n\n(No se jugó y no querés reprogramarlo)'))return;
+  schedule=schedule.filter(function(s){return!(s.p1id===m.p1id&&s.p2id===m.p2id&&s.date===m.date&&s.time===m.time&&s.cat===m.cat)});
+  db.ref('programacion').set(schedule);rVencidos();rUp();rCal();toast('Partido eliminado');
+}
 function rAdmPanel(){
   var el=document.getElementById('admSch');var h1='';
   if(!schedule.length)h1='<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin partidos</div>';
@@ -2295,6 +2365,7 @@ function rAdmPanel(){
   if(!sorted.length)h3='<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin participantes</div>';
   else{var cc='';sorted.forEach(function(p){if(p.cat!==cc){cc=p.cat;h3+='<div class="slbl" style="margin-top:12px;margin-bottom:6px">'+CL[p.cat]+'</div>'}h3+='<div class="adm-card"><div class="adm-info">'+p.apellido+', '+p.nombre+'</div><button class="adm-del" onclick="admDelPart(\''+p.id+'\')">✕</button></div>'})}
   el3.innerHTML=h3;
+  rVencidos();
 }
 function admDelSch(i){if(!isAdmin){toast('Solo el administrador puede eliminar');return}if(!confirm('Eliminar partido?'))return;schedule.splice(i,1);db.ref('programacion').set(schedule);rAdmPanel();rCal();rUp();toast('Eliminado')}
 function admDelRes(i){if(!isAdmin){toast('Solo el administrador puede eliminar');return}if(!confirm('Eliminar resultado?'))return;results.splice(i,1);db.ref('resultados').set(results);rAdmPanel();toast('Eliminado')}
