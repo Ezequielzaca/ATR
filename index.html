@@ -308,6 +308,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div class="mi" id="usersBtn" style="display:none" onclick="subPg('users')"><div class="mic" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">🗂️</div><div><div class="mit">Usuarios</div><div class="mid">Cuentas de jugadores</div></div></div>
     <div class="mi" id="insigBtn" style="display:none" onclick="subPg('insignias')"><div class="mic" style="background:linear-gradient(135deg,#d4a017,#a16207)">🏅</div><div><div class="mit">Insignias</div><div class="mid">Logros y apodos de jugadores</div></div></div>
     <div class="mi" id="partidosBtn" style="display:none" onclick="subPg('partidos')"><div class="mic" style="background:linear-gradient(135deg,#0284c7,#1e3a8a)">🎾</div><div><div class="mit">Partidos</div><div class="mid">Por jugar y jugados por grupo</div></div></div>
+    <div class="mi" id="auditBtn" style="display:none" onclick="subPg('auditoria')"><div class="mic" style="background:linear-gradient(135deg,#64748b,#334155)">📋</div><div><div class="mit">Registro de actividad</div><div class="mid">Quién cargó o cambió qué</div></div></div>
     <div class="mi" id="admMenuBtn" style="display:none" onclick="subPg('admin')"><div class="mic" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">⚙️</div><div><div class="mit">Panel Admin</div><div class="mid">Gestionar torneo</div></div></div>
   </div>
   <!-- LOGIN / REGISTER / PROFILE -->
@@ -402,6 +403,12 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     </div>
     <div class="ctabs" id="mtchFilter" style="margin-bottom:14px"></div>
     <div id="mtchList"></div>
+  </div>
+  <!-- Registro de actividad (admin) -->
+  <div id="sub-auditoria" style="display:none">
+    <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Registro de actividad</span></div>
+    <div class="ctabs" id="auditFilter" style="margin-bottom:14px"></div>
+    <div id="auditList"></div>
   </div>
   <div id="sub-part" style="display:none">
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Participantes</span></div>
@@ -749,6 +756,9 @@ function rCTabs(){
 function rCModeTabs(){
   var mt=document.getElementById('cModeTabs');
   if(!selCat){mt.style.display='none';return}
+  // Playoffs solo para admin; si un no-admin quedó en esa vista, volver a cuadros
+  if(!isAdmin&&cView==='playoffs')cView='cuadros';
+  if(!isAdmin){mt.style.display='none';return}
   mt.style.display='flex';
   mt.innerHTML='';
   [['cuadros','🏆 Cuadros'],['playoffs','⚡ Playoffs']].forEach(function(pair){
@@ -855,6 +865,19 @@ function renderGroupStandingsSummary(cat){
   html+='</div>';
   return html;
 }
+var CROSS_SCHEMES={
+  'AB_CD':{label:'A-B · C-D (por defecto)',pairs:[['A',1,'B',2],['B',1,'A',2],['C',1,'D',2],['D',1,'C',2]]},
+  'AC_BD':{label:'A-C · B-D',pairs:[['A',1,'C',2],['C',1,'A',2],['B',1,'D',2],['D',1,'B',2]]},
+  'AD_BC':{label:'A-D · B-C',pairs:[['A',1,'D',2],['D',1,'A',2],['B',1,'C',2],['C',1,'B',2]]}
+};
+var crossScheme={}; // {cat: 'AB_CD'|'AC_BD'|'AD_BC'}
+db.ref('crossScheme').on('value',function(s){crossScheme=s.val()||{};if(curPg==='cuadros'&&cView==='playoffs')rGrid()});
+function setCrossScheme(cat,val){
+  crossScheme[cat]=val;
+  db.ref('crossScheme').set(crossScheme);
+  rGrid();
+  toast('Esquema de cruce actualizado');
+}
 function renderProjectedQuarters(cat){
   var groups=['A','B','C','D'];
   var standings={},incomplete=false;
@@ -864,12 +887,22 @@ function renderProjectedQuarters(cat){
     if(arr.length<2)incomplete=true;
   });
   var html='<div class="slbl">⚡ Cruces Proyectados de Cuartos</div>';
+  // Selector de esquema (solo admin)
+  if(isAdmin){
+    var cur=crossScheme[cat]||'AB_CD';
+    var opts='';
+    Object.keys(CROSS_SCHEMES).forEach(function(k){
+      opts+='<option value="'+k+'"'+(cur===k?' selected':'')+'>'+CROSS_SCHEMES[k].label+'</option>';
+    });
+    html+='<div style="margin-bottom:10px"><div style="font-size:.68rem;color:var(--tm);margin-bottom:5px">Elegí qué grupo cruza con qué grupo:</div><select class="fs catsel" style="width:100%" onchange="setCrossScheme(\''+cat+'\',this.value)">'+opts+'</select></div>';
+  }
   if(incomplete){
     html+='<div style="background:var(--card);border:1px dashed var(--brd);border-radius:var(--rs);padding:14px;text-align:center;font-size:.75rem;color:var(--tm);margin-bottom:16px">Todavía faltan jugadores en algún grupo para proyectar los cruces</div>';
     return html;
   }
   html+='<div style="font-size:.68rem;color:var(--tm);margin-bottom:10px">Se actualiza solo según las posiciones actuales. Puede cambiar hasta que termine la fase de grupos.</div>';
-  var pairs=[['A',1,'B',2],['B',1,'A',2],['C',1,'D',2],['D',1,'C',2]];
+  var schemeKey=crossScheme[cat]||'AB_CD';
+  var pairs=CROSS_SCHEMES[schemeKey].pairs;
   pairs.forEach(function(pair){
     var g1=pair[0],pos1=pair[1],g2=pair[2],pos2=pair[3];
     var p1=standings[g1][pos1-1],p2=standings[g2][pos2-1];
@@ -1373,6 +1406,7 @@ function saveRes(){
   if(!confirm(resumen))return;
   results.push({fecha:fecha,cat:cat,grupo:grp,fase:fase,p1id:p1id,p2id:p2id,p1:nm1,p2:nm2,score:score,winner:winner});
   db.ref('resultados').set(results);
+  logAction('Cargó resultado',gan+' '+score+' a '+per+' ('+CL[cat]+(fase!=='grupos'?' — '+FASE_L[fase]:grp?' — Grupo '+grp:'')+')');
   // Si el resultado viene de un partido programado, lo sacamos de Próximos Partidos
   if(window._schedMatchToRemove){
     var rm=window._schedMatchToRemove;
@@ -1488,6 +1522,7 @@ function saveSch(){
   if(_schedFase&&_schedFase!=='grupos')entry.fase=_schedFase;
   schedule.push(entry);
   db.ref('programacion').set(schedule);clMod('mSch');rCal();rUp();
+  logAction('Programó partido',entry.p1+' vs '+entry.p2+' — '+CL[cat]+' ('+date+(time?' '+time:'')+')');
   toast(_schedFase!=='grupos'?'Cruce de '+FASE_L[_schedFase]+' programado':'Partido programado');
   _schedFase='grupos';
 }
@@ -1546,6 +1581,47 @@ function rGlobalMatchStats(){
     html+='</span></div>';
   });
   html+='</div>';
+  el.innerHTML=html;
+}
+// ═══ REGISTRO DE ACTIVIDAD ═══
+var auditFilter='todos';
+function rAuditoria(){
+  var ft=document.getElementById('auditFilter');
+  if(ft){
+    ft.innerHTML='';
+    [['todos','Todo'],['resultados','Resultados'],['programados','Programados'],['cambios','Cambios']].forEach(function(pair){
+      var val=pair[0],label=pair[1];
+      var d=document.createElement('div');d.className='ct';
+      if(auditFilter===val){d.style.background='var(--acc-d)';d.style.color='var(--acc)';d.style.borderColor='var(--acc)'}
+      d.textContent=label;
+      d.onclick=function(){auditFilter=val;rAuditoria()};
+      ft.appendChild(d);
+    });
+  }
+  var el=document.getElementById('auditList');if(!el)return;
+  var items=auditLog.slice().reverse(); // más reciente primero
+  // Filtro
+  if(auditFilter==='resultados')items=items.filter(function(a){return a.accion.indexOf('resultado')!==-1});
+  else if(auditFilter==='programados')items=items.filter(function(a){return a.accion.indexOf('rogramó')!==-1||a.accion.indexOf('rograma')!==-1});
+  else if(auditFilter==='cambios')items=items.filter(function(a){return a.accion.indexOf('Editó')!==-1||a.accion.indexOf('Eliminó')!==-1});
+  if(!items.length){el.innerHTML='<div class="es"><div class="es-i">📋</div><div class="es-t">Sin actividad registrada'+(auditFilter!=='todos'?' en este filtro':'')+'</div></div>';return}
+  var html='';
+  items.forEach(function(a){
+    var d=new Date(a.ts);
+    var fecha=('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2);
+    var hora=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+    var icon=a.accion.indexOf('Cargó')!==-1?'✓':a.accion.indexOf('Programó')!==-1?'📅':a.accion.indexOf('Editó')!==-1?'✎':a.accion.indexOf('Eliminó')!==-1?'✕':'•';
+    var iconColor=a.accion.indexOf('Eliminó')!==-1?'#f87171':'var(--acc)';
+    html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:11px 14px;margin-bottom:7px">';
+    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">';
+    html+='<span style="color:'+iconColor+';font-weight:800;font-size:.85rem;flex-shrink:0">'+icon+'</span>';
+    html+='<span style="font-weight:700;font-size:.82rem;flex:1">'+a.accion+'</span>';
+    html+='<span style="font-size:.62rem;color:var(--tm);flex-shrink:0">'+fecha+' '+hora+'</span>';
+    html+='</div>';
+    html+='<div style="font-size:.75rem;color:var(--t2);margin-left:20px">'+(a.detalle||'')+'</div>';
+    html+='<div style="font-size:.65rem;color:var(--acc);margin-left:20px;margin-top:3px">👤 '+a.actor+'</div>';
+    html+='</div>';
+  });
   el.innerHTML=html;
 }
 function partidosInit(){
@@ -1823,6 +1899,7 @@ function saveEditP(){
   p.nombre=n;p.apellido=a;p.cat=c;p.grupo=g;
   var nombreCompleto=a+' '+n;
   db.ref('participantes').set(parts);
+  logAction('Editó participante',nombreCompleto+' ('+CL[c]+' Grupo '+g+')');
   // ── Propagar el nombre (y cat/grupo si cambió) a partidos programados ──
   var schChanged=false;
   schedule.forEach(function(s){
@@ -2020,6 +2097,21 @@ function delBal(tipo,idx){
 var isAdmin=localStorage.getItem('atr_admin')==='1';
 var curUser=JSON.parse(localStorage.getItem('atr_user')||'null');
 if(!isAdmin&&curUser&&curUser.admin===true)isAdmin=true;
+// ═══ AUDITORÍA ═══
+var auditLog=[];
+db.ref('auditoria').on('value',function(s){auditLog=s.val()||[];if(document.getElementById('sub-auditoria')&&document.getElementById('sub-auditoria').style.display!=='none')rAuditoria()});
+function currentActor(){
+  if(curUser&&curUser.nombre)return curUser.apellido?(curUser.apellido+' '+curUser.nombre):curUser.nombre;
+  if(localStorage.getItem('atr_admin')==='1')return 'Admin general';
+  return 'Desconocido';
+}
+function logAction(accion,detalle){
+  var entry={ts:Date.now(),actor:currentActor(),accion:accion,detalle:detalle||''};
+  auditLog.push(entry);
+  // Mantener solo las últimas 500 entradas para no crecer infinito
+  if(auditLog.length>500)auditLog=auditLog.slice(auditLog.length-500);
+  db.ref('auditoria').set(auditLog);
+}
 var usuarios=[];
 db.ref('usuarios').on('value',function(s){
   var v=s.val()||[];
@@ -2251,6 +2343,8 @@ function updAdmUI(){
   if(insigBtn)insigBtn.style.display=isAdmin?'flex':'none';
   var partidosBtn=document.getElementById('partidosBtn');
   if(partidosBtn)partidosBtn.style.display=isAdmin?'flex':'none';
+  var auditBtn=document.getElementById('auditBtn');
+  if(auditBtn)auditBtn.style.display=isAdmin?'flex':'none';
   var admMBtn=document.getElementById('admMenuBtn');
   if(admMBtn)admMBtn.style.display=isAdmin?'flex':'none';
   var miEntBtn=document.getElementById('miEntradaBtn');
@@ -2367,9 +2461,9 @@ function rAdmPanel(){
   el3.innerHTML=h3;
   rVencidos();
 }
-function admDelSch(i){if(!isAdmin){toast('Solo el administrador puede eliminar');return}if(!confirm('Eliminar partido?'))return;schedule.splice(i,1);db.ref('programacion').set(schedule);rAdmPanel();rCal();rUp();toast('Eliminado')}
-function admDelRes(i){if(!isAdmin){toast('Solo el administrador puede eliminar');return}if(!confirm('Eliminar resultado?'))return;results.splice(i,1);db.ref('resultados').set(results);rAdmPanel();toast('Eliminado')}
-function admDelPart(id){if(!isAdmin){toast('Solo el administrador puede eliminar');return}if(!confirm('Eliminar participante?'))return;parts=parts.filter(function(p){return p.id!==id});db.ref('participantes').set(parts);rAdmPanel();toast('Eliminado')}
+function admDelSch(i){if(!isAdmin){toast('Solo el administrador puede eliminar');return}if(!confirm('Eliminar partido?'))return;var _d=schedule[i];logAction('Eliminó partido programado',_d?(_d.p1+' vs '+_d.p2):'');schedule.splice(i,1);db.ref('programacion').set(schedule);rAdmPanel();rCal();rUp();toast('Eliminado')}
+function admDelRes(i){if(!isAdmin){toast('Solo el administrador puede eliminar');return}if(!confirm('Eliminar resultado?'))return;var _d=results[i];logAction('Eliminó resultado',_d?(_d.p1+' vs '+_d.p2+' ('+_d.score+')'):'');results.splice(i,1);db.ref('resultados').set(results);rAdmPanel();toast('Eliminado')}
+function admDelPart(id){if(!isAdmin){toast('Solo el administrador puede eliminar');return}if(!confirm('Eliminar participante?'))return;var _p=parts.find(function(p){return p.id===id});logAction('Eliminó participante',_p?(_p.apellido+' '+_p.nombre):'');parts=parts.filter(function(p){return p.id!==id});db.ref('participantes').set(parts);rAdmPanel();toast('Eliminado')}
 var editIdx=-1;
 function admEditRes(i){
   if(!isAdmin){toast('Solo el administrador puede editar resultados');return}
@@ -2392,6 +2486,7 @@ function saveEdit(){
   var ve=validateScore(score);
   if(!ve.ok){toast(ve.error);return}
   results[editIdx].score=score;results[editIdx].winner=winner;results[editIdx].fecha=fecha;
+  logAction('Editó resultado',results[editIdx].p1+' vs '+results[editIdx].p2+' → '+score);
   db.ref('resultados').set(results);clMod('mEdit');rAdmPanel();rRes();toast('Resultado actualizado');editIdx=-1;
 }
 
@@ -2410,6 +2505,7 @@ subPg=function(s){
   if(s==='users')rUsers();
   if(s==='insignias')insigInit();
   if(s==='partidos')partidosInit();
+  if(s==='auditoria')rAuditoria();
   if(s==='mientrada')rMiEntrada();
   if(s==='login'){
     if(curUser){showCuentaLogged()}
