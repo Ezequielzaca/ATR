@@ -309,6 +309,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div class="mi" id="insigBtn" style="display:none" onclick="subPg('insignias')"><div class="mic" style="background:linear-gradient(135deg,#d4a017,#a16207)">🏅</div><div><div class="mit">Insignias</div><div class="mid">Logros y apodos de jugadores</div></div></div>
     <div class="mi" id="partidosBtn" style="display:none" onclick="subPg('partidos')"><div class="mic" style="background:linear-gradient(135deg,#0284c7,#1e3a8a)">🎾</div><div><div class="mit">Partidos</div><div class="mid">Por jugar y jugados por grupo</div></div></div>
     <div class="mi" id="auditBtn" style="display:none" onclick="subPg('auditoria')"><div class="mic" style="background:linear-gradient(135deg,#64748b,#334155)">📋</div><div><div class="mit">Registro de actividad</div><div class="mid">Quién cargó o cambió qué</div></div></div>
+    <div class="mi" id="flyerBtn" style="display:none" onclick="subPg('flyers')"><div class="mic" style="background:linear-gradient(135deg,#7dd3fc,#c4b5fd)">🖼️</div><div><div class="mit">Placas de partidos</div><div class="mid">Versus del día para compartir</div></div></div>
     <div class="mi" id="admMenuBtn" style="display:none" onclick="subPg('admin')"><div class="mic" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">⚙️</div><div><div class="mit">Panel Admin</div><div class="mid">Gestionar torneo</div></div></div>
   </div>
   <!-- LOGIN / REGISTER / PROFILE -->
@@ -409,6 +410,15 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Registro de actividad</span></div>
     <div class="ctabs" id="auditFilter" style="margin-bottom:14px"></div>
     <div id="auditList"></div>
+  </div>
+  <!-- Placas de partidos (admin) -->
+  <div id="sub-flyers" style="display:none">
+    <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Placas de partidos</span></div>
+    <div class="af">
+      <div class="af-t">Elegí el día</div>
+      <div class="fr"><input class="fi" type="date" id="flyerDate" onchange="rFlyerList()" style="width:100%"/></div>
+    </div>
+    <div id="flyerList"></div>
   </div>
   <div id="sub-part" style="display:none">
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Participantes</span></div>
@@ -626,8 +636,8 @@ var db=firebase.database();
 var MN=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 var DN=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 var CATS=['signature','oro','plata','bronce','madera','mujeres'];
-var FASE_L={grupos:'Grupos',cuartos:'Cuartos de Final',semis:'Semifinal',final:'Final'};
-var FASE_PTS={cuartos:2,semis:3,final:5};
+var FASE_L={grupos:'Grupos',cuartos:'Cuartos de Final',semis:'Semifinal',final:'Final',cuartos_c:'Cuartos (Repechaje)',semis_c:'Semifinal (Repechaje)',final_c:'Final (Repechaje)'};
+var FASE_PTS={cuartos:2,semis:3,final:5,cuartos_c:1,semis_c:2,final_c:3};
 var BADGE_TYPES={
   trebol:{emoji:'🍀',label:'Más Suerte'},
   calavera:{emoji:'💀',label:'Más Difícil'},
@@ -756,9 +766,10 @@ function rCTabs(){
 function rCModeTabs(){
   var mt=document.getElementById('cModeTabs');
   if(!selCat){mt.style.display='none';return}
-  // Playoffs solo para admin; si un no-admin quedó en esa vista, volver a cuadros
-  if(!isAdmin&&cView==='playoffs')cView='cuadros';
-  if(!isAdmin){mt.style.display='none';return}
+  // Playoffs: admin siempre; público solo si playoffConfig.visible
+  var puedeVer=isAdmin||playoffConfig.visible;
+  if(!puedeVer&&cView==='playoffs')cView='cuadros';
+  if(!puedeVer){mt.style.display='none';return}
   mt.style.display='flex';
   mt.innerHTML='';
   [['cuadros','🏆 Cuadros'],['playoffs','⚡ Playoffs']].forEach(function(pair){
@@ -866,102 +877,148 @@ function renderGroupStandingsSummary(cat){
   return html;
 }
 var CROSS_SCHEMES={
-  'AB_CD':{label:'A-B · C-D (por defecto)',pairs:[['A',1,'B',2],['B',1,'A',2],['C',1,'D',2],['D',1,'C',2]]},
-  'AC_BD':{label:'A-C · B-D',pairs:[['A',1,'C',2],['C',1,'A',2],['B',1,'D',2],['D',1,'B',2]]},
-  'AD_BC':{label:'A-D · B-C',pairs:[['A',1,'D',2],['D',1,'A',2],['B',1,'C',2],['C',1,'B',2]]}
+  'AB_CD':{label:'A-B · C-D (por defecto)',cross:[['A','B'],['B','A'],['C','D'],['D','C']]},
+  'AC_BD':{label:'A-C · B-D',cross:[['A','C'],['C','A'],['B','D'],['D','B']]},
+  'AD_BC':{label:'A-D · B-C',cross:[['A','D'],['D','A'],['B','C'],['C','B']]}
 };
-var crossScheme={}; // {cat: 'AB_CD'|'AC_BD'|'AD_BC'}
+var crossScheme={};  // {cat: esquema} para cuadro principal (1° vs 2°)
+var crossSchemeC={}; // {cat: esquema} para repechaje (3° vs 4°)
+var playoffConfig={visible:false,repechajeVisible:false}; // control maestro de visibilidad pública
 db.ref('crossScheme').on('value',function(s){crossScheme=s.val()||{};if(curPg==='cuadros'&&cView==='playoffs')rGrid()});
+db.ref('crossSchemeC').on('value',function(s){crossSchemeC=s.val()||{};if(curPg==='cuadros'&&cView==='playoffs')rGrid()});
+db.ref('playoffConfig').on('value',function(s){playoffConfig=s.val()||{visible:false,repechajeVisible:false};if(curPg==='cuadros'){rCModeTabs();rCGrpTabs();rGrid()}});
 function setCrossScheme(cat,val){
-  crossScheme[cat]=val;
-  db.ref('crossScheme').set(crossScheme);
-  rGrid();
-  toast('Esquema de cruce actualizado');
+  crossScheme[cat]=val;db.ref('crossScheme').set(crossScheme);rGrid();toast('Esquema de cruce actualizado');
 }
-function renderProjectedQuarters(cat){
+function setCrossSchemeC(cat,val){
+  crossSchemeC[cat]=val;db.ref('crossSchemeC').set(crossSchemeC);rGrid();toast('Esquema de repechaje actualizado');
+}
+function setPlayoffVisible(v){
+  playoffConfig.visible=v;db.ref('playoffConfig').set(playoffConfig);rCModeTabs();rCGrpTabs();rGrid();
+  toast(v?'Playoffs ahora visibles para todos':'Playoffs solo para admin');
+}
+function setRepechajeVisible(v){
+  playoffConfig.repechajeVisible=v;db.ref('playoffConfig').set(playoffConfig);rGrid();
+  toast(v?'Repechaje visible':'Repechaje oculto');
+}
+// Genera los cruces proyectados de un cuadro. posHi/posLo = posiciones que se cruzan (1&2 principal, 3&4 repechaje)
+function renderBracketQuarters(cat,opts){
   var groups=['A','B','C','D'];
   var standings={},incomplete=false;
   groups.forEach(function(g){
     var arr=computeGroupStandings(cat,g);
     standings[g]=arr;
-    if(arr.length<2)incomplete=true;
+    if(arr.length<opts.posLo)incomplete=true;
   });
-  var html='<div class="slbl">⚡ Cruces Proyectados de Cuartos</div>';
-  // Selector de esquema (solo admin)
+  var schemeStore=opts.esScheme,schemeKey=(schemeStore[cat]||'AB_CD');
+  var cross=CROSS_SCHEMES[schemeKey].cross;
+  var html='<div class="slbl">'+opts.titulo+'</div>';
   if(isAdmin){
-    var cur=crossScheme[cat]||'AB_CD';
-    var opts='';
-    Object.keys(CROSS_SCHEMES).forEach(function(k){
-      opts+='<option value="'+k+'"'+(cur===k?' selected':'')+'>'+CROSS_SCHEMES[k].label+'</option>';
-    });
-    html+='<div style="margin-bottom:10px"><div style="font-size:.68rem;color:var(--tm);margin-bottom:5px">Elegí qué grupo cruza con qué grupo:</div><select class="fs catsel" style="width:100%" onchange="setCrossScheme(\''+cat+'\',this.value)">'+opts+'</select></div>';
+    var optsHtml='';
+    Object.keys(CROSS_SCHEMES).forEach(function(k){optsHtml+='<option value="'+k+'"'+(schemeKey===k?' selected':'')+'>'+CROSS_SCHEMES[k].label+'</option>';});
+    html+='<div style="margin-bottom:10px"><div style="font-size:.68rem;color:var(--tm);margin-bottom:5px">Elegí qué grupo cruza con qué grupo:</div><select class="fs catsel" style="width:100%" onchange="'+opts.setFn+'(\''+cat+'\',this.value)">'+optsHtml+'</select></div>';
   }
   if(incomplete){
-    html+='<div style="background:var(--card);border:1px dashed var(--brd);border-radius:var(--rs);padding:14px;text-align:center;font-size:.75rem;color:var(--tm);margin-bottom:16px">Todavía faltan jugadores en algún grupo para proyectar los cruces</div>';
+    html+='<div style="background:var(--card);border:1px dashed var(--brd);border-radius:var(--rs);padding:14px;text-align:center;font-size:.75rem;color:var(--tm);margin-bottom:16px">Todavía faltan jugadores o posiciones definidas en algún grupo</div>';
     return html;
   }
   html+='<div style="font-size:.68rem;color:var(--tm);margin-bottom:10px">Se actualiza solo según las posiciones actuales. Puede cambiar hasta que termine la fase de grupos.</div>';
-  var schemeKey=crossScheme[cat]||'AB_CD';
-  var pairs=CROSS_SCHEMES[schemeKey].pairs;
-  pairs.forEach(function(pair){
-    var g1=pair[0],pos1=pair[1],g2=pair[2],pos2=pair[3];
-    var p1=standings[g1][pos1-1],p2=standings[g2][pos2-1];
-    if(!p1||!p2)return;
-    var already=schedule.some(function(s){return s.cat===cat&&s.fase==='cuartos'&&((s.p1id===p1.id&&s.p2id===p2.id)||(s.p1id===p2.id&&s.p2id===p1.id))})
-              ||results.some(function(r){return r.cat===cat&&r.fase==='cuartos'&&((r.p1id===p1.id&&r.p2id===p2.id)||(r.p1id===p2.id&&r.p2id===p1.id))});
-    var btn=(isAdmin&&!already)?'<button onclick="openPlayoffSchedule(\''+cat+'\',\''+p1.id+'\',\''+p2.id+'\',\'cuartos\')" style="padding:6px 12px;border-radius:8px;border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);font-size:.7rem;font-weight:700;cursor:pointer;flex-shrink:0">📅 Programar</button>':(already?'<span style="font-size:.65rem;color:var(--tm);font-weight:600;flex-shrink:0">✓ Ya definido</span>':'');
+  cross.forEach(function(pair){
+    var gHi=pair[0],gLo=pair[1];
+    var pHi=standings[gHi][opts.posHi-1],pLo=standings[gLo][opts.posLo-1];
+    if(!pHi||!pLo)return;
+    var already=schedule.some(function(s){return s.cat===cat&&s.fase===opts.faseCuartos&&((s.p1id===pHi.id&&s.p2id===pLo.id)||(s.p1id===pLo.id&&s.p2id===pHi.id))})
+              ||results.some(function(r){return r.cat===cat&&r.fase===opts.faseCuartos&&((r.p1id===pHi.id&&r.p2id===pLo.id)||(r.p1id===pLo.id&&r.p2id===pHi.id))});
+    var btn=(isAdmin&&!already)?'<button onclick="openPlayoffSchedule(\''+cat+'\',\''+pHi.id+'\',\''+pLo.id+'\',\''+opts.faseCuartos+'\')" style="padding:6px 12px;border-radius:8px;border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);font-size:.7rem;font-weight:700;cursor:pointer;flex-shrink:0">📅 Programar</button>':(already?'<span style="font-size:.65rem;color:var(--tm);font-weight:600;flex-shrink:0">✓ Ya definido</span>':'');
     html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">';
-    html+='<span style="font-size:.82rem"><b>'+pos1+'°'+g1+'</b> '+p1.nm+' <span style="color:var(--tm)">vs</span> <b>'+pos2+'°'+g2+'</b> '+p2.nm+'</span>';
+    html+='<span style="font-size:.82rem"><b>'+opts.posHi+'°'+gHi+'</b> '+pHi.nm+' <span style="color:var(--tm)">vs</span> <b>'+opts.posLo+'°'+gLo+'</b> '+pLo.nm+'</span>';
     html+=btn;
     html+='</div>';
   });
   return html;
 }
+function renderProjectedQuarters(cat){
+  return renderBracketQuarters(cat,{titulo:'⚡ Cruces Proyectados de Cuartos (1° y 2°)',posHi:1,posLo:2,esScheme:crossScheme,setFn:'setCrossScheme',faseCuartos:'cuartos'});
+}
+function renderConsolationQuarters(cat){
+  return renderBracketQuarters(cat,{titulo:'🎗️ Repechaje — Cruces de 3° y 4°',posHi:3,posLo:4,esScheme:crossSchemeC,setFn:'setCrossSchemeC',faseCuartos:'cuartos_c'});
+}
 function rPlayoffsPanel(){
-  var html=renderGroupStandingsSummary(selCat)+renderProjectedQuarters(selCat);
-  var pendFases=['cuartos','semis','final'];
+  var html='';
+  // Control maestro: mostrar playoffs a todos (solo admin lo ve)
+  if(isAdmin){
+    var poOn=playoffConfig.visible;
+    html+='<div style="background:linear-gradient(135deg,#1e3a8a,#7c3aed);border-radius:var(--r);padding:14px 16px;margin-bottom:16px">';
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">';
+    html+='<div><div style="font-size:.82rem;font-weight:700;color:#fff">⚡ Playoffs visibles al público</div><div style="font-size:.68rem;color:rgba(255,255,255,.7);margin-top:2px">'+(poOn?'Todos pueden ver la pestaña Playoffs':'Solo vos (admin) ves esto por ahora')+'</div></div>';
+    html+='<button onclick="setPlayoffVisible('+(!poOn)+')" style="padding:8px 16px;border-radius:20px;border:0;background:'+(poOn?'#fff':'rgba(255,255,255,.2)')+';color:'+(poOn?'#1e3a8a':'#fff')+';font-size:.75rem;font-weight:800;cursor:pointer;flex-shrink:0">'+(poOn?'✓ Visible':'Activar')+'</button>';
+    html+='</div></div>';
+  }
+  html+=renderGroupStandingsSummary(selCat)+renderProjectedQuarters(selCat);
+  // Cuadro de repechaje (3° y 4°): admin siempre lo ve; el público solo si está habilitado
+  var mostrarRepe=isAdmin||playoffConfig.repechajeVisible;
+  if(mostrarRepe){
+    if(isAdmin){
+      var repOn=playoffConfig.repechajeVisible;
+      html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:12px 14px;margin:14px 0;display:flex;align-items:center;justify-content:space-between;gap:10px">';
+      html+='<span style="font-size:.78rem;font-weight:600">🎗️ Mostrar repechaje al público</span>';
+      html+='<button onclick="setRepechajeVisible('+(!repOn)+')" style="padding:6px 14px;border-radius:20px;border:1px solid '+(repOn?'var(--acc)':'var(--brd)')+';background:'+(repOn?'var(--acc-d)':'var(--card-h)')+';color:'+(repOn?'var(--acc)':'var(--tm)')+';font-size:.72rem;font-weight:700;cursor:pointer">'+(repOn?'✓ Visible':'Oculto')+'</button></div>';
+    }
+    html+='<div style="height:1px;background:var(--brd);margin:16px 0"></div>';
+    html+=renderConsolationQuarters(selCat);
+  }
+  // Partidos programados de ambos cuadros
+  var pendFases=['cuartos','semis','final','cuartos_c','semis_c','final_c'];
   var pendHtml='';
   pendFases.forEach(function(f){
+    if((f.indexOf('_c')!==-1)&&!mostrarRepe)return;
     var pend=schedule.filter(function(s){return s.cat===selCat&&s.fase===f});
     if(!pend.length)return;
     pendHtml+='<div class="slbl" style="margin-top:10px">⏳ '+FASE_L[f]+' — Programados</div>';
     pend.forEach(function(s){
       pendHtml+='<div style="background:var(--card);border:1.5px dashed var(--acc);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">';
       pendHtml+='<span style="font-size:.82rem;font-weight:700">'+s.p1+' <span style="color:var(--tm);font-weight:400">vs</span> '+s.p2+'</span>';
-      pendHtml+='<button onclick="openResForPlayoffMatch(\''+s.cat+'\',\''+s.p1id+'\',\''+s.p2id+'\',\''+s.fase+'\',\''+s.date+'\',\''+(s.time||'')+'\',\''+(s.court||'')+'\')" style="padding:7px 14px;border-radius:8px;border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);font-size:.72rem;font-weight:700;cursor:pointer;flex-shrink:0">Cargar resultado</button>';
+      if(isAdmin)pendHtml+='<button onclick="openResForPlayoffMatch(\''+s.cat+'\',\''+s.p1id+'\',\''+s.p2id+'\',\''+s.fase+'\',\''+s.date+'\',\''+(s.time||'')+'\',\''+(s.court||'')+'\')" style="padding:7px 14px;border-radius:8px;border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);font-size:.72rem;font-weight:700;cursor:pointer;flex-shrink:0">Cargar resultado</button>';
       pendHtml+='</div>';
     });
   });
-  return html+pendHtml+rPlayoffs();
+  return html+pendHtml+rPlayoffs(mostrarRepe);
 }
-function rPlayoffs(){
-  var fases=['cuartos','semis','final'];
-  var icons={cuartos:'🎾',semis:'🥎',final:'🏆'};
+function rPlayoffs(mostrarRepe){
   var html='';
-  var any=false;
-  fases.forEach(function(f){
-    var matches=results.filter(function(r){return r.cat===selCat&&r.fase===f}).sort(function(a,b){return(a.fecha||'').localeCompare(b.fecha||'')});
-    html+='<div class="slbl" style="margin-top:18px;margin-bottom:8px">'+icons[f]+' '+FASE_L[f]+'</div>';
-    if(!matches.length){
-      html+='<div style="background:var(--card);border:1px dashed var(--brd);border-radius:var(--rs);padding:14px;text-align:center;font-size:.75rem;color:var(--tm)">Sin partidos cargados</div>';
-      return;
-    }
-    any=true;
-    matches.forEach(function(m){
-      var wName=m.winner===1?m.p1:m.p2,lName=m.winner===1?m.p2:m.p1;
-      html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px">';
-      html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">';
-      html+='<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.85rem;color:var(--win-c)">'+wName+' <span style="font-size:.6rem;font-weight:600">✓</span></div><div style="font-size:.8rem;color:var(--tm)">'+lName+'</div></div>';
-      html+='<div style="font-family:Space Mono,monospace;font-weight:700;font-size:.82rem;color:var(--acc);flex-shrink:0">'+m.score+'</div>';
-      html+='</div><div style="font-size:.6rem;color:var(--tm);margin-top:6px">'+m.fecha+' · +'+FASE_PTS[f]+' pts al ganador</div></div>';
+  function renderFases(fases,icons,tituloBloque,campeonLabel){
+    var bloque='';
+    fases.forEach(function(f){
+      var matches=results.filter(function(r){return r.cat===selCat&&r.fase===f}).sort(function(a,b){return(a.fecha||'').localeCompare(b.fecha||'')});
+      bloque+='<div class="slbl" style="margin-top:18px;margin-bottom:8px">'+icons[f]+' '+FASE_L[f]+'</div>';
+      if(!matches.length){
+        bloque+='<div style="background:var(--card);border:1px dashed var(--brd);border-radius:var(--rs);padding:14px;text-align:center;font-size:.75rem;color:var(--tm)">Sin partidos cargados</div>';
+        return;
+      }
+      matches.forEach(function(m){
+        var wName=m.winner===1?m.p1:m.p2,lName=m.winner===1?m.p2:m.p1;
+        bloque+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px">';
+        bloque+='<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">';
+        bloque+='<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.85rem;color:var(--win-c)">'+wName+' <span style="font-size:.6rem;font-weight:600">✓</span></div><div style="font-size:.8rem;color:var(--tm)">'+lName+'</div></div>';
+        bloque+='<div style="font-family:Space Mono,monospace;font-weight:700;font-size:.82rem;color:var(--acc);flex-shrink:0">'+m.score+'</div>';
+        bloque+='</div><div style="font-size:.6rem;color:var(--tm);margin-top:6px">'+m.fecha+' · +'+FASE_PTS[f]+' pts al ganador</div></div>';
+      });
+      // Campeón del cuadro
+      var finalFase=fases[fases.length-1];
+      if(f===finalFase&&matches.length){
+        var fm=matches[matches.length-1];
+        var champ=fm.winner===1?fm.p1:fm.p2;
+        bloque+='<div style="background:linear-gradient(135deg,#1e3a8a,#7c3aed);border-radius:var(--r);padding:18px;text-align:center;margin-top:10px"><div style="font-size:1.6rem">🏆</div><div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:2px;margin:4px 0">'+campeonLabel+' '+CL[selCat]+'</div><div style="font-size:1.15rem;font-weight:800;color:#fff">'+champ+'</div></div>';
+      }
     });
-    // Champion highlight
-    if(f==='final'&&matches.length){
-      var fm=matches[matches.length-1];
-      var champ=fm.winner===1?fm.p1:fm.p2;
-      html+='<div style="background:linear-gradient(135deg,#1e3a8a,#7c3aed);border-radius:var(--r);padding:18px;text-align:center;margin-top:10px"><div style="font-size:1.6rem">🏆</div><div style="font-size:.6rem;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:2px;margin:4px 0">Campeón '+CL[selCat]+'</div><div style="font-size:1.15rem;font-weight:800;color:#fff">'+champ+'</div></div>';
-    }
-  });
+    return bloque;
+  }
+  html+=renderFases(['cuartos','semis','final'],{cuartos:'🎾',semis:'🥎',final:'🏆'},'Principal','Campeón');
+  if(mostrarRepe){
+    html+='<div style="height:1px;background:var(--brd);margin:20px 0"></div>';
+    html+='<div class="slbl" style="color:var(--acc2,#c4b5fd)">🎗️ REPECHAJE (3° y 4°)</div>';
+    html+=renderFases(['cuartos_c','semis_c','final_c'],{cuartos_c:'🎾',semis_c:'🥎',final_c:'🎗️'},'Repechaje','Campeón Repechaje');
+  }
   return html;
 }
 
@@ -1585,6 +1642,101 @@ function rGlobalMatchStats(){
 }
 // ═══ REGISTRO DE ACTIVIDAD ═══
 var auditFilter='todos';
+// ═══ PLACAS DE PARTIDOS (versus del día) ═══
+function flyerInit(){
+  document.getElementById('flyerDate').value=todayStr;
+  rFlyerList();
+}
+function rFlyerList(){
+  var date=document.getElementById('flyerDate').value;
+  var el=document.getElementById('flyerList');
+  if(!date){el.innerHTML='';return}
+  var delDia=schedule.filter(function(s){return s.date===date}).sort(function(a,b){return(a.time||'').localeCompare(b.time||'')});
+  if(!delDia.length){
+    el.innerHTML='<div class="es"><div class="es-i">🖼️</div><div class="es-t">No hay partidos programados ese día</div><div class="es-s">Programá partidos desde el botón +</div></div>';
+    return;
+  }
+  window._flyerMatches=delDia;
+  var html='<div style="font-size:.75rem;color:var(--tm);margin-bottom:12px">'+delDia.length+' partido'+(delDia.length>1?'s':'')+' — tocá "Descargar placa" en cada uno</div>';
+  delDia.forEach(function(m,idx){
+    var faseTxt=(m.fase&&m.fase!=='grupos')?(m.fase==='final'?'FINAL':m.fase==='semis'?'SEMIFINAL':'CUARTOS'):'';
+    html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:14px;margin-bottom:10px">';
+    html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:.6rem;font-weight:700;color:var(--acc);background:var(--acc-d);padding:2px 8px;border-radius:10px">'+(m.time||'A definir')+(m.court?' · Cancha '+m.court:'')+'</span><span class="lb l-'+CS[m.cat]+'" style="font-size:.5rem">'+CL[m.cat]+'</span>'+(faseTxt?'<span class="lb" style="background:linear-gradient(135deg,#1e3a8a,#7c3aed);color:#fff;font-size:.5rem">'+faseTxt+'</span>':'')+'</div>';
+    html+='<div style="font-size:.9rem;font-weight:700;margin-bottom:12px">'+m.p1+' <span style="color:var(--tm);font-weight:400">vs</span> '+m.p2+'</div>';
+    html+='<button class="fb" onclick="downloadFlyer('+idx+')" style="margin:0">⬇ Descargar placa</button>';
+    html+='</div>';
+  });
+  el.innerHTML=html;
+}
+function downloadFlyer(idx){
+  var m=window._flyerMatches[idx];if(!m)return;
+  var W=1080,H=1920;
+  var canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
+  var ctx=canvas.getContext('2d');
+  // Fondo degradé azul oscuro
+  var bg=ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#0a0e24');bg.addColorStop(0.5,'#131a35');bg.addColorStop(1,'#0a0e24');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  // Triángulos decorativos sutiles (estilo remera)
+  ctx.globalAlpha=0.06;
+  for(var i=0;i<14;i++){
+    ctx.fillStyle=i%2?'#7dd3fc':'#c4b5fd';
+    var tx=Math.random()*W,ty=Math.random()*H,ts=60+Math.random()*120;
+    ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(tx+ts,ty);ctx.lineTo(tx+ts/2,ty-ts*0.87);ctx.closePath();ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  // Marco
+  ctx.strokeStyle='rgba(125,211,252,.35)';ctx.lineWidth=3;
+  ctx.strokeRect(50,50,W-100,H-100);
+  // Encabezado
+  ctx.textAlign='center';
+  ctx.fillStyle='#7dd3fc';ctx.font='bold 52px Outfit,Arial,sans-serif';
+  ctx.fillText('TENIS ATR 2026',W/2,220);
+  ctx.fillStyle='#a5b4d6';ctx.font='600 32px Outfit,Arial,sans-serif';
+  ctx.fillText('TOUR CORRIENTES',W/2,270);
+  // Categoría + fase
+  var faseTxt=(m.fase&&m.fase!=='grupos')?(m.fase==='final'?'FINAL':m.fase==='semis'?'SEMIFINAL':'CUARTOS DE FINAL'):'';
+  ctx.fillStyle='#c4b5fd';ctx.font='bold 40px Outfit,Arial,sans-serif';
+  ctx.fillText(CL[m.cat].toUpperCase()+(faseTxt?' · '+faseTxt:''),W/2,420);
+  // Nombres de jugadores
+  function drawName(name,y){
+    ctx.fillStyle='#eef2ff';
+    var fs=90;ctx.font='bold '+fs+'px Outfit,Arial,sans-serif';
+    while(ctx.measureText(name).width>W-160&&fs>40){fs-=5;ctx.font='bold '+fs+'px Outfit,Arial,sans-serif';}
+    ctx.fillText(name,W/2,y);
+  }
+  drawName(m.p1,760);
+  // VS central
+  ctx.fillStyle='#7dd3fc';ctx.font='bold 130px Outfit,Arial,sans-serif';
+  ctx.fillText('VS',W/2,1010);
+  // Línea decorativa
+  ctx.strokeStyle='rgba(196,181,253,.4)';ctx.lineWidth=4;
+  ctx.beginPath();ctx.moveTo(W/2-180,880);ctx.lineTo(W/2+180,880);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(W/2-180,1080);ctx.lineTo(W/2+180,1080);ctx.stroke();
+  drawName(m.p2,1290);
+  // Hora y cancha
+  ctx.fillStyle='#7dd3fc';ctx.font='bold 56px Outfit,Arial,sans-serif';
+  var dp=m.date.split('-'),dO=new Date(dp[0],dp[1]-1,dp[2]);
+  var fechaTxt=DN[dO.getDay()]+' '+dp[2]+'/'+dp[1];
+  ctx.fillText(fechaTxt+(m.time?'  ·  '+m.time+' hs':''),W/2,1620);
+  if(m.court){
+    ctx.fillStyle='#a5b4d6';ctx.font='600 44px Outfit,Arial,sans-serif';
+    ctx.fillText('Cancha '+m.court,W/2,1690);
+  }
+  // Pie
+  ctx.fillStyle='#6b7aa3';ctx.font='600 30px Outfit,Arial,sans-serif';
+  ctx.fillText('A.T.R. FRIENDS TOUR 2026',W/2,1820);
+  // Descargar
+  canvas.toBlob(function(blob){
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;
+    a.download='versus_'+m.p1.split(' ')[0]+'_vs_'+m.p2.split(' ')[0]+'.png';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url)},1000);
+  },'image/png');
+  toast('Placa descargada 📥');
+}
 function rAuditoria(){
   var ft=document.getElementById('auditFilter');
   if(ft){
@@ -2345,6 +2497,8 @@ function updAdmUI(){
   if(partidosBtn)partidosBtn.style.display=isAdmin?'flex':'none';
   var auditBtn=document.getElementById('auditBtn');
   if(auditBtn)auditBtn.style.display=isAdmin?'flex':'none';
+  var flyerBtn=document.getElementById('flyerBtn');
+  if(flyerBtn)flyerBtn.style.display=isAdmin?'flex':'none';
   var admMBtn=document.getElementById('admMenuBtn');
   if(admMBtn)admMBtn.style.display=isAdmin?'flex':'none';
   var miEntBtn=document.getElementById('miEntradaBtn');
@@ -2506,6 +2660,7 @@ subPg=function(s){
   if(s==='insignias')insigInit();
   if(s==='partidos')partidosInit();
   if(s==='auditoria')rAuditoria();
+  if(s==='flyers')flyerInit();
   if(s==='mientrada')rMiEntrada();
   if(s==='login'){
     if(curUser){showCuentaLogged()}
