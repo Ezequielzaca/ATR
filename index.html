@@ -216,6 +216,20 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 
 /* Toast */
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--acc);color:#fff;padding:11px 22px;border-radius:14px;font-weight:600;font-size:.85rem;z-index:400;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;box-shadow:0 8px 28px var(--acc-g),0 2px 6px rgba(0,0,0,.15);white-space:nowrap}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.dlg-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:500;display:none;align-items:center;justify-content:center;padding:24px}
+.dlg-bg.show{display:flex;animation:dlgFade .2s ease}
+@keyframes dlgFade{from{opacity:0}to{opacity:1}}
+.dlg{background:var(--mdl-bg);border:1px solid var(--brd);border-radius:20px;padding:24px 22px;max-width:340px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5);animation:dlgPop .25s cubic-bezier(.16,1,.3,1)}
+@keyframes dlgPop{from{opacity:0;transform:scale(.9) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.dlg-ic{font-size:2.4rem;margin-bottom:10px;line-height:1}
+.dlg-t{font-size:1.05rem;font-weight:800;color:var(--t1);margin-bottom:8px}
+.dlg-m{font-size:.85rem;color:var(--t2);line-height:1.5;margin-bottom:20px;white-space:pre-line}
+.dlg-btns{display:flex;gap:10px}
+.dlg-btns button{flex:1;padding:12px;border-radius:12px;font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;border:0;transition:.2s}
+.dlg-btns button:active{transform:scale(.96)}
+.dlg-cancel{background:var(--card-h);color:var(--t2);border:1px solid var(--brd)!important}
+.dlg-ok{background:linear-gradient(135deg,#7dd3fc,#c4b5fd);color:#0a0e24}
+.dlg-danger{background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff}
 
 /* Admin */
 .adm-card{background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-sm)}
@@ -522,10 +536,13 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
       <div style="font-size:.72rem;color:var(--tm);line-height:1.5;margin-bottom:10px">Partidos programados cuya fecha ya pasó y no tienen resultado cargado. Cargá el resultado si se jugó, reprogramá si se pasó a otro día, o eliminá si no se juega.</div>
       <div id="admVencidos" style="margin-bottom:20px"></div>
       <div class="slbl">Gestionar Partidos Programados</div>
+      <input class="fi" id="admSchSearch" placeholder="🔍 Buscar partido..." oninput="rAdmPanel()" style="width:100%;margin-bottom:8px"/>
       <div id="admSch"></div>
       <div class="slbl" style="margin-top:20px">Gestionar Resultados</div>
+      <input class="fi" id="admResSearch" placeholder="🔍 Buscar resultado..." oninput="rAdmPanel()" style="width:100%;margin-bottom:8px"/>
       <div id="admRes"></div>
       <div class="slbl" style="margin-top:20px">Gestionar Participantes</div>
+      <input class="fi" id="admPartSearch" placeholder="🔍 Buscar participante..." oninput="rAdmPanel()" style="width:100%;margin-bottom:8px"/>
       <div id="admPart"></div>
     </div>
   </div>
@@ -564,6 +581,15 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 <div class="cbg" id="cardBg" onclick="if(event.target===this)clCard()"><div class="fc" id="fcCard"></div></div>
 
 <div class="toast" id="toast"></div>
+<!-- Modal propio de confirmación/alerta -->
+<div class="dlg-bg" id="dlgBg">
+  <div class="dlg">
+    <div class="dlg-ic" id="dlgIc">❓</div>
+    <div class="dlg-t" id="dlgTitle"></div>
+    <div class="dlg-m" id="dlgMsg"></div>
+    <div class="dlg-btns" id="dlgBtns"></div>
+  </div>
+</div>
 
 <!-- Modal: Edit Result -->
 <div class="mbg" id="mEdit" onclick="if(event.target===this)clMod('mEdit')"><div class="mdl">
@@ -669,6 +695,39 @@ function fmt(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'
 var todayStr=fmt(today);
 
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2200)}
+// Modal propio de confirmación (reemplaza confirm nativo)
+function confirmModal(msg,onOk,opts){
+  opts=opts||{};
+  var bg=document.getElementById('dlgBg');
+  document.getElementById('dlgIc').textContent=opts.icon||(opts.danger?'⚠️':'❓');
+  document.getElementById('dlgTitle').textContent=opts.title||'¿Confirmás?';
+  document.getElementById('dlgMsg').textContent=msg||'';
+  var btns=document.getElementById('dlgBtns');
+  btns.innerHTML='';
+  var cancel=document.createElement('button');
+  cancel.className='dlg-cancel';cancel.textContent=opts.cancelText||'Cancelar';
+  cancel.onclick=function(){bg.classList.remove('show')};
+  var ok=document.createElement('button');
+  ok.className=opts.danger?'dlg-danger':'dlg-ok';ok.textContent=opts.okText||'Confirmar';
+  ok.onclick=function(){bg.classList.remove('show');if(onOk)onOk()};
+  btns.appendChild(cancel);btns.appendChild(ok);
+  bg.classList.add('show');
+}
+// Modal propio de aviso (reemplaza alert nativo)
+function alertModal(msg,opts){
+  opts=opts||{};
+  var bg=document.getElementById('dlgBg');
+  document.getElementById('dlgIc').textContent=opts.icon||'ℹ️';
+  document.getElementById('dlgTitle').textContent=opts.title||'Aviso';
+  document.getElementById('dlgMsg').textContent=msg||'';
+  var btns=document.getElementById('dlgBtns');
+  btns.innerHTML='';
+  var ok=document.createElement('button');
+  ok.className='dlg-ok';ok.textContent=opts.okText||'Entendido';
+  ok.onclick=function(){bg.classList.remove('show');if(opts.onClose)opts.onClose()};
+  btns.appendChild(ok);
+  bg.classList.add('show');
+}
 
 // ═══ FIREBASE SYNC ═══
 function onLoad(){loaded++;if(loaded>=3){ready=true;initApp()}}
@@ -1544,7 +1603,7 @@ function saveRes(){
   });
   if(dup){
     var faseTxt=fase==='grupos'?'':' de '+FASE_L[fase];
-    alert('⚠ Este partido ya fue cargado'+faseTxt+'\n\n'+dup.p1+' vs '+dup.p2+'\nResultado: '+dup.score+' ('+dup.fecha+')\n\nSi está mal cargado, editalo desde Panel Admin → Resultados.');
+    alertModal('Este partido ya fue cargado'+faseTxt+'\n\n'+dup.p1+' vs '+dup.p2+'\nResultado: '+dup.score+' ('+dup.fecha+')\n\nSi está mal cargado, editalo desde Panel Admin → Resultados.',{icon:'⚠️',title:'Partido duplicado'});
     return;
   }
   var p1=parts.find(function(p){return p.id===p1id}),p2=parts.find(function(p){return p.id===p2id});
@@ -1559,7 +1618,7 @@ function saveRes(){
     +'Fecha: '+fecha+'\n'
     +CL[cat]+(grp?' — Grupo '+grp:'')+(fase!=='grupos'?' — '+FASE_L[fase]:'')
     +(vs.warn?'\n\n⚠ '+vs.warn:'');
-  if(!confirm(resumen))return;
+  confirmModal(resumen,function(){
   results.push({fecha:fecha,cat:cat,grupo:grp,fase:fase,p1id:p1id,p2id:p2id,p1:nm1,p2:nm2,score:score,winner:winner});
   db.ref('resultados').set(results);
   logAction('Cargó resultado',gan+' '+score+' a '+per+' ('+CL[cat]+(fase!=='grupos'?' — '+FASE_L[fase]:grp?' — Grupo '+grp:'')+')');
@@ -1576,6 +1635,7 @@ function saveRes(){
   var subP=document.getElementById('sub-partidos');
   if(subP&&subP.style.display!=='none'){rGlobalMatchStats();rPartidos()}
   toast('Resultado guardado'+(fase!=='grupos'?' — '+FASE_L[fase]:''));
+  },{title:'Confirmar resultado',okText:'✓ Guardar',icon:'🎾'});
 }
 // Quick result from upcoming match
 function openResFromMatch(idx){
@@ -1659,7 +1719,7 @@ function saveSch(){
     return (r.p1id===p1id&&r.p2id===p2id)||(r.p1id===p2id&&r.p2id===p1id);
   });
   if(yaJugado){
-    alert('⚠ Este partido ya se jugó\n\n'+yaJugado.p1+' vs '+yaJugado.p2+'\nResultado: '+yaJugado.score+' ('+yaJugado.fecha+')\n\nNo hace falta programarlo de nuevo.');
+    alertModal('Este partido ya se jugó\n\n'+yaJugado.p1+' vs '+yaJugado.p2+'\nResultado: '+yaJugado.score+' ('+yaJugado.fecha+')\n\nNo hace falta programarlo de nuevo.',{icon:'⚠️',title:'Ya jugado'});
     return;
   }
   // ── ¿Ya está programado? ──
@@ -1670,7 +1730,7 @@ function saveSch(){
     return (s.p1id===p1id&&s.p2id===p2id)||(s.p1id===p2id&&s.p2id===p1id);
   });
   if(yaProgramado){
-    alert('⚠ Este partido ya está programado\n\n'+yaProgramado.p1+' vs '+yaProgramado.p2+'\n'+yaProgramado.date+(yaProgramado.time?' a las '+yaProgramado.time:'')+(yaProgramado.court?' — Cancha '+yaProgramado.court:'')+'\n\nSi querés cambiar la fecha, eliminá el anterior desde Panel Admin → Programación.');
+    alertModal('Este partido ya está programado\n\n'+yaProgramado.p1+' vs '+yaProgramado.p2+'\n'+yaProgramado.date+(yaProgramado.time?' a las '+yaProgramado.time:'')+(yaProgramado.court?' — Cancha '+yaProgramado.court:'')+'\n\nSi querés cambiar la fecha, eliminá el anterior desde Panel Admin → Programación.',{icon:'⚠️',title:'Ya programado'});
     return;
   }
   var p1=parts.find(function(p){return p.id===p1id}),p2=parts.find(function(p){return p.id===p2id});
@@ -2056,10 +2116,7 @@ function rLogrosList(){
 }
 function delLogro(pid,idx){
   var p=parts.find(function(x){return x.id===pid});if(!p||!p.logros)return;
-  if(!confirm('Eliminar este logro?'))return;
-  p.logros.splice(idx,1);
-  db.ref('participantes').set(parts);
-  rLogrosList();toast('Eliminado');
+  confirmModal('¿Eliminar este logro?',function(){p.logros.splice(idx,1);db.ref('participantes').set(parts);rLogrosList();toast('Eliminado')},{danger:true,title:'Eliminar logro',okText:'Eliminar'});
 }
 
 function rPList(){
@@ -2134,11 +2191,12 @@ function resyncNames(){
   var msg='Se corrigieron '+schFix+' nombres en programados y '+resFix+' en resultados.';
   if(huerfanos>0)msg+='\n\n⚠ Hay '+huerfanos+' partido(s) con jugadores que ya no existen en la lista (posiblemente eliminados). Esos no se pudieron actualizar automáticamente — revisalos manualmente en Programación/Resultados.';
   if(schFix===0&&resFix===0&&huerfanos===0){toast('Todo ya estaba sincronizado ✓');return}
-  if(!confirm(msg+'\n\n¿Aplicar los cambios?'))return;
-  if(schFix>0)db.ref('programacion').set(schedule);
-  if(resFix>0)db.ref('resultados').set(results);
-  rAdmPanel();rRes();rUp();
-  toast('Nombres sincronizados ✓');
+  confirmModal(msg,function(){
+    if(schFix>0)db.ref('programacion').set(schedule);
+    if(resFix>0)db.ref('resultados').set(results);
+    rAdmPanel();rRes();rUp();
+    toast('Nombres sincronizados ✓');
+  },{title:'Sincronizar nombres',okText:'Aplicar cambios',icon:'🔄'});
 }
 function saveEditP(){
   if(!editPId)return;
@@ -2169,7 +2227,7 @@ function saveEditP(){
   var extra=(schChanged||resChanged)?' (actualizado en partidos y resultados)':'';
   toast('Participante actualizado'+extra);editPId='';
 }
-function delP(id){if(!confirm('Eliminar participante?'))return;parts=parts.filter(function(p){return p.id!==id});db.ref('participantes').set(parts);rPList();toast('Eliminado')}
+function delP(id){confirmModal('¿Seguro que querés eliminar este participante?',function(){parts=parts.filter(function(p){return p.id!==id});db.ref('participantes').set(parts);rPList();toast('Eliminado')},{danger:true,title:'Eliminar participante',okText:'Eliminar'})}
 function compressImageFile(file,maxDim,quality,cb){
   var reader=new FileReader();
   reader.onload=function(e){
@@ -2271,7 +2329,7 @@ function saveEditSpo(){
   clMod('mEditSpo');rSpo();toast('Sponsor actualizado');
   editSpoIdx=-1;_espoLogoData=null;
 }
-function delSpo(i){if(!confirm('Eliminar sponsor?'))return;sponsors.splice(i,1);db.ref('sponsors').set(sponsors);rSpo();toast('Eliminado')}
+function delSpo(i){confirmModal('¿Eliminar este sponsor?',function(){sponsors.splice(i,1);db.ref('sponsors').set(sponsors);rSpo();toast('Eliminado')},{danger:true,title:'Eliminar sponsor',okText:'Eliminar'})}
 
 // ═══ BALANCE ═══
 var balView='resumen';
@@ -2338,10 +2396,11 @@ function addBal(){
   rBalance();toast((balView==='ingresos'?'Ingreso':'Gasto')+' agregado');
 }
 function delBal(tipo,idx){
-  if(!confirm('Eliminar?'))return;
-  if(tipo==='ingresos'){balIngresos.splice(idx,1);db.ref('balIngresos').set(balIngresos)}
-  else{balGastos.splice(idx,1);db.ref('balGastos').set(balGastos)}
-  rBalance();toast('Eliminado');
+  confirmModal('¿Eliminar este movimiento del balance?',function(){
+    if(tipo==='ingresos'){balIngresos.splice(idx,1);db.ref('balIngresos').set(balIngresos)}
+    else{balGastos.splice(idx,1);db.ref('balGastos').set(balGastos)}
+    rBalance();toast('Eliminado');
+  },{danger:true,title:'Eliminar movimiento',okText:'Eliminar'});
 }
 
 // ═══ ADMIN ═══
@@ -2597,18 +2656,12 @@ function editUserPass(uid){
   u.pass=np;db.ref('usuarios').set(usuarios);rUsers();toast('Contraseña actualizada');
 }
 function delUser(uid){
-  if(!confirm('Eliminar esta cuenta?'))return;
-  usuarios=usuarios.filter(function(u){return u.uid!==uid});
-  db.ref('usuarios').set(usuarios);rUsers();toast('Cuenta eliminada');
+  confirmModal('¿Eliminar esta cuenta de usuario?',function(){usuarios=usuarios.filter(function(u){return u.uid!==uid});db.ref('usuarios').set(usuarios);rUsers();toast('Cuenta eliminada')},{danger:true,title:'Eliminar cuenta',okText:'Eliminar'});
 }
 function toggleUserAdmin(uid){
   var u=usuarios.find(function(x){return x.uid===uid});if(!u)return;
   var val=u.admin!==true;
-  if(!confirm(val?'¿Dar permisos de ADMINISTRADOR a '+u.nombre+'?\n\nPodrá cargar partidos, marcar pagos, entregas y más.':'¿Quitar permisos de administrador a '+u.nombre+'?'))return;
-  u.admin=val;
-  db.ref('usuarios').set(usuarios);
-  rUsers();
-  toast(val?'👑 '+u.nombre+' ahora es administrador':u.nombre+' ya no es administrador');
+  confirmModal(val?'¿Dar permisos de ADMINISTRADOR a '+u.nombre+'?\n\nPodrá cargar partidos, marcar pagos, entregas y más.':'¿Quitar permisos de administrador a '+u.nombre+'?',function(){u.admin=val;db.ref('usuarios').set(usuarios);rUsers();toast(val?'👑 '+u.nombre+' ahora es administrador':u.nombre+' ya no es administrador')},{title:val?'Hacer administrador':'Quitar administrador',okText:val?'Sí, dar permisos':'Sí, quitar',icon:'👑'});
 }
 function updAdmUI(){
   document.querySelectorAll('.pdl').forEach(function(b){b.style.display=isAdmin?'flex':'none'});
@@ -2729,29 +2782,46 @@ function reprogVencido(idx){
 }
 function delVencido(idx){
   var m=window._vencMatches[idx];if(!m)return;
-  if(!confirm('¿Eliminar este partido programado?\n\n'+m.p1+' vs '+m.p2+'\n\n(No se jugó y no querés reprogramarlo)'))return;
-  schedule=schedule.filter(function(s){return!(s.p1id===m.p1id&&s.p2id===m.p2id&&s.date===m.date&&s.time===m.time&&s.cat===m.cat)});
-  db.ref('programacion').set(schedule);rVencidos();rUp();rCal();toast('Partido eliminado');
+  confirmModal('¿Eliminar este partido programado?\n\n'+m.p1+' vs '+m.p2+'\n\n(No se jugó y no querés reprogramarlo)',function(){
+    schedule=schedule.filter(function(s){return!(s.p1id===m.p1id&&s.p2id===m.p2id&&s.date===m.date&&s.time===m.time&&s.cat===m.cat)});
+    db.ref('programacion').set(schedule);rVencidos();rUp();rCal();toast('Partido eliminado');
+  },{danger:true,title:'Eliminar vencido',okText:'Eliminar'});
 }
 function rAdmPanel(){
+  var qSch=norm((document.getElementById('admSchSearch')||{}).value||'');
+  var qRes=norm((document.getElementById('admResSearch')||{}).value||'');
+  var qPart=norm((document.getElementById('admPartSearch')||{}).value||'');
+  // Partidos programados
   var el=document.getElementById('admSch');var h1='';
+  var schShown=schedule.map(function(m,i){return {m:m,i:i}}).filter(function(o){
+    return !qSch||norm(o.m.p1+' '+o.m.p2+' '+CL[o.m.cat]).indexOf(qSch)!==-1;
+  });
   if(!schedule.length)h1='<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin partidos</div>';
-  else schedule.forEach(function(m,i){h1+='<div class="adm-card"><div class="adm-info">'+m.p1+' vs '+m.p2+'<small>'+m.date+' '+m.time+' - Cancha '+m.court+' - '+CL[m.cat]+'</small></div><button class="adm-del" onclick="admDelSch('+i+')">✕</button></div>'});
+  else if(!schShown.length)h1='<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin resultados para "'+qSch+'"</div>';
+  else schShown.forEach(function(o){var m=o.m;h1+='<div class="adm-card"><div class="adm-info">'+m.p1+' vs '+m.p2+'<small>'+m.date+' '+m.time+' - Cancha '+m.court+' - '+CL[m.cat]+'</small></div><button class="adm-del" onclick="admDelSch('+o.i+')">✕</button></div>'});
   el.innerHTML=h1;
+  // Resultados
   var el2=document.getElementById('admRes');var h2='';
+  var resShown=results.map(function(r,i){return {r:r,i:i}}).filter(function(o){
+    return !qRes||norm(o.r.p1+' '+o.r.p2+' '+CL[o.r.cat]+' '+o.r.score).indexOf(qRes)!==-1;
+  });
   if(!results.length)h2='<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin resultados</div>';
-  else results.forEach(function(r,i){h2+='<div class="adm-card"><div class="adm-info">'+r.p1+' vs '+r.p2+' → '+r.score+'<small>'+r.fecha+' - '+CL[r.cat]+(r.grupo?' G'+r.grupo:'')+(r.fase&&r.fase!=='grupos'?' · '+FASE_L[r.fase]:'')+' - Ganó: '+(r.winner===1?r.p1:r.p2)+'</small></div><button class="adm-edit" onclick="admEditRes('+i+')" title="Editar">✎</button><button class="adm-del" onclick="admDelRes('+i+')" title="Eliminar">✕</button></div>'});
+  else if(!resShown.length)h2='<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin resultados para "'+qRes+'"</div>';
+  else resShown.forEach(function(o){var r=o.r;h2+='<div class="adm-card"><div class="adm-info">'+r.p1+' vs '+r.p2+' → '+r.score+'<small>'+r.fecha+' - '+CL[r.cat]+(r.grupo?' G'+r.grupo:'')+(r.fase&&r.fase!=='grupos'?' · '+FASE_L[r.fase]:'')+' - Ganó: '+(r.winner===1?r.p1:r.p2)+'</small></div><button class="adm-edit" onclick="admEditRes('+o.i+')" title="Editar">✎</button><button class="adm-del" onclick="admDelRes('+o.i+')" title="Eliminar">✕</button></div>'});
   el2.innerHTML=h2;
+  // Participantes
   var el3=document.getElementById('admPart');var h3='';
   var sorted=parts.slice().sort(function(a,b){return(a.cat+a.apellido).localeCompare(b.cat+b.apellido)});
-  if(!sorted.length)h3='<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin participantes</div>';
+  if(qPart)sorted=sorted.filter(function(p){return norm(p.nombre+' '+p.apellido).indexOf(qPart)!==-1});
+  if(!parts.length)h3='<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin participantes</div>';
+  else if(!sorted.length)h3='<div style="color:var(--tm);font-size:.8rem;padding:10px">Sin resultados para "'+qPart+'"</div>';
   else{var cc='';sorted.forEach(function(p){if(p.cat!==cc){cc=p.cat;h3+='<div class="slbl" style="margin-top:12px;margin-bottom:6px">'+CL[p.cat]+'</div>'}h3+='<div class="adm-card"><div class="adm-info">'+p.apellido+', '+p.nombre+'</div><button class="adm-del" onclick="admDelPart(\''+p.id+'\')">✕</button></div>'})}
   el3.innerHTML=h3;
   rVencidos();
 }
-function admDelSch(i){if(!isAdmin){toast('Solo el administrador puede eliminar');return}if(!confirm('Eliminar partido?'))return;var _d=schedule[i];logAction('Eliminó partido programado',_d?(_d.p1+' vs '+_d.p2):'');schedule.splice(i,1);db.ref('programacion').set(schedule);rAdmPanel();rCal();rUp();toast('Eliminado')}
-function admDelRes(i){if(!isAdmin){toast('Solo el administrador puede eliminar');return}if(!confirm('Eliminar resultado?'))return;var _d=results[i];logAction('Eliminó resultado',_d?(_d.p1+' vs '+_d.p2+' ('+_d.score+')'):'');results.splice(i,1);db.ref('resultados').set(results);rAdmPanel();toast('Eliminado')}
-function admDelPart(id){if(!isAdmin){toast('Solo el administrador puede eliminar');return}if(!confirm('Eliminar participante?'))return;var _p=parts.find(function(p){return p.id===id});logAction('Eliminó participante',_p?(_p.apellido+' '+_p.nombre):'');parts=parts.filter(function(p){return p.id!==id});db.ref('participantes').set(parts);rAdmPanel();toast('Eliminado')}
+function admDelSch(i){if(!isAdmin){toast('Solo el administrador puede eliminar');return}var _d=schedule[i];confirmModal('¿Eliminar este partido programado?'+(_d?'\n\n'+_d.p1+' vs '+_d.p2:''),function(){logAction('Eliminó partido programado',_d?(_d.p1+' vs '+_d.p2):'');schedule.splice(i,1);db.ref('programacion').set(schedule);rAdmPanel();rCal();rUp();toast('Eliminado')},{danger:true,title:'Eliminar partido',okText:'Eliminar'})}
+function admDelRes(i){if(!isAdmin){toast('Solo el administrador puede eliminar');return}var _d=results[i];confirmModal('¿Eliminar este resultado?'+(_d?'\n\n'+_d.p1+' vs '+_d.p2+' ('+_d.score+')':''),function(){logAction('Eliminó resultado',_d?(_d.p1+' vs '+_d.p2+' ('+_d.score+')'):'');results.splice(i,1);db.ref('resultados').set(results);rAdmPanel();toast('Eliminado')},{danger:true,title:'Eliminar resultado',okText:'Eliminar'})}
+function admDelPart(id){if(!isAdmin){toast('Solo el administrador puede eliminar');return}var _p=parts.find(function(p){return p.id===id});confirmModal('¿Eliminar este participante?'+(_p?'\n\n'+_p.apellido+' '+_p.nombre:''),function(){logAction('Eliminó participante',_p?(_p.apellido+' '+_p.nombre):'');parts=parts.filter(function(p){return p.id!==id});db.ref('participantes').set(parts);rAdmPanel();toast('Eliminado')},{danger:true,title:'Eliminar participante',okText:'Eliminar'})}
 var editIdx=-1;
 function admEditRes(i){
   if(!isAdmin){toast('Solo el administrador puede editar resultados');return}
