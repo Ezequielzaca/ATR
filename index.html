@@ -11,6 +11,7 @@
 <title>Tenis ATR 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
 <style>
 :root{--bg:#0a0e24;--card:#131a35;--card-h:#1b2547;--acc:#7dd3fc;--acc2:#c4b5fd;--acc-d:rgba(125,211,252,.15);--acc-g:rgba(125,211,252,.25);--t1:#eef2ff;--t2:#a5b4d6;--tm:#6b7aa3;--brd:rgba(255,255,255,.08);--r:16px;--rs:10px;--nav-h:72px;--sig:#a855f7;--oro:#d4a017;--pla:#8a8a8a;--bro:#c47a20;--mad:#7a5a30;--muj:#d44a7a;--hdr-bg:rgba(10,14,36,.92);--nav-bg:rgba(10,14,36,.95);--mdl-bg:#131a35;--input-bg:#0d1330;--tbl-hdr:#131a35;--win-bg:rgba(22,163,74,.15);--win-c:#4ade80;--loss-bg:rgba(220,38,38,.12);--loss-c:#f87171;--shadow-sm:0 2px 12px rgba(0,0,0,.45),0 1px 2px rgba(0,0,0,.3);--shadow-md:0 6px 24px rgba(0,0,0,.55),0 2px 6px rgba(0,0,0,.35)}
@@ -324,6 +325,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div class="mi" id="partidosBtn" style="display:none" onclick="subPg('partidos')"><div class="mic" style="background:linear-gradient(135deg,#0284c7,#1e3a8a)">🎾</div><div><div class="mit">Partidos</div><div class="mid">Por jugar y jugados por grupo</div></div></div>
     <div class="mi" id="auditBtn" style="display:none" onclick="subPg('auditoria')"><div class="mic" style="background:linear-gradient(135deg,#64748b,#334155)">📋</div><div><div class="mit">Registro de actividad</div><div class="mid">Quién cargó o cambió qué</div></div></div>
     <div class="mi" id="flyerBtn" style="display:none" onclick="subPg('flyers')"><div class="mic" style="background:linear-gradient(135deg,#7dd3fc,#c4b5fd)">🖼️</div><div><div class="mit">Placas de partidos</div><div class="mid">Versus del día para compartir</div></div></div>
+    <div class="mi" id="fiestaBtn" style="display:none" onclick="subPg('fiesta')"><div class="mic" style="background:linear-gradient(135deg,#ec4899,#a855f7)">🎉</div><div><div class="mit">Entradas Fiesta</div><div class="mid">Generar QR y controlar acceso</div></div></div>
     <div class="mi" id="admMenuBtn" style="display:none" onclick="subPg('admin')"><div class="mic" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">⚙️</div><div><div class="mit">Panel Admin</div><div class="mid">Gestionar torneo</div></div></div>
   </div>
   <!-- LOGIN / REGISTER / PROFILE -->
@@ -439,6 +441,23 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
       <div class="fr"><input class="fi" type="date" id="flyerDate" onchange="rFlyerList()" style="width:100%"/></div>
     </div>
     <div id="flyerList"></div>
+  </div>
+  <!-- Entradas Fiesta (admin) -->
+  <div id="sub-fiesta" style="display:none">
+    <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Entradas Fiesta</span></div>
+    <button class="fb" onclick="openScannerFiesta()" style="margin-bottom:16px">📷 Escanear entrada de fiesta</button>
+    <div class="af">
+      <div class="af-t">🎉 Nueva venta de entradas</div>
+      <div class="fr"><input class="fi" id="fstNombre" placeholder="Nombre y apellido del comprador"/></div>
+      <div class="fr"><input class="fi" id="fstCant" type="number" min="1" max="50" placeholder="Cantidad de entradas" value="1"/></div>
+      <button class="fb" onclick="crearEntradasFiesta()">Generar entradas</button>
+    </div>
+    <div id="fstResumen" style="margin-bottom:14px"></div>
+    <div style="position:relative;margin-bottom:12px">
+      <input class="fi" id="fstSearch" placeholder="🔍 Buscar por comprador..." oninput="rFiesta()" style="width:100%;padding-right:36px"/>
+      <button id="fstSearchClear" onclick="document.getElementById('fstSearch').value='';rFiesta()" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--tm);font-size:1rem;cursor:pointer;padding:4px">✕</button>
+    </div>
+    <div id="fstList"></div>
   </div>
   <div id="sub-part" style="display:none">
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Participantes</span></div>
@@ -1802,6 +1821,221 @@ function rGlobalMatchStats(){
 // ═══ REGISTRO DE ACTIVIDAD ═══
 var auditFilter='todos';
 // ═══ PLACAS DE PARTIDOS (versus del día) ═══
+// ═══ ENTRADAS FIESTA ═══
+var entradasFiesta=[]; // [{id,comprador,num,total,usada,ts}]
+db.ref('entradasFiesta').on('value',function(s){entradasFiesta=s.val()||[];if(document.getElementById('sub-fiesta')&&document.getElementById('sub-fiesta').style.display!=='none')rFiesta()});
+function fiestaInit(){rFiesta()}
+function crearEntradasFiesta(){
+  var nombre=document.getElementById('fstNombre').value.trim();
+  var cant=parseInt(document.getElementById('fstCant').value);
+  if(!nombre){toast('Escribí el nombre del comprador');return}
+  if(!cant||cant<1||cant>50){toast('Cantidad inválida (1 a 50)');return}
+  var baseId=Date.now().toString(36);
+  var nuevas=[];
+  for(var i=1;i<=cant;i++){
+    nuevas.push({id:baseId+'-'+i, comprador:nombre, num:i, total:cant, usada:false, ts:Date.now()});
+  }
+  entradasFiesta=entradasFiesta.concat(nuevas);
+  db.ref('entradasFiesta').set(entradasFiesta);
+  logAction('Generó entradas de fiesta',cant+' entrada(s) para '+nombre);
+  document.getElementById('fstNombre').value='';
+  document.getElementById('fstCant').value='1';
+  toast('✓ '+cant+' entrada(s) generada(s)');
+  // Ofrecer descarga inmediata del PDF
+  setTimeout(function(){descargarPDFFiesta(baseId,nombre)},400);
+}
+function rFiesta(){
+  var el=document.getElementById('fstList');if(!el)return;
+  var q=norm((document.getElementById('fstSearch')||{}).value||'');
+  var clr=document.getElementById('fstSearchClear');if(clr)clr.style.display=q?'block':'none';
+  // Entradas de jugadores: cada jugador tiene su entrada base 'jug-{pid}-1' + acompañantes
+  // Separar entradas en: de jugador (id empieza con 'jug-') y externas
+  var esJug=function(e){return e.id.indexOf('jug-')===0};
+  var jugEntradas=entradasFiesta.filter(esJug);
+  var extEntradas=entradasFiesta.filter(function(e){return !esJug(e)});
+  // Mapa: pid -> entradas de ese jugador
+  var porJugador={};
+  jugEntradas.forEach(function(e){
+    var pid=e.pid;
+    if(!porJugador[pid])porJugador[pid]=[];
+    porJugador[pid].push(e);
+  });
+  // Resumen global
+  var total=entradasFiesta.length;
+  var usadas=entradasFiesta.filter(function(e){return e.usada}).length;
+  var resEl=document.getElementById('fstResumen');
+  if(resEl){
+    var rh='<div style="display:flex;gap:8px;margin-bottom:10px">';
+    rh+='<div style="flex:1;background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.25);border-radius:var(--r);padding:12px 8px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:#16a34a">'+usadas+'</div><div style="font-size:.58rem;color:#16a34a;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Usadas</div></div>';
+    rh+='<div style="flex:1;background:var(--acc-d);border:1px solid var(--brd);border-radius:var(--r);padding:12px 8px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:var(--acc)">'+(total-usadas)+'</div><div style="font-size:.58rem;color:var(--acc);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Sin usar</div></div>';
+    rh+='<div style="flex:1;background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:12px 8px;text-align:center"><div style="font-size:1.4rem;font-weight:800;color:var(--t1)">'+total+'</div><div style="font-size:.58rem;color:var(--tm);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Total</div></div>';
+    rh+='</div>';
+    resEl.innerHTML=rh;
+  }
+  var html='';
+  // ═══ SECCIÓN JUGADORES ═══
+  var jugadoresFiltrados=parts.slice().sort(function(a,b){return(a.apellido+a.nombre).localeCompare(b.apellido+b.nombre)});
+  if(q)jugadoresFiltrados=jugadoresFiltrados.filter(function(p){return norm(p.apellido+' '+p.nombre).indexOf(q)!==-1});
+  if(jugadoresFiltrados.length){
+    html+='<div class="slbl">🎾 Jugadores ('+jugadoresFiltrados.length+')</div>';
+    jugadoresFiltrados.forEach(function(p){
+      var nombre=p.apellido+' '+p.nombre;
+      var ents=porJugador[p.id]||[];
+      var us=ents.filter(function(e){return e.usada}).length;
+      html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:14px;margin-bottom:10px">';
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px"><div style="min-width:0"><div style="font-weight:700;font-size:.88rem">'+nombre+'</div><div style="font-size:.65rem;color:var(--tm)">'+CL[p.cat]+(ents.length?' · '+us+'/'+ents.length+' usadas':' · sin entrada')+'</div></div>';
+      html+='<div style="display:flex;gap:6px;flex-shrink:0">';
+      html+='<button onclick="addAcompanante(\''+p.id+'\')" style="padding:7px 10px;border-radius:8px;border:1px solid var(--acc2,#c4b5fd);background:rgba(196,181,253,.12);color:var(--acc2,#c4b5fd);font-size:.68rem;font-weight:700;cursor:pointer">+ Acomp.</button>';
+      html+='<button onclick="descargarPDFJugador(\''+p.id+'\')" style="padding:7px 10px;border-radius:8px;border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);font-size:.68rem;font-weight:700;cursor:pointer">⬇ PDF</button>';
+      html+='</div></div>';
+      if(ents.length){
+        html+='<div style="display:flex;flex-wrap:wrap;gap:6px">';
+        ents.sort(function(a,b){return a.num-b.num}).forEach(function(e){
+          var lbl=e.num===1?'Jugador':'Acomp '+(e.num-1);
+          var col=e.usada?['rgba(22,163,74,.12)','#16a34a']:['var(--acc-d)','var(--acc)'];
+          html+='<div onclick="toggleEntradaFiesta(\''+e.id+'\')" title="Tocá para marcar/desmarcar" style="cursor:pointer;padding:5px 10px;border-radius:8px;background:'+col[0]+';border:1px solid '+col[1]+';color:'+col[1]+';font-size:.68rem;font-weight:700">'+(e.usada?'✓ ':'')+lbl+'</div>';
+        });
+        html+='</div>';
+      }else{
+        html+='<div style="font-size:.7rem;color:var(--tm)">Tocá ⬇ PDF para generar su entrada</div>';
+      }
+      html+='</div>';
+    });
+  }
+  // ═══ SECCIÓN VENTAS EXTERNAS ═══
+  var gruposExt={};
+  extEntradas.forEach(function(e){
+    if(q&&norm(e.comprador).indexOf(q)===-1)return;
+    var key=e.comprador+'||'+e.id.split('-')[0];
+    if(!gruposExt[key])gruposExt[key]={comprador:e.comprador,baseId:e.id.split('-')[0],entradas:[]};
+    gruposExt[key].entradas.push(e);
+  });
+  var keysExt=Object.keys(gruposExt);
+  if(keysExt.length){
+    keysExt.sort(function(a,b){return gruposExt[b].entradas[0].ts-gruposExt[a].entradas[0].ts});
+    html+='<div class="slbl" style="margin-top:20px">🎟️ Ventas externas ('+keysExt.length+')</div>';
+    keysExt.forEach(function(k){
+      var g=gruposExt[k];
+      var us=g.entradas.filter(function(e){return e.usada}).length;
+      var tot=g.entradas.length;
+      html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:14px;margin-bottom:10px">';
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px"><div><div style="font-weight:700;font-size:.9rem">'+g.comprador+'</div><div style="font-size:.68rem;color:var(--tm)">'+us+' de '+tot+' usadas</div></div>';
+      html+='<button onclick="descargarPDFFiesta(\''+g.baseId+'\',\''+g.comprador.replace(/'/g,"")+'\')" style="padding:8px 12px;border-radius:8px;border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);font-size:.7rem;font-weight:700;cursor:pointer;flex-shrink:0">⬇ PDF</button></div>';
+      html+='<div style="display:flex;flex-wrap:wrap;gap:6px">';
+      g.entradas.sort(function(a,b){return a.num-b.num}).forEach(function(e){
+        var col=e.usada?['rgba(22,163,74,.12)','#16a34a']:['var(--acc-d)','var(--acc)'];
+        html+='<div onclick="toggleEntradaFiesta(\''+e.id+'\')" title="Tocá para marcar/desmarcar" style="cursor:pointer;padding:5px 10px;border-radius:8px;background:'+col[0]+';border:1px solid '+col[1]+';color:'+col[1]+';font-size:.7rem;font-weight:700">'+(e.usada?'✓ #'+e.num:'#'+e.num)+'</div>';
+      });
+      html+='</div></div>';
+    });
+  }
+  if(!html){html='<div class="es"><div class="es-i">🔍</div><div class="es-t">Sin resultados'+(q?' para "'+q+'"':'')+'</div></div>';}
+  el.innerHTML=html;
+}
+// Genera (si no existe) la entrada base del jugador y devuelve su lote
+function ensureJugadorEntrada(pid){
+  var p=parts.find(function(x){return x.id===pid});if(!p)return[];
+  var ents=entradasFiesta.filter(function(e){return e.pid===pid&&e.id.indexOf('jug-')===0});
+  if(!ents.length){
+    var nombre=p.apellido+' '+p.nombre;
+    var nueva={id:'jug-'+pid+'-1',pid:pid,comprador:nombre,num:1,total:1,usada:false,ts:Date.now()};
+    entradasFiesta.push(nueva);
+    db.ref('entradasFiesta').set(entradasFiesta);
+    ents=[nueva];
+  }
+  return ents;
+}
+function addAcompanante(pid){
+  var p=parts.find(function(x){return x.id===pid});if(!p)return;
+  var ents=ensureJugadorEntrada(pid);
+  var maxNum=ents.reduce(function(m,e){return Math.max(m,e.num)},0);
+  var nuevoNum=maxNum+1;
+  var nombre=p.apellido+' '+p.nombre;
+  entradasFiesta.push({id:'jug-'+pid+'-'+nuevoNum,pid:pid,comprador:nombre,num:nuevoNum,total:0,usada:false,ts:Date.now()});
+  // Actualizar total en todas las del jugador
+  var todas=entradasFiesta.filter(function(e){return e.pid===pid&&e.id.indexOf('jug-')===0});
+  todas.forEach(function(e){e.total=todas.length});
+  db.ref('entradasFiesta').set(entradasFiesta);
+  logAction('Agregó acompañante fiesta',nombre+' (+1 acompañante, total '+todas.length+')');
+  rFiesta();
+  toast('Acompañante agregado a '+nombre);
+}
+function descargarPDFJugador(pid){
+  var ents=ensureJugadorEntrada(pid);
+  var p=parts.find(function(x){return x.id===pid});
+  var nombre=p?(p.apellido+' '+p.nombre):'Jugador';
+  descargarPDFLote(ents,nombre);
+}
+function toggleEntradaFiesta(id){
+  var e=entradasFiesta.find(function(x){return x.id===id});if(!e)return;
+  e.usada=!e.usada;
+  db.ref('entradasFiesta').set(entradasFiesta);
+  rFiesta();
+  toast(e.usada?'Entrada marcada como usada':'Entrada reactivada');
+}
+function descargarPDFFiesta(baseId,comprador){
+  var lote=entradasFiesta.filter(function(e){return e.id.split('-')[0]===baseId}).sort(function(a,b){return a.num-b.num});
+  descargarPDFLote(lote,comprador);
+}
+function descargarPDFLote(lote,comprador){
+  if(!lote||!lote.length){toast('No se encontraron entradas');return}
+  if(typeof window.jspdf==='undefined'){toast('Cargando librería PDF, probá de nuevo en un segundo');return}
+  var esJugador=lote[0].id.indexOf('jug-')===0;
+  var jsPDF=window.jspdf.jsPDF;
+  var pdf=new jsPDF({unit:'mm',format:'a4'});
+  var pageW=210,pageH=297;
+  lote.sort(function(a,b){return a.num-b.num}).forEach(function(e,idx){
+    if(idx>0)pdf.addPage();
+    pdf.setFillColor(10,14,36);pdf.rect(0,0,pageW,pageH,'F');
+    pdf.setDrawColor(125,211,252);pdf.setLineWidth(1);pdf.roundedRect(15,15,pageW-30,pageH-30,5,5,'S');
+    pdf.setTextColor(125,211,252);pdf.setFontSize(30);pdf.setFont(undefined,'bold');
+    pdf.text('TENIS ATR 2026',pageW/2,45,{align:'center'});
+    pdf.setTextColor(196,181,253);pdf.setFontSize(20);
+    pdf.text('FIESTA DEL TORNEO',pageW/2,58,{align:'center'});
+    pdf.setDrawColor(60,70,110);pdf.setLineWidth(0.4);pdf.line(50,66,pageW-50,66);
+    var qrPayload='FIESTA-'+e.id;
+    var qrCanvas=makeQRCanvas(qrPayload,240);
+    var qrImg=qrCanvas.toDataURL('image/png');
+    var qrSize=90, qrX=(pageW-qrSize)/2, qrY=80;
+    pdf.setFillColor(255,255,255);pdf.roundedRect(qrX-5,qrY-5,qrSize+10,qrSize+10,3,3,'F');
+    pdf.addImage(qrImg,'PNG',qrX,qrY,qrSize,qrSize);
+    pdf.setTextColor(238,242,255);pdf.setFontSize(22);pdf.setFont(undefined,'bold');
+    pdf.text(comprador,pageW/2,qrY+qrSize+25,{align:'center'});
+    pdf.setTextColor(125,211,252);pdf.setFontSize(26);
+    // Etiqueta: para jugadores distinguimos "Jugador" vs "Acompañante N"
+    var etiqueta;
+    if(esJugador){etiqueta=e.num===1?'Entrada Jugador':'Acompañante '+(e.num-1)+' de '+(e.total-1)}
+    else{etiqueta='Entrada '+e.num+' de '+e.total}
+    pdf.text(etiqueta,pageW/2,qrY+qrSize+42,{align:'center'});
+    pdf.setTextColor(107,122,163);pdf.setFontSize(11);pdf.setFont(undefined,'normal');
+    pdf.text('Presentá este QR en la entrada. Válido para una sola persona.',pageW/2,qrY+qrSize+58,{align:'center'});
+    pdf.setFontSize(9);
+    pdf.text('A.T.R. FRIENDS TOUR 2026 — '+e.id,pageW/2,pageH-25,{align:'center'});
+  });
+  var fname='entradas_'+comprador.replace(/[^a-zA-Z0-9]/g,'_')+'.pdf';
+  pdf.save(fname);
+  toast('PDF descargado 📥');
+}
+function makeQRCanvas(text,size){
+  // Genera un QR en un div temporal y devuelve su canvas
+  var tmp=document.createElement('div');
+  tmp.style.position='absolute';tmp.style.left='-9999px';document.body.appendChild(tmp);
+  new QRCode(tmp,{text:text,width:size,height:size,colorDark:'#0a0e24',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.H});
+  var canvas=tmp.querySelector('canvas');
+  // Si qrcodejs usó img en vez de canvas, convertir
+  if(!canvas){
+    var img=tmp.querySelector('img');
+    canvas=document.createElement('canvas');canvas.width=size;canvas.height=size;
+    var ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);
+    if(img&&img.complete)ctx.drawImage(img,0,0,size,size);
+  }
+  var result=canvas;
+  document.body.removeChild(tmp);
+  return result;
+}
+function openScannerFiesta(){
+  openScanner();
+}
 function flyerInit(){
   document.getElementById('flyerDate').value=todayStr;
   rFlyerList();
@@ -2614,6 +2848,24 @@ function scanLoop(){
 }
 function handleScan(data){
   scanLock=true;
+  // QR de entrada de FIESTA
+  if(data.indexOf('FIESTA-')===0){
+    var fid=data.slice(7);
+    var e=entradasFiesta.find(function(x){return x.id===fid});
+    if(!e){showScanRes('err','✕ Entrada no encontrada','Este QR de fiesta no existe o fue eliminado');return}
+    var esJug=e.id.indexOf('jug-')===0;
+    var sub=e.comprador+(esJug?(e.num===1?' — Jugador':' — Acompañante '+(e.num-1)):' — Entrada '+e.num+' de '+e.total);
+    if(e.usada){
+      if(navigator.vibrate)navigator.vibrate([100,50,100]);
+      showScanResFiesta('warn','⚠ ENTRADA YA UTILIZADA',sub,e);
+    }else{
+      e.usada=true;db.ref('entradasFiesta').set(entradasFiesta);
+      if(navigator.vibrate)navigator.vibrate(80);
+      showScanResFiesta('ok','✓ ENTRADA VÁLIDA — Registrada',sub,e);
+    }
+    return;
+  }
+  // QR de jugador (torneo)
   if(data.indexOf('ATR2026-')!==0){showScanRes('err','✕ QR no válido','Este código no pertenece al torneo');return}
   var rest=data.slice(8);
   var u=usuarios.find(function(x){return x.uid+'-'+x.pid===rest});
@@ -2626,6 +2878,13 @@ function handleScan(data){
     if(navigator.vibrate)navigator.vibrate(80);
     showScanRes('ok','✓ ENTRADA VÁLIDA — Registrada',u.nombre+' — '+CL[u.cat],u);
   }
+}
+function showScanResFiesta(type,title,sub,e){
+  var c={ok:['rgba(22,163,74,.12)','#16a34a'],warn:['rgba(245,158,11,.12)','#d97706'],err:['rgba(239,68,68,.12)','#ef4444']}[type];
+  var html='<div style="background:'+c[0]+';border:1.5px solid '+c[1]+';border-radius:12px;padding:14px;text-align:center"><div style="font-weight:800;color:'+c[1]+';font-size:.95rem">'+title+'</div>'+(sub?'<div style="font-size:.85rem;margin-top:4px;font-weight:600">'+sub+'</div>':'')+'</div>';
+  html+='<button onclick="toggleEntradaFiesta(\''+e.id+'\');rescan()" style="width:100%;margin-top:10px;padding:10px;border-radius:10px;border:1px solid var(--brd);background:transparent;color:var(--t2);font-family:Outfit,sans-serif;font-size:.8rem;font-weight:600;cursor:pointer">↩ '+(type==='ok'?'Deshacer registro':'Reactivar entrada')+'</button>';
+  html+='<button class="fb" onclick="rescan()" style="margin-top:10px">📷 Escanear otro</button>';
+  document.getElementById('scanResult').innerHTML=html;
 }
 function showScanRes(type,title,sub,u){
   var c={ok:['rgba(22,163,74,.12)','#16a34a'],warn:['rgba(245,158,11,.12)','#d97706'],err:['rgba(239,68,68,.12)','#ef4444']}[type];
@@ -2686,6 +2945,8 @@ function updAdmUI(){
   if(auditBtn)auditBtn.style.display=isAdmin?'flex':'none';
   var flyerBtn=document.getElementById('flyerBtn');
   if(flyerBtn)flyerBtn.style.display=isAdmin?'flex':'none';
+  var fiestaBtn=document.getElementById('fiestaBtn');
+  if(fiestaBtn)fiestaBtn.style.display=isAdmin?'flex':'none';
   var admMBtn=document.getElementById('admMenuBtn');
   if(admMBtn)admMBtn.style.display=isAdmin?'flex':'none';
   var miEntBtn=document.getElementById('miEntradaBtn');
@@ -2865,6 +3126,7 @@ subPg=function(s){
   if(s==='partidos')partidosInit();
   if(s==='auditoria')rAuditoria();
   if(s==='flyers')flyerInit();
+  if(s==='fiesta')fiestaInit();
   if(s==='mientrada')rMiEntrada();
   if(s==='login'){
     if(curUser){showCuentaLogged()}
