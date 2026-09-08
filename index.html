@@ -610,6 +610,18 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div class="dlg-btns" id="dlgBtns"></div>
   </div>
 </div>
+<!-- Modal de input (pedir texto) -->
+<div class="dlg-bg" id="inpBg">
+  <div class="dlg">
+    <div class="dlg-ic" id="inpIc">✏️</div>
+    <div class="dlg-t" id="inpTitle"></div>
+    <input class="fi" id="inpField" style="width:100%;margin-bottom:16px;text-align:center" onkeydown="if(event.key==='Enter')document.getElementById('inpOk').click()"/>
+    <div class="dlg-btns">
+      <button class="dlg-cancel" onclick="document.getElementById('inpBg').classList.remove('show')">Cancelar</button>
+      <button class="dlg-ok" id="inpOk">Guardar</button>
+    </div>
+  </div>
+</div>
 
 <!-- Modal: Edit Result -->
 <div class="mbg" id="mEdit" onclick="if(event.target===this)clMod('mEdit')"><div class="mdl">
@@ -748,6 +760,26 @@ function alertModal(msg,opts){
   ok.onclick=function(){bg.classList.remove('show');if(opts.onClose)opts.onClose()};
   btns.appendChild(ok);
   bg.classList.add('show');
+}
+// Modal propio de entrada de texto (reemplaza prompt nativo)
+function inputModal(title,onOk,opts){
+  opts=opts||{};
+  var bg=document.getElementById('inpBg');
+  document.getElementById('inpIc').textContent=opts.icon||'✏️';
+  document.getElementById('inpTitle').textContent=title||'Escribí un valor';
+  var field=document.getElementById('inpField');
+  field.value=opts.value||'';
+  field.placeholder=opts.placeholder||'';
+  document.getElementById('inpOk').textContent=opts.okText||'Guardar';
+  document.getElementById('inpOk').onclick=function(){
+    var val=field.value.trim();
+    if(opts.required&&!val){field.style.borderColor='#f87171';return}
+    bg.classList.remove('show');
+    if(onOk)onOk(val);
+  };
+  field.style.borderColor='';
+  bg.classList.add('show');
+  setTimeout(function(){field.focus()},100);
 }
 
 // ═══ FIREBASE SYNC ═══
@@ -1067,8 +1099,9 @@ function buildBracket(cat,esPrincipal){
       res:res,winner:win,p1:p1,p2:p2
     };
   }
-  var sf1=semiSlot(qfSlots[0].winner,qfSlots[1].winner);
-  var sf2=semiSlot(qfSlots[2].winner,qfSlots[3].winner);
+  // Semis: emparejamiento cruzado (QF1vQF4, QF2vQF3) para que en semis no se crucen jugadores del mismo grupo de origen
+  var sf1=semiSlot(qfSlots[0].winner,qfSlots[3].winner);
+  var sf2=semiSlot(qfSlots[1].winner,qfSlots[2].winner);
   // Final: ganadores de SF1 y SF2
   var fp1=sf1.winner?{id:sf1.winner.id,nm:sf1.winner.nm}:null;
   var fp2=sf2.winner?{id:sf2.winner.id,nm:sf2.winner.nm}:null;
@@ -1118,9 +1151,11 @@ function renderBracketSVG(cat,esPrincipal){
            '<path d="M'+xm+' '+yMid+' H'+x2+'" fill="none" stroke="var(--brd)" stroke-width="1.5"/>';
   }
   var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;font-family:Outfit,sans-serif" xmlns="http://www.w3.org/2000/svg">';
-  // Cuartos (4 llaves, columna 1)
+  // Cuartos (4 llaves, columna 1). Orden visual: QF1,QF4 arriba (van a SF1) y QF2,QF3 abajo (van a SF2)
+  // para que las líneas conecten los cuartos que realmente se emparejan (evita cruces de mismo grupo)
+  var qfOrden=[b.qf[0], b.qf[3], b.qf[1], b.qf[2]];
   var qfY=[10, 10+2*(boxH+8)+gap, 10+4*(boxH+8)+2*gap, 10+6*(boxH+8)+3*gap];
-  b.qf.forEach(function(s,i){svg+=slotBox(col1X,qfY[i],s,10)});
+  qfOrden.forEach(function(s,i){svg+=slotBox(col1X,qfY[i],s,10)});
   // Semis (columna 2) — centradas entre pares de cuartos
   var sfY=[];
   sfY[0]=(qfY[0]+ (qfY[1]+boxH+8))/2 - boxH/2 - 4;
@@ -1129,9 +1164,7 @@ function renderBracketSVG(cat,esPrincipal){
   // Final (columna 3) — centrada entre las dos semis
   var fY=(sfY[0]+(sfY[1]+boxH+8))/2 - boxH/2 - 4;
   svg+=slotBox(col3X,fY,b.final,11);
-  // Conectores cuartos -> semis
-  function pairMidY(y){return y+boxH+4}
-  // QF1&QF2 -> SF1 top ; QF3&QF4 -> SF2
+  // Conectores cuartos -> semis (QF1&QF4 arriba -> SF1 ; QF2&QF3 abajo -> SF2)
   svg+=connector(col1X+boxW, qfY[0]+boxH/2, qfY[1]+boxH+8+boxH/2, col2X, sfY[0]+boxH/2);
   svg+=connector(col1X+boxW, qfY[2]+boxH/2, qfY[3]+boxH+8+boxH/2, col2X, sfY[1]+boxH+8+boxH/2);
   // Semis -> Final
@@ -1921,10 +1954,11 @@ function rFiesta(){
       if(ents.length){
         html+='<div style="display:flex;flex-wrap:wrap;gap:6px">';
         ents.sort(function(a,b){return a.num-b.num}).forEach(function(e){
-          var lbl=e.num===1?'Jugador':'Acomp '+(e.num-1);
+          var lbl=e.num===1?'🎾 '+nombre.split(' ')[0]:(e.nombre||'Acomp '+(e.num-1));
           var col=e.usada?['rgba(22,163,74,.12)','#16a34a']:['var(--acc-d)','var(--acc)'];
-          html+='<div style="display:inline-flex;align-items:center;gap:4px;padding:5px 8px;border-radius:8px;background:'+col[0]+';border:1px solid '+col[1]+'">';
+          html+='<div style="display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:8px;background:'+col[0]+';border:1px solid '+col[1]+'">';
           html+='<span onclick="toggleEntradaFiesta(\''+e.id+'\')" title="Tocá para marcar/desmarcar" style="cursor:pointer;color:'+col[1]+';font-size:.68rem;font-weight:700">'+(e.usada?'✓ ':'')+lbl+'</span>';
+          html+='<span onclick="descargarPDFEntrada(\''+e.id+'\')" title="Descargar PDF de esta entrada" style="cursor:pointer;color:var(--acc2,#c4b5fd);font-size:.72rem;padding-left:2px">⬇</span>';
           if(e.num>1)html+='<span onclick="quitarAcompanante(\''+e.id+'\')" title="Quitar acompañante" style="cursor:pointer;color:#f87171;font-size:.7rem;font-weight:800;padding-left:2px">✕</span>';
           html+='</div>';
         });
@@ -1958,8 +1992,9 @@ function rFiesta(){
       html+='<div style="display:flex;flex-wrap:wrap;gap:6px">';
       g.entradas.sort(function(a,b){return a.num-b.num}).forEach(function(e){
         var col=e.usada?['rgba(22,163,74,.12)','#16a34a']:['var(--acc-d)','var(--acc)'];
-        html+='<div style="display:inline-flex;align-items:center;gap:4px;padding:5px 8px;border-radius:8px;background:'+col[0]+';border:1px solid '+col[1]+'">';
+        html+='<div style="display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:8px;background:'+col[0]+';border:1px solid '+col[1]+'">';
         html+='<span onclick="toggleEntradaFiesta(\''+e.id+'\')" title="Tocá para marcar/desmarcar" style="cursor:pointer;color:'+col[1]+';font-size:.7rem;font-weight:700">'+(e.usada?'✓ #'+e.num:'#'+e.num)+'</span>';
+        html+='<span onclick="descargarPDFEntrada(\''+e.id+'\')" title="Descargar PDF de esta entrada" style="cursor:pointer;color:var(--acc2,#c4b5fd);font-size:.72rem;padding-left:2px">⬇</span>';
         html+='<span onclick="eliminarEntradaExt(\''+e.id+'\')" title="Eliminar entrada" style="cursor:pointer;color:#f87171;font-size:.7rem;font-weight:800;padding-left:2px">✕</span>';
         html+='</div>';
       });
@@ -1984,18 +2019,19 @@ function ensureJugadorEntrada(pid){
 }
 function addAcompanante(pid){
   var p=parts.find(function(x){return x.id===pid});if(!p)return;
-  var ents=ensureJugadorEntrada(pid);
-  var maxNum=ents.reduce(function(m,e){return Math.max(m,e.num)},0);
-  var nuevoNum=maxNum+1;
-  var nombre=p.apellido+' '+p.nombre;
-  entradasFiesta.push({id:'jug-'+pid+'-'+nuevoNum,pid:pid,comprador:nombre,num:nuevoNum,total:0,usada:false,ts:Date.now()});
-  // Actualizar total en todas las del jugador
-  var todas=entradasFiesta.filter(function(e){return e.pid===pid&&e.id.indexOf('jug-')===0});
-  todas.forEach(function(e){e.total=todas.length});
-  db.ref('entradasFiesta').set(entradasFiesta);
-  logAction('Agregó acompañante fiesta',nombre+' (+1 acompañante, total '+todas.length+')');
-  rFiesta();
-  toast('Acompañante agregado a '+nombre);
+  var jugNombre=p.apellido+' '+p.nombre;
+  inputModal('Nombre del acompañante de '+jugNombre,function(nombreAcomp){
+    var ents=ensureJugadorEntrada(pid);
+    var maxNum=ents.reduce(function(m,e){return Math.max(m,e.num)},0);
+    var nuevoNum=maxNum+1;
+    entradasFiesta.push({id:'jug-'+pid+'-'+nuevoNum,pid:pid,comprador:jugNombre,nombre:nombreAcomp,num:nuevoNum,total:0,usada:false,ts:Date.now()});
+    var todas=entradasFiesta.filter(function(e){return e.pid===pid&&e.id.indexOf('jug-')===0});
+    todas.forEach(function(e){e.total=todas.length});
+    db.ref('entradasFiesta').set(entradasFiesta);
+    logAction('Agregó acompañante fiesta',jugNombre+' → '+nombreAcomp);
+    rFiesta();
+    toast(nombreAcomp+' agregado como acompañante');
+  },{icon:'🎉',title:'Nuevo acompañante',placeholder:'Nombre y apellido',okText:'Agregar',required:true});
 }
 function descargarPDFJugador(pid){
   var ents=ensureJugadorEntrada(pid);
@@ -2047,44 +2083,62 @@ function descargarPDFFiesta(baseId,comprador){
   var lote=entradasFiesta.filter(function(e){return e.id.split('-')[0]===baseId}).sort(function(a,b){return a.num-b.num});
   descargarPDFLote(lote,comprador);
 }
+function nombreDeEntrada(e){
+  // Nombre que va en el QR: el propio de la entrada si tiene, sino el comprador
+  return e.nombre||e.comprador;
+}
+function dibujarEntradaPDF(pdf,e){
+  var pageW=210,pageH=297;
+  pdf.setFillColor(10,14,36);pdf.rect(0,0,pageW,pageH,'F');
+  pdf.setDrawColor(125,211,252);pdf.setLineWidth(1);pdf.roundedRect(15,15,pageW-30,pageH-30,5,5,'S');
+  pdf.setTextColor(125,211,252);pdf.setFontSize(30);pdf.setFont(undefined,'bold');
+  pdf.text('TENIS ATR 2026',pageW/2,45,{align:'center'});
+  pdf.setTextColor(196,181,253);pdf.setFontSize(20);
+  pdf.text('FIESTA DEL TORNEO',pageW/2,58,{align:'center'});
+  pdf.setDrawColor(60,70,110);pdf.setLineWidth(0.4);pdf.line(50,66,pageW-50,66);
+  var qrCanvas=makeQRCanvas('FIESTA-'+e.id,240);
+  var qrImg=qrCanvas.toDataURL('image/png');
+  var qrSize=90, qrX=(pageW-qrSize)/2, qrY=80;
+  pdf.setFillColor(255,255,255);pdf.roundedRect(qrX-5,qrY-5,qrSize+10,qrSize+10,3,3,'F');
+  pdf.addImage(qrImg,'PNG',qrX,qrY,qrSize,qrSize);
+  // Nombre grande (el de esta entrada)
+  pdf.setTextColor(238,242,255);pdf.setFontSize(24);pdf.setFont(undefined,'bold');
+  pdf.text(nombreDeEntrada(e),pageW/2,qrY+qrSize+28,{align:'center'});
+  // Subtítulo: ENTRADA
+  pdf.setTextColor(125,211,252);pdf.setFontSize(24);
+  pdf.text('ENTRADA',pageW/2,qrY+qrSize+46,{align:'center'});
+  pdf.setTextColor(107,122,163);pdf.setFontSize(11);pdf.setFont(undefined,'normal');
+  pdf.text('Presentá este QR en la entrada. Válido para una sola persona.',pageW/2,qrY+qrSize+62,{align:'center'});
+  pdf.setFontSize(9);
+  pdf.text('A.T.R. FRIENDS TOUR 2026',pageW/2,pageH-25,{align:'center'});
+}
+// Descargar UNA entrada como su propio PDF
+function descargarPDFEntrada(id){
+  var e=entradasFiesta.find(function(x){return x.id===id});if(!e)return;
+  if(typeof window.jspdf==='undefined'){toast('Cargando librería PDF, probá de nuevo en un segundo');return}
+  var jsPDF=window.jspdf.jsPDF;
+  var pdf=new jsPDF({unit:'mm',format:'a4'});
+  dibujarEntradaPDF(pdf,e);
+  var nom=nombreDeEntrada(e).replace(/[^a-zA-Z0-9]/g,'_');
+  pdf.save('entrada_'+nom+'.pdf');
+  toast('Entrada de '+nombreDeEntrada(e)+' descargada 📥');
+}
+// Descargar todas las entradas de un lote, cada una como PDF separado
 function descargarPDFLote(lote,comprador){
   if(!lote||!lote.length){toast('No se encontraron entradas');return}
   if(typeof window.jspdf==='undefined'){toast('Cargando librería PDF, probá de nuevo en un segundo');return}
-  var esJugador=lote[0].id.indexOf('jug-')===0;
-  var jsPDF=window.jspdf.jsPDF;
-  var pdf=new jsPDF({unit:'mm',format:'a4'});
-  var pageW=210,pageH=297;
-  lote.sort(function(a,b){return a.num-b.num}).forEach(function(e,idx){
-    if(idx>0)pdf.addPage();
-    pdf.setFillColor(10,14,36);pdf.rect(0,0,pageW,pageH,'F');
-    pdf.setDrawColor(125,211,252);pdf.setLineWidth(1);pdf.roundedRect(15,15,pageW-30,pageH-30,5,5,'S');
-    pdf.setTextColor(125,211,252);pdf.setFontSize(30);pdf.setFont(undefined,'bold');
-    pdf.text('TENIS ATR 2026',pageW/2,45,{align:'center'});
-    pdf.setTextColor(196,181,253);pdf.setFontSize(20);
-    pdf.text('FIESTA DEL TORNEO',pageW/2,58,{align:'center'});
-    pdf.setDrawColor(60,70,110);pdf.setLineWidth(0.4);pdf.line(50,66,pageW-50,66);
-    var qrPayload='FIESTA-'+e.id;
-    var qrCanvas=makeQRCanvas(qrPayload,240);
-    var qrImg=qrCanvas.toDataURL('image/png');
-    var qrSize=90, qrX=(pageW-qrSize)/2, qrY=80;
-    pdf.setFillColor(255,255,255);pdf.roundedRect(qrX-5,qrY-5,qrSize+10,qrSize+10,3,3,'F');
-    pdf.addImage(qrImg,'PNG',qrX,qrY,qrSize,qrSize);
-    pdf.setTextColor(238,242,255);pdf.setFontSize(22);pdf.setFont(undefined,'bold');
-    pdf.text(comprador,pageW/2,qrY+qrSize+25,{align:'center'});
-    pdf.setTextColor(125,211,252);pdf.setFontSize(26);
-    // Etiqueta: para jugadores distinguimos "Jugador" vs "Acompañante N"
-    var etiqueta;
-    if(esJugador){etiqueta=e.num===1?'Entrada Jugador':'Acompañante '+(e.num-1)+' de '+(e.total-1)}
-    else{etiqueta='Entrada '+e.num+' de '+e.total}
-    pdf.text(etiqueta,pageW/2,qrY+qrSize+42,{align:'center'});
-    pdf.setTextColor(107,122,163);pdf.setFontSize(11);pdf.setFont(undefined,'normal');
-    pdf.text('Presentá este QR en la entrada. Válido para una sola persona.',pageW/2,qrY+qrSize+58,{align:'center'});
-    pdf.setFontSize(9);
-    pdf.text('A.T.R. FRIENDS TOUR 2026 — '+e.id,pageW/2,pageH-25,{align:'center'});
+  lote.sort(function(a,b){return a.num-b.num});
+  // Descargar cada una como PDF individual, con un pequeño delay entre cada una
+  lote.forEach(function(e,idx){
+    setTimeout(function(){
+      var jsPDF=window.jspdf.jsPDF;
+      var pdf=new jsPDF({unit:'mm',format:'a4'});
+      dibujarEntradaPDF(pdf,e);
+      var nom=nombreDeEntrada(e).replace(/[^a-zA-Z0-9]/g,'_');
+      pdf.save('entrada_'+nom+'.pdf');
+    },idx*600);
   });
-  var fname='entradas_'+comprador.replace(/[^a-zA-Z0-9]/g,'_')+'.pdf';
-  pdf.save(fname);
-  toast('PDF descargado 📥');
+  toast('Descargando '+lote.length+' entrada(s)...');
 }
 function makeQRCanvas(text,size){
   // Genera un QR en un div temporal y devuelve su canvas
@@ -2939,7 +2993,8 @@ function handleScan(data){
     var e=entradasFiesta.find(function(x){return x.id===fid});
     if(!e){showScanRes('err','✕ Entrada no encontrada','Este QR de fiesta no existe o fue eliminado');return}
     var esJug=e.id.indexOf('jug-')===0;
-    var sub=e.comprador+(esJug?(e.num===1?' — Jugador':' — Acompañante '+(e.num-1)):' — Entrada '+e.num+' de '+e.total);
+    var quien=e.nombre||e.comprador;
+    var sub=esJug?(e.num===1?quien+' (jugador)':quien+' (acompañante de '+e.comprador+')'):quien+' — Entrada '+e.num+' de '+e.total;
     if(e.usada){
       if(navigator.vibrate)navigator.vibrate([100,50,100]);
       showScanResFiesta('warn','⚠ ENTRADA YA UTILIZADA',sub,e);
