@@ -992,9 +992,9 @@ function renderGroupStandingsSummary(cat){
   return html;
 }
 var CROSS_SCHEMES={
-  'AB_CD':{label:'A-B · C-D',cross:[['A','B'],['B','A'],['C','D'],['D','C']]},
-  'AC_BD':{label:'A-C · B-D (por defecto)',cross:[['A','C'],['C','A'],['B','D'],['D','B']]},
-  'AD_BC':{label:'A-D · B-C',cross:[['A','D'],['D','A'],['B','C'],['C','B']]}
+  'AB_CD':{label:'A-B · C-D',cross:[['A','B'],['C','D'],['B','A'],['D','C']]},
+  'AC_BD':{label:'A-C · B-D (por defecto)',cross:[['A','C'],['B','D'],['C','A'],['D','B']]},
+  'AD_BC':{label:'A-D · B-C',cross:[['A','D'],['B','C'],['D','A'],['C','B']]}
 };
 var crossScheme={};  // {cat: esquema} para cuadro principal (1° vs 2°)
 var crossSchemeC={}; // {cat: esquema} para repechaje (3° vs 4°)
@@ -1099,9 +1099,10 @@ function buildBracket(cat,esPrincipal){
       res:res,winner:win,p1:p1,p2:p2
     };
   }
-  // Semis: emparejamiento cruzado (QF1vQF4, QF2vQF3) para que en semis no se crucen jugadores del mismo grupo de origen
-  var sf1=semiSlot(qfSlots[0].winner,qfSlots[3].winner);
-  var sf2=semiSlot(qfSlots[1].winner,qfSlots[2].winner);
+  // Semis: CF1 vs CF2 y CF3 vs CF4. Con el orden de cuartos (1A-2C, 1B-2D, 1C-2A, 1D-2B)
+  // cada semi junta un lado A/C con un lado B/D, así nunca se cruzan dos del mismo grupo antes de la final
+  var sf1=semiSlot(qfSlots[0].winner,qfSlots[1].winner);
+  var sf2=semiSlot(qfSlots[2].winner,qfSlots[3].winner);
   // Final: ganadores de SF1 y SF2
   var fp1=sf1.winner?{id:sf1.winner.id,nm:sf1.winner.nm}:null;
   var fp2=sf2.winner?{id:sf2.winner.id,nm:sf2.winner.nm}:null;
@@ -1151,11 +1152,9 @@ function renderBracketSVG(cat,esPrincipal){
            '<path d="M'+xm+' '+yMid+' H'+x2+'" fill="none" stroke="var(--brd)" stroke-width="1.5"/>';
   }
   var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;font-family:Outfit,sans-serif" xmlns="http://www.w3.org/2000/svg">';
-  // Cuartos (4 llaves, columna 1). Orden visual: QF1,QF4 arriba (van a SF1) y QF2,QF3 abajo (van a SF2)
-  // para que las líneas conecten los cuartos que realmente se emparejan (evita cruces de mismo grupo)
-  var qfOrden=[b.qf[0], b.qf[3], b.qf[1], b.qf[2]];
+  // Cuartos (4 llaves, columna 1) en orden natural. CF1&CF2 arriba -> SF1 ; CF3&CF4 abajo -> SF2
   var qfY=[10, 10+2*(boxH+8)+gap, 10+4*(boxH+8)+2*gap, 10+6*(boxH+8)+3*gap];
-  qfOrden.forEach(function(s,i){svg+=slotBox(col1X,qfY[i],s,10)});
+  b.qf.forEach(function(s,i){svg+=slotBox(col1X,qfY[i],s,10)});
   // Semis (columna 2) — centradas entre pares de cuartos
   var sfY=[];
   sfY[0]=(qfY[0]+ (qfY[1]+boxH+8))/2 - boxH/2 - 4;
@@ -1164,7 +1163,7 @@ function renderBracketSVG(cat,esPrincipal){
   // Final (columna 3) — centrada entre las dos semis
   var fY=(sfY[0]+(sfY[1]+boxH+8))/2 - boxH/2 - 4;
   svg+=slotBox(col3X,fY,b.final,11);
-  // Conectores cuartos -> semis (QF1&QF4 arriba -> SF1 ; QF2&QF3 abajo -> SF2)
+  // Conectores cuartos -> semis (CF1&CF2 -> SF1 ; CF3&CF4 -> SF2)
   svg+=connector(col1X+boxW, qfY[0]+boxH/2, qfY[1]+boxH+8+boxH/2, col2X, sfY[0]+boxH/2);
   svg+=connector(col1X+boxW, qfY[2]+boxH/2, qfY[3]+boxH+8+boxH/2, col2X, sfY[1]+boxH+8+boxH/2);
   // Semis -> Final
