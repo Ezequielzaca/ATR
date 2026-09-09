@@ -437,10 +437,16 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
   <div id="sub-flyers" style="display:none">
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Placas de partidos</span></div>
     <div class="af">
-      <div class="af-t">Elegí el día</div>
+      <div class="af-t">🎾 Placa de partidos del día</div>
       <div class="fr"><input class="fi" type="date" id="flyerDate" onchange="rFlyerList()" style="width:100%"/></div>
     </div>
     <div id="flyerList"></div>
+    <div class="af" style="margin-top:20px">
+      <div class="af-t">🏆 Placa de cuadro de Playoffs</div>
+      <div class="fr"><select class="fs catsel" id="brFlyerCat" style="width:100%"></select></div>
+      <div class="fr" style="gap:8px"><button class="fb" onclick="downloadBracketFlyer('principal')" style="margin:0">⬇ Play Off Principal</button></div>
+      <div class="fr" style="gap:8px;margin-bottom:0"><button class="fb" onclick="downloadBracketFlyer('second')" style="margin:0;background:linear-gradient(135deg,#c4b5fd,#a855f7)">⬇ Second Chance</button></div>
+    </div>
   </div>
   <!-- Entradas Fiesta (admin) -->
   <div id="sub-fiesta" style="display:none">
@@ -2161,6 +2167,12 @@ function openScannerFiesta(){
 }
 function flyerInit(){
   document.getElementById('flyerDate').value=todayStr;
+  var cs=document.getElementById('brFlyerCat');
+  if(cs){
+    var opts='';
+    CATS.forEach(function(cat){if(parts.some(function(p){return p.cat===cat}))opts+='<option value="'+cat+'">'+CL[cat]+'</option>';});
+    cs.innerHTML=opts;
+  }
   rFlyerList();
 }
 function rFlyerList(){
@@ -2252,6 +2264,129 @@ function downloadFlyer(idx){
     setTimeout(function(){URL.revokeObjectURL(url)},1000);
   },'image/png');
   toast('Placa descargada 📥');
+}
+function downloadBracketFlyer(modo){
+  var cat=document.getElementById('brFlyerCat').value;
+  if(!cat){toast('Elegí una categoría');return}
+  var esPrincipal=(modo!=='second');
+  var b=buildBracket(cat,esPrincipal);
+  if(!b){toast('Faltan posiciones definidas en los grupos para armar la llave');return}
+  var W=1080,H=1920;
+  var canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
+  var ctx=canvas.getContext('2d');
+  // ── Fondo: cancha azul oscuro con resplandor ──
+  ctx.fillStyle='#050a18';ctx.fillRect(0,0,W,H);
+  var glow=ctx.createRadialGradient(W/2,H*0.62,60,W/2,H*0.62,W*0.9);
+  glow.addColorStop(0,'rgba(30,120,200,.35)');glow.addColorStop(.5,'rgba(15,50,110,.18)');glow.addColorStop(1,'rgba(5,10,24,0)');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+  // Líneas de cancha en perspectiva (parte inferior)
+  ctx.strokeStyle='rgba(90,180,240,.25)';ctx.lineWidth=2;
+  for(var i=0;i<6;i++){
+    var y=H*0.7+i*60;
+    var spread=(i+1)*90;
+    ctx.beginPath();ctx.moveTo(W/2-spread,y);ctx.lineTo(W/2+spread,y);ctx.stroke();
+  }
+  ctx.beginPath();ctx.moveTo(W/2-120,H*0.7);ctx.lineTo(W/2-540,H);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(W/2+120,H*0.7);ctx.lineTo(W/2+540,H);ctx.stroke();
+  // Partículas
+  ctx.globalAlpha=.5;
+  for(var p=0;p<50;p++){
+    ctx.fillStyle=Math.random()>.5?'#38bdf8':'#7dd3fc';
+    var px=Math.random()*W,py=H*0.55+Math.random()*H*0.4,ps=Math.random()*3+1;
+    ctx.beginPath();ctx.arc(px,py,ps,0,7);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  // ── Encabezado ──
+  ctx.textAlign='center';
+  // Badge HOY
+  ctx.fillStyle='#38bdf8';
+  roundRectPath(ctx,W/2-90,70,180,54,12);ctx.fill();
+  ctx.fillStyle='#050a18';ctx.font='bold 34px Outfit,Arial,sans-serif';
+  ctx.fillText('ATR 2026',W/2,106);
+  // Título fase
+  ctx.fillStyle='#ffffff';ctx.font='bold 62px Outfit,Arial,sans-serif';
+  ctx.fillText(esPrincipal?'PLAY OFF':'SECOND',W/2,200);
+  ctx.fillStyle='#38bdf8';ctx.font='bold 92px Outfit,Arial,sans-serif';
+  ctx.fillText(esPrincipal?'PRINCIPAL':'CHANCE',W/2,290);
+  ctx.fillStyle='#c4b5fd';ctx.font='bold 40px Outfit,Arial,sans-serif';
+  ctx.fillText(CL[cat].toUpperCase(),W/2,350);
+  // ── Llave ──
+  drawBracketOnCanvas(ctx,b,55,470,W-110);
+  // Campeón (si hay)
+  if(b.champ){
+    ctx.fillStyle='#c4b5fd';ctx.font='bold 30px Outfit,Arial,sans-serif';
+    ctx.fillText('🏆 CAMPEÓN: '+b.champ.nm,W/2,H-120);
+  }
+  // Pie
+  ctx.fillStyle='rgba(125,180,220,.6)';ctx.font='600 26px Outfit,Arial,sans-serif';
+  ctx.fillText('A.T.R. FRIENDS TOUR 2026',W/2,H-60);
+  canvas.toBlob(function(blob){
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;
+    a.download='cuadro_'+(esPrincipal?'playoff':'secondchance')+'_'+cat+'.png';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url)},1000);
+  },'image/png');
+  toast('Cuadro descargado 📥');
+}
+function roundRectPath(ctx,x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+}
+function drawBracketOnCanvas(ctx,b,ox,oy,availW){
+  // 3 columnas: cuartos, semis, final. availW ancho total disponible
+  var colW=availW/3;
+  var boxW=colW-24, boxH=60, pairGap=14, groupGap=62;
+  // Y de cada cuarto (4 cajas dobles... en realidad 4 llaves con top/bot)
+  function drawSlot(x,y,slot,fs){
+    fs=fs||24;
+    [['top',slot.top],['bot',slot.bot]].forEach(function(pr,i){
+      var d=pr[1];var yy=y+i*(boxH+8);
+      var won=d.won;
+      ctx.fillStyle=won?'rgba(74,222,128,.18)':'rgba(19,26,53,.9)';
+      roundRectPath(ctx,x,yy,boxW,boxH,10);ctx.fill();
+      ctx.strokeStyle=won?'#4ade80':'rgba(90,150,220,.4)';ctx.lineWidth=2;
+      roundRectPath(ctx,x,yy,boxW,boxH,10);ctx.stroke();
+      ctx.textAlign='left';
+      if(d.tag){ctx.fillStyle='#38bdf8';ctx.font='bold 18px Outfit,Arial,sans-serif';ctx.fillText(d.tag,x+14,yy+boxH/2+6);}
+      ctx.fillStyle=won?'#4ade80':(d.nm==='Por definir'||d.nm==='—'?'#6b7aa3':'#eef2ff');
+      ctx.font=(won?'bold ':'600 ')+fs+'px Outfit,Arial,sans-serif';
+      var nmX=d.tag?x+58:x+14;
+      var nm=shortNmCanvas(ctx,d.nm,boxW-(d.tag?70:24),fs);
+      ctx.fillText(nm+(won?' ✓':''),nmX,yy+boxH/2+7);
+    });
+  }
+  function connector(x1,yTopMid,yBotMid,x2,yOutMid){
+    var xm=x1+16;
+    ctx.strokeStyle='rgba(90,150,220,.5)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(x1,yTopMid);ctx.lineTo(xm,yTopMid);ctx.lineTo(xm,yBotMid);ctx.lineTo(x1,yBotMid);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(xm,yOutMid);ctx.lineTo(x2,yOutMid);ctx.stroke();
+  }
+  var col1=ox, col2=ox+colW, col3=ox+colW*2;
+  var slotH=boxH*2+8; // altura de una llave (top+bot)
+  var qfY=[oy, oy+slotH+groupGap, oy+2*(slotH+groupGap), oy+3*(slotH+groupGap)];
+  b.qf.forEach(function(s,i){drawSlot(col1,qfY[i],s,24)});
+  // Semis centradas entre pares
+  var sfY=[(qfY[0]+qfY[1]+slotH)/2 - slotH/2, (qfY[2]+qfY[3]+slotH)/2 - slotH/2];
+  b.sf.forEach(function(s,i){drawSlot(col2,sfY[i],s,22)});
+  // Final centrada
+  var fY=(sfY[0]+sfY[1]+slotH)/2 - slotH/2;
+  drawSlot(col3,fY,b.final,24);
+  // Conectores QF->SF
+  connector(col1+boxW, qfY[0]+slotH/2, qfY[1]+slotH/2, col2, sfY[0]+slotH/2);
+  connector(col1+boxW, qfY[2]+slotH/2, qfY[3]+slotH/2, col2, sfY[1]+slotH/2);
+  // SF->Final
+  connector(col2+boxW, sfY[0]+slotH/2, sfY[1]+slotH/2, col3, fY+slotH/2);
+}
+function shortNmCanvas(ctx,nm,maxW,fs){
+  if(!nm)return '—';
+  ctx.font='600 '+fs+'px Outfit,Arial,sans-serif';
+  if(ctx.measureText(nm).width<=maxW)return nm;
+  // Abreviar apellido nombre -> Apellido N.
+  var parts=nm.split(' ');
+  if(parts.length>=2){var ab=parts[0]+' '+parts[1][0]+'.';if(ctx.measureText(ab).width<=maxW)return ab}
+  var s=nm;
+  while(s.length>3&&ctx.measureText(s+'…').width>maxW)s=s.slice(0,-1);
+  return s+'…';
 }
 function rAuditoria(){
   var ft=document.getElementById('auditFilter');
