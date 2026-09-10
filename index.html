@@ -887,13 +887,33 @@ function rCTabs(){
   rCModeTabs();
   rCGrpTabs();
 }
+function categoriaCompleta(cat){
+  // ¿Se jugaron todos los cruces de grupo de la categoría?
+  var groups=['A','B','C','D'];
+  var totalCruces=0,jugados=0;
+  groups.forEach(function(g){
+    var pl=parts.filter(function(p){return p.cat===cat&&p.grupo===g});
+    if(pl.length<2)return;
+    totalCruces+=pl.length*(pl.length-1)/2;
+    var ids={};pl.forEach(function(p){ids[p.id]=true});
+    jugados+=results.filter(function(r){
+      return r.cat===cat&&(!r.fase||r.fase==='grupos')&&r.grupo===g&&ids[r.p1id]&&ids[r.p2id];
+    }).length;
+  });
+  return totalCruces>0&&jugados>=totalCruces;
+}
 function rCModeTabs(){
   var mt=document.getElementById('cModeTabs');
   if(!selCat){mt.style.display='none';return}
+  var completa=categoriaCompleta(selCat);
+  // Si la categoría terminó la fase de grupos, ya no se muestra Cuadros; se pasa a Playoffs
+  var tabs=completa?[['playoffs','🏆 Play Off Principal'],['second','🎗️ Second Chance']]
+                   :[['cuadros','📋 Cuadros'],['playoffs','🏆 Play Off Principal'],['second','🎗️ Second Chance']];
+  if(completa&&cView==='cuadros')cView='playoffs';
   mt.style.display='flex';
   mt.style.flexWrap='wrap';
   mt.innerHTML='';
-  [['cuadros','📋 Cuadros'],['playoffs','🏆 Play Off Principal'],['second','🎗️ Second Chance']].forEach(function(pair){
+  tabs.forEach(function(pair){
     var val=pair[0],label=pair[1];
     var d=document.createElement('div');d.className='ct';
     if(cView===val){d.style.background='var(--acc-d)';d.style.color='var(--acc)';d.style.borderColor='var(--acc)'}
@@ -1490,6 +1510,36 @@ function searchPlayer(){
 }
 
 // ═══ FIFA CARD ═══
+function playerAdvancedStats(pid,cat){
+  // Todos los partidos del jugador en esa categoría (grupos + playoffs), ordenados por fecha
+  var mine=results.filter(function(r){return r.cat===cat&&(r.p1id===pid||r.p2id===pid)})
+                  .sort(function(a,b){return(a.fecha||'').localeCompare(b.fecha||'')});
+  var st={rachaActual:0,rachaTipo:'',mejorRacha:0,setsSeguidos:0,rivalDificil:null,rivalFacil:null,
+          poJugados:0,poGanados:0,ultimos:[],totalGames:0};
+  if(!mine.length)return st;
+  // Racha actual y mejor racha de victorias
+  var curW=0,maxW=0,lastResult='';
+  mine.forEach(function(r){
+    var gano=(r.winner===1&&r.p1id===pid)||(r.winner===2&&r.p2id===pid);
+    if(gano){curW++;if(curW>maxW)maxW=curW;lastResult='W'}
+    else{curW=0;lastResult='L'}
+  });
+  st.mejorRacha=maxW;
+  // Racha actual (desde el final hacia atrás)
+  var ra=0,tipo=mine.length?(( (mine[mine.length-1].winner===1&&mine[mine.length-1].p1id===pid)||(mine[mine.length-1].winner===2&&mine[mine.length-1].p2id===pid))?'W':'L'):'';
+  for(var i=mine.length-1;i>=0;i--){
+    var g=(mine[i].winner===1&&mine[i].p1id===pid)||(mine[i].winner===2&&mine[i].p2id===pid);
+    if((tipo==='W'&&g)||(tipo==='L'&&!g))ra++;else break;
+  }
+  st.rachaActual=ra;st.rachaTipo=tipo;
+  // Últimos 5 resultados (W/L)
+  st.ultimos=mine.slice(-5).map(function(r){return((r.winner===1&&r.p1id===pid)||(r.winner===2&&r.p2id===pid))?'W':'L'});
+  // Playoffs
+  mine.forEach(function(r){
+    if(r.fase&&r.fase!=='grupos'){st.poJugados++;if((r.winner===1&&r.p1id===pid)||(r.winner===2&&r.p2id===pid))st.poGanados++}
+  });
+  return st;
+}
 function openCard(i){
   var s=window._pd[i];if(!s)return;
   var bg=document.getElementById('cardBg'),c=document.getElementById('fcCard');
@@ -1516,7 +1566,33 @@ function openCard(i){
   if(s.logros&&s.logros.length){
     logrosHtml='<div style="padding:14px 20px;background:'+g+';border-top:1px solid rgba(255,255,255,.12)"><div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.6);margin-bottom:8px">🏅 Historial</div>'+s.logros.map(function(l){return'<div style="font-size:.78rem;color:#fff;padding:5px 0;opacity:.92">'+l+'</div>'}).join('')+'</div>';
   }
-  c.innerHTML='<div class="fc-top" style="background:'+g+';color:#fff"><button class="fc-x" onclick="clCard()">✕</button>'+medalHtml+'<div class="fc-rwrap" style="border-color:'+a+'66"><div class="fc-r" style="color:'+a+'">'+s.rat+'</div></div><div class="fc-pos" style="color:'+a+'">'+pl+'</div><div class="fc-nm">'+s.nm+'</div><div class="fc-cat">'+CL[s.cat]+'</div>'+badgesHtml+'</div><div class="fc-div"></div><div class="fc-sts" style="background:'+g+';color:#fff"><div class="fst"><span class="fst-l">PJ</span><span class="fst-v">'+s.pj+'</span></div><div class="fst"><span class="fst-l">Pts</span><span class="fst-v" style="color:'+(s.pts>=0?a:'#f87171')+'">'+(s.pts>0?'+':'')+s.pts+'</span></div><div class="fst"><span class="fst-l">PG</span><span class="fst-v" style="color:var(--acc)">'+s.pg+'</span></div><div class="fst"><span class="fst-l">PP</span><span class="fst-v" style="color:#f87171">'+s.pp+'</span></div><div class="fst fst-f"><span class="fst-l">Victorias</span><span class="fst-v">'+wp+'%</span></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Sets '+s.sg+'G / '+s.sp+'P</span><span class="fst-v" style="color:'+(s.sd>=0?a:'#f87171')+'">'+(s.sd>0?'+':'')+s.sd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+sp+'%;background:'+a+';color:'+a+'"></div></div></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Games '+s.gg+'G / '+s.gp+'P</span><span class="fst-v" style="color:'+(s.gd>=0?a:'#f87171')+'">'+(s.gd>0?'+':'')+s.gd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+gp+'%;background:'+a+';color:'+a+'"></div></div></div></div>'+logrosHtml+pagoBtn;
+  // ── Estadísticas avanzadas del torneo ──
+  var adv=playerAdvancedStats(s.id,s.cat);
+  var advHtml='';
+  if(s.pj>0){
+    advHtml='<div style="padding:14px 20px;background:'+g+';border-top:1px solid rgba(255,255,255,.12)">';
+    advHtml+='<div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.6);margin-bottom:10px">📊 Estadísticas del torneo</div>';
+    // Últimos resultados (forma)
+    if(adv.ultimos.length){
+      var forma=adv.ultimos.map(function(x){return x==='W'?'<span style="display:inline-flex;width:22px;height:22px;border-radius:50%;background:#4ade80;color:#0a0e24;align-items:center;justify-content:center;font-size:.65rem;font-weight:800">G</span>':'<span style="display:inline-flex;width:22px;height:22px;border-radius:50%;background:#f87171;color:#0a0e24;align-items:center;justify-content:center;font-size:.65rem;font-weight:800">P</span>'}).join(' ');
+      advHtml+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><span style="font-size:.72rem;color:rgba(255,255,255,.75);font-weight:600">Forma reciente</span><span style="display:flex;gap:4px">'+forma+'</span></div>';
+    }
+    // Racha actual
+    if(adv.rachaActual>0){
+      var rachaTxt=adv.rachaTipo==='W'?('🔥 '+adv.rachaActual+' victoria'+(adv.rachaActual>1?'s':'')+' al hilo'):('❄️ '+adv.rachaActual+' derrota'+(adv.rachaActual>1?'s':'')+' al hilo');
+      advHtml+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:.72rem;color:rgba(255,255,255,.75);font-weight:600">Racha actual</span><span style="font-size:.8rem;font-weight:800;color:'+(adv.rachaTipo==='W'?'#4ade80':'#f87171')+'">'+rachaTxt+'</span></div>';
+    }
+    // Mejor racha
+    if(adv.mejorRacha>1){
+      advHtml+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:.72rem;color:rgba(255,255,255,.75);font-weight:600">Mejor racha</span><span style="font-size:.8rem;font-weight:800;color:#fff">'+adv.mejorRacha+' seguidas</span></div>';
+    }
+    // Playoffs
+    if(adv.poJugados>0){
+      advHtml+='<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:.72rem;color:rgba(255,255,255,.75);font-weight:600">En playoffs</span><span style="font-size:.8rem;font-weight:800;color:var(--acc2,#c4b5fd)">'+adv.poGanados+' de '+adv.poJugados+' ganados</span></div>';
+    }
+    advHtml+='</div>';
+  }
+  c.innerHTML='<div class="fc-top" style="background:'+g+';color:#fff"><button class="fc-x" onclick="clCard()">✕</button>'+medalHtml+'<div class="fc-rwrap" style="border-color:'+a+'66"><div class="fc-r" style="color:'+a+'">'+s.rat+'</div></div><div class="fc-pos" style="color:'+a+'">'+pl+'</div><div class="fc-nm">'+s.nm+'</div><div class="fc-cat">'+CL[s.cat]+'</div>'+badgesHtml+'</div><div class="fc-div"></div><div class="fc-sts" style="background:'+g+';color:#fff"><div class="fst"><span class="fst-l">PJ</span><span class="fst-v">'+s.pj+'</span></div><div class="fst"><span class="fst-l">Pts</span><span class="fst-v" style="color:'+(s.pts>=0?a:'#f87171')+'">'+(s.pts>0?'+':'')+s.pts+'</span></div><div class="fst"><span class="fst-l">PG</span><span class="fst-v" style="color:var(--acc)">'+s.pg+'</span></div><div class="fst"><span class="fst-l">PP</span><span class="fst-v" style="color:#f87171">'+s.pp+'</span></div><div class="fst fst-f"><span class="fst-l">Victorias</span><span class="fst-v">'+wp+'%</span></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Sets '+s.sg+'G / '+s.sp+'P</span><span class="fst-v" style="color:'+(s.sd>=0?a:'#f87171')+'">'+(s.sd>0?'+':'')+s.sd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+sp+'%;background:'+a+';color:'+a+'"></div></div></div><div class="fst fst-f" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><span class="fst-l">Games '+s.gg+'G / '+s.gp+'P</span><span class="fst-v" style="color:'+(s.gd>=0?a:'#f87171')+'">'+(s.gd>0?'+':'')+s.gd+'</span></div><div class="fbar"><div class="fbar-f" style="width:'+gp+'%;background:'+a+';color:'+a+'"></div></div></div></div>'+logrosHtml+advHtml+pagoBtn;
   bg.classList.add('show');
 }
 function clCard(){document.getElementById('cardBg').classList.remove('show')}
@@ -2335,14 +2411,14 @@ function roundRectPath(ctx,x,y,w,h,r){
 function drawBracketOnCanvas(ctx,b,ox,oy,availW){
   // 3 columnas: cuartos, semis, final. availW ancho total disponible
   var colW=availW/3;
-  var boxW=colW-24, boxH=60, pairGap=14, groupGap=62;
-  // Y de cada cuarto (4 cajas dobles... en realidad 4 llaves con top/bot)
+  var boxW=colW-30, boxH=60, groupGap=62;
+  var slotH=boxH*2+8; // altura de una llave (top+bot con 8px entre medio)
   function drawSlot(x,y,slot,fs){
     fs=fs||24;
     [['top',slot.top],['bot',slot.bot]].forEach(function(pr,i){
       var d=pr[1];var yy=y+i*(boxH+8);
       var won=d.won;
-      ctx.fillStyle=won?'rgba(74,222,128,.18)':'rgba(19,26,53,.9)';
+      ctx.fillStyle=won?'rgba(74,222,128,.18)':'rgba(19,26,53,.92)';
       roundRectPath(ctx,x,yy,boxW,boxH,10);ctx.fill();
       ctx.strokeStyle=won?'#4ade80':'rgba(90,150,220,.4)';ctx.lineWidth=2;
       roundRectPath(ctx,x,yy,boxW,boxH,10);ctx.stroke();
@@ -2355,27 +2431,37 @@ function drawBracketOnCanvas(ctx,b,ox,oy,availW){
       ctx.fillText(nm+(won?' ✓':''),nmX,yy+boxH/2+7);
     });
   }
-  function connector(x1,yTopMid,yBotMid,x2,yOutMid){
-    var xm=x1+16;
-    ctx.strokeStyle='rgba(90,150,220,.5)';ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(x1,yTopMid);ctx.lineTo(xm,yTopMid);ctx.lineTo(xm,yBotMid);ctx.lineTo(x1,yBotMid);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(xm,yOutMid);ctx.lineTo(x2,yOutMid);ctx.stroke();
+  // Conecta dos enfrentamientos (centros yA y yB) hacia el destino (centro yDest de la siguiente ronda)
+  // Sale UNA línea del centro de cada enfrentamiento, se unen con una vertical, y de ahí una sola línea al destino
+  function connector(xRight,yA,yB,xDest,yDest){
+    var xm=(xRight+xDest)/2;
+    ctx.strokeStyle='rgba(120,200,250,.6)';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.beginPath();
+    ctx.moveTo(xRight,yA);    // sale del centro del enfrentamiento de arriba
+    ctx.lineTo(xm,yA);        // horizontal hasta la columna media
+    ctx.lineTo(xm,yB);        // baja por la vertical
+    ctx.lineTo(xRight,yB);    // vuelve al centro del enfrentamiento de abajo
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(xm,yDest);     // del medio de la vertical
+    ctx.lineTo(xDest,yDest);  // una sola horizontal al destino
+    ctx.stroke();
   }
   var col1=ox, col2=ox+colW, col3=ox+colW*2;
-  var slotH=boxH*2+8; // altura de una llave (top+bot)
   var qfY=[oy, oy+slotH+groupGap, oy+2*(slotH+groupGap), oy+3*(slotH+groupGap)];
+  var qfMid=qfY.map(function(y){return y+slotH/2});
+  var sfMid=[(qfMid[0]+qfMid[1])/2, (qfMid[2]+qfMid[3])/2];
+  var sfY=sfMid.map(function(m){return m-slotH/2});
+  var fMid=(sfMid[0]+sfMid[1])/2;
+  var fY=fMid-slotH/2;
+  // 1) Conectores primero (van detrás)
+  connector(col1+boxW, qfMid[0], qfMid[1], col2, sfMid[0]);
+  connector(col1+boxW, qfMid[2], qfMid[3], col2, sfMid[1]);
+  connector(col2+boxW, sfMid[0], sfMid[1], col3, fMid);
+  // 2) Cajas encima
   b.qf.forEach(function(s,i){drawSlot(col1,qfY[i],s,24)});
-  // Semis centradas entre pares
-  var sfY=[(qfY[0]+qfY[1]+slotH)/2 - slotH/2, (qfY[2]+qfY[3]+slotH)/2 - slotH/2];
   b.sf.forEach(function(s,i){drawSlot(col2,sfY[i],s,22)});
-  // Final centrada
-  var fY=(sfY[0]+sfY[1]+slotH)/2 - slotH/2;
   drawSlot(col3,fY,b.final,24);
-  // Conectores QF->SF
-  connector(col1+boxW, qfY[0]+slotH/2, qfY[1]+slotH/2, col2, sfY[0]+slotH/2);
-  connector(col1+boxW, qfY[2]+slotH/2, qfY[3]+slotH/2, col2, sfY[1]+slotH/2);
-  // SF->Final
-  connector(col2+boxW, sfY[0]+slotH/2, sfY[1]+slotH/2, col3, fY+slotH/2);
 }
 function shortNmCanvas(ctx,nm,maxW,fs){
   if(!nm)return '—';
