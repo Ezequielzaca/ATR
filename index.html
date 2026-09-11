@@ -35,6 +35,8 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 .hdr-yr{font-family:'Space Mono',monospace;font-size:.85rem;color:var(--acc);background:var(--acc-d);padding:6px 14px;border-radius:20px;font-weight:700;border:1px solid var(--acc-g)}
 .main{max-width:500px;margin:0 auto;padding:20px 16px;transition:opacity .3s;overflow-y:auto}
 .slbl{font-size:.7rem;font-weight:700;color:var(--tm);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:12px;padding-left:4px;display:flex;align-items:center;gap:7px}
+.msec{font-size:.66rem;font-weight:700;color:var(--acc);letter-spacing:2px;text-transform:uppercase;margin:22px 0 10px;padding-left:4px;display:flex;align-items:center;gap:7px}
+.msec::before{content:'';width:14px;height:2px;border-radius:2px;background:var(--acc);opacity:.6}
 .slbl::before{content:'';width:4px;height:14px;border-radius:2px;background:var(--acc);flex-shrink:0;opacity:.7}
 .page{display:none}.page.active{display:block;animation:fu .4s ease both;padding-bottom:100px}
 @keyframes fu{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
@@ -317,16 +319,22 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div class="mi" onclick="subPg('spo')"><div class="mic sp">⭐</div><div><div class="mit">Sponsors</div><div class="mid">Marcas del torneo</div></div></div>
     <div class="mi" onclick="subPg('info')"><div class="mic" style="background:linear-gradient(135deg,#0ea5e9,#0369a1)">📋</div><div><div class="mit">Información</div><div class="mid">Reglamento, premios y sede</div></div></div>
     <div class="mi" onclick="subPg('cont')"><div class="mic co">💬</div><div><div class="mit">Contacto</div><div class="mid">Escribinos</div></div></div>
+
+    <div class="msec" id="secGestion" style="display:none">Gestión del torneo</div>
     <div class="mi" id="pagosBtn" style="display:none" onclick="subPg('pagos')"><div class="mic" style="background:linear-gradient(135deg,#f59e0b,#d97706)">💰</div><div><div class="mit">Pagos</div><div class="mid">Estado de pagos</div></div></div>
     <div class="mi" id="balanceBtn" style="display:none" onclick="subPg('balance')"><div class="mic" style="background:linear-gradient(135deg,#6366f1,#4f46e5)">📊</div><div><div class="mit">Balance</div><div class="mid">Ingresos y gastos</div></div></div>
-    <div class="mi" id="entradaBtn" style="display:none" onclick="subPg('entrada')"><div class="mic" style="background:linear-gradient(135deg,#0284c7,#1e3a8a)">🎟️</div><div><div class="mit">Entradas</div><div class="mid">QR y verificación</div></div></div>
-    <div class="mi" id="usersBtn" style="display:none" onclick="subPg('users')"><div class="mic" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">🗂️</div><div><div class="mit">Usuarios</div><div class="mid">Cuentas de jugadores</div></div></div>
-    <div class="mi" id="insigBtn" style="display:none" onclick="subPg('insignias')"><div class="mic" style="background:linear-gradient(135deg,#d4a017,#a16207)">🏅</div><div><div class="mit">Insignias</div><div class="mid">Logros y apodos de jugadores</div></div></div>
     <div class="mi" id="partidosBtn" style="display:none" onclick="subPg('partidos')"><div class="mic" style="background:linear-gradient(135deg,#0284c7,#1e3a8a)">🎾</div><div><div class="mit">Partidos</div><div class="mid">Por jugar y jugados por grupo</div></div></div>
-    <div class="mi" id="auditBtn" style="display:none" onclick="subPg('auditoria')"><div class="mic" style="background:linear-gradient(135deg,#64748b,#334155)">📋</div><div><div class="mit">Registro de actividad</div><div class="mid">Quién cargó o cambió qué</div></div></div>
-    <div class="mi" id="flyerBtn" style="display:none" onclick="subPg('flyers')"><div class="mic" style="background:linear-gradient(135deg,#7dd3fc,#c4b5fd)">🖼️</div><div><div class="mit">Placas de partidos</div><div class="mid">Versus del día para compartir</div></div></div>
+    <div class="mi" id="insigBtn" style="display:none" onclick="subPg('insignias')"><div class="mic" style="background:linear-gradient(135deg,#d4a017,#a16207)">🏅</div><div><div class="mit">Insignias</div><div class="mid">Logros y apodos de jugadores</div></div></div>
+    <div class="mi" id="usersBtn" style="display:none" onclick="subPg('users')"><div class="mic" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">🗂️</div><div><div class="mit">Usuarios</div><div class="mid">Cuentas de jugadores</div></div></div>
+
+    <div class="msec" id="secFiesta" style="display:none">Fiesta y entradas</div>
+    <div class="mi" id="entradaBtn" style="display:none" onclick="subPg('entrada')"><div class="mic" style="background:linear-gradient(135deg,#0284c7,#1e3a8a)">🎟️</div><div><div class="mit">Entradas del torneo</div><div class="mid">Escanear QR de jugadores</div></div></div>
     <div class="mi" id="fiestaBtn" style="display:none" onclick="subPg('fiesta')"><div class="mic" style="background:linear-gradient(135deg,#ec4899,#a855f7)">🎉</div><div><div class="mit">Entradas Fiesta</div><div class="mid">Generar QR y controlar acceso</div></div></div>
-    <div class="mi" id="admMenuBtn" style="display:none" onclick="subPg('admin')"><div class="mic" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">⚙️</div><div><div class="mit">Panel Admin</div><div class="mid">Gestionar torneo</div></div></div>
+    <div class="mi" id="flyerBtn" style="display:none" onclick="subPg('flyers')"><div class="mic" style="background:linear-gradient(135deg,#7dd3fc,#c4b5fd)">🖼️</div><div><div class="mit">Placas de partidos</div><div class="mid">Versus y cuadros para compartir</div></div></div>
+
+    <div class="msec" id="secHerr" style="display:none">Herramientas</div>
+    <div class="mi" id="auditBtn" style="display:none" onclick="subPg('auditoria')"><div class="mic" style="background:linear-gradient(135deg,#64748b,#334155)">📋</div><div><div class="mit">Registro de actividad</div><div class="mid">Quién cargó o cambió qué</div></div></div>
+    <div class="mi" id="admMenuBtn" style="display:none" onclick="subPg('admin')"><div class="mic" style="background:linear-gradient(135deg,#ef4444,#b91c1c)">⚙️</div><div><div class="mit">Panel Admin</div><div class="mid">Backup, sincronizar y más</div></div></div>
   </div>
   <!-- LOGIN / REGISTER / PROFILE -->
   <div id="sub-login" style="display:none">
@@ -557,6 +565,13 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
         <div style="font-size:.82rem;font-weight:600;margin-bottom:4px">🔄 Sincronizar nombres</div>
         <div style="font-size:.72rem;color:var(--tm);line-height:1.5;margin-bottom:10px">Si editaste el nombre de un jugador y en partidos o resultados viejos todavía aparece el nombre anterior, tocá acá para actualizarlos todos de una vez.</div>
         <button class="fb" onclick="resyncNames()" style="margin:0">Sincronizar ahora</button>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:14px;margin-bottom:20px">
+        <div style="font-size:.82rem;font-weight:600;margin-bottom:4px">💾 Copia de seguridad</div>
+        <div style="font-size:.72rem;color:var(--tm);line-height:1.5;margin-bottom:10px">Descargá todos los datos del torneo (jugadores, resultados, pagos, entradas, etc.) en un archivo. Guardalo por las dudas. Hacelo seguido, sobre todo antes de la fiesta.</div>
+        <button class="fb" onclick="descargarBackup()" style="margin:0 0 8px 0">⬇ Descargar backup</button>
+        <label for="restoreFile" style="display:block;text-align:center;padding:10px;border-radius:var(--rs);border:1px solid var(--brd);background:var(--card-h);color:var(--tm);font-size:.78rem;font-weight:600;cursor:pointer">↩ Restaurar desde un backup</label>
+        <input type="file" id="restoreFile" accept="application/json,.json" style="display:none" onchange="restaurarBackup(this)"/>
       </div>
       <div class="slbl" style="color:#d97706">⏰ Partidos Vencidos (sin resultado)</div>
       <div style="font-size:.72rem;color:var(--tm);line-height:1.5;margin-bottom:10px">Partidos programados cuya fecha ya pasó y no tienen resultado cargado. Cargá el resultado si se jugó, reprogramá si se pasó a otro día, o eliminá si no se juega.</div>
@@ -2746,6 +2761,52 @@ function editPart(id){
   document.getElementById('epG').value=p.grupo||'';
   document.getElementById('mEditP').classList.add('show');
 }
+function descargarBackup(){
+  if(!isAdmin){toast('Solo el administrador');return}
+  var rutas=['participantes','resultados','programacion','pagos','entregas','sponsors','balIngresos','balGastos','usuarios','anuncio','info','crossScheme','crossSchemeC','playoffConfig','auditoria','entradasFiesta'];
+  var backup={_meta:{fecha:new Date().toISOString(),app:'Tenis ATR 2026',version:1}};
+  var pendientes=rutas.length;
+  toast('Generando backup...');
+  rutas.forEach(function(ruta){
+    db.ref(ruta).once('value').then(function(snap){
+      backup[ruta]=snap.val();
+      pendientes--;
+      if(pendientes===0){
+        var blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+        var url=URL.createObjectURL(blob);
+        var a=document.createElement('a');
+        var f=new Date();
+        var fecha=f.getFullYear()+('0'+(f.getMonth()+1)).slice(-2)+('0'+f.getDate()).slice(-2)+'_'+('0'+f.getHours()).slice(-2)+('0'+f.getMinutes()).slice(-2);
+        a.href=url;a.download='backup_ATR2026_'+fecha+'.json';
+        document.body.appendChild(a);a.click();document.body.removeChild(a);
+        setTimeout(function(){URL.revokeObjectURL(url)},1000);
+        logAction('Descargó backup','copia de seguridad completa');
+        toast('✓ Backup descargado');
+      }
+    }).catch(function(){pendientes--;toast('Error leyendo '+ruta)});
+  });
+}
+function restaurarBackup(input){
+  if(!isAdmin){toast('Solo el administrador');return}
+  var file=input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var backup;
+    try{backup=JSON.parse(e.target.result)}catch(err){alertModal('El archivo no es un backup válido',{icon:'⚠️',title:'Error'});return}
+    if(!backup._meta||!backup.participantes){alertModal('El archivo no parece un backup de esta app',{icon:'⚠️',title:'Error'});return}
+    var fechaBk=backup._meta.fecha?new Date(backup._meta.fecha).toLocaleString('es-AR'):'desconocida';
+    confirmModal('⚠ Esto REEMPLAZA todos los datos actuales por los del backup del '+fechaBk+'.\n\nSe pierde todo lo cargado después de esa fecha. ¿Continuar?',function(){
+      var rutas=['participantes','resultados','programacion','pagos','entregas','sponsors','balIngresos','balGastos','usuarios','anuncio','info','crossScheme','crossSchemeC','playoffConfig','auditoria','entradasFiesta'];
+      var pend=rutas.length;
+      rutas.forEach(function(ruta){
+        var val=backup[ruta];
+        db.ref(ruta).set(val===undefined?null:val).then(function(){pend--;if(pend===0){toast('✓ Backup restaurado');logAction('Restauró backup','del '+fechaBk)}});
+      });
+    },{danger:true,title:'Restaurar backup',okText:'Sí, restaurar todo'});
+  };
+  reader.readAsText(file);
+  input.value='';
+}
 function resyncNames(){
   if(!isAdmin){toast('Solo el administrador');return}
   // Mapa id -> nombre actual desde participantes
@@ -3310,6 +3371,7 @@ function updAdmUI(){
   if(fiestaBtn)fiestaBtn.style.display=isAdmin?'flex':'none';
   var admMBtn=document.getElementById('admMenuBtn');
   if(admMBtn)admMBtn.style.display=isAdmin?'flex':'none';
+  ['secGestion','secFiesta','secHerr'].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display=isAdmin?'flex':'none'});
   var miEntBtn=document.getElementById('miEntradaBtn');
   if(miEntBtn)miEntBtn.style.display=curUser?'flex':'none';
   // Update login button text
