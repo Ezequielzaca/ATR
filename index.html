@@ -596,7 +596,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 <!-- Modal: Result -->
 <div class="mbg" id="mRes" onclick="if(event.target===this)clMod('mRes')"><div class="mdl">
   <div class="mh"><span class="mt">Cargar Resultado</span><button class="mx" onclick="clMod('mRes')">✕</button></div>
-  <div class="fr"><select class="fs" id="rCat" onchange="rPickCat()"><option value="">Categoría...</option></select><select class="fs" id="rFase" onchange="rPickFase()"><option value="grupos">Fase: Grupos</option><option value="cuartos">Cuartos de Final</option><option value="semis">Semifinal</option><option value="final">Final</option></select></div>
+  <div class="fr"><select class="fs" id="rCat" onchange="rPickCat()"><option value="">Categoría...</option></select><select class="fs" id="rFase" onchange="rPickFase()"><option value="grupos">Fase: Grupos</option><option value="cuartos">🏆 Cuartos (Principal)</option><option value="semis">🏆 Semifinal (Principal)</option><option value="final">🏆 Final (Principal)</option><option value="cuartos_c">🎗️ Cuartos (Second Chance)</option><option value="semis_c">🎗️ Semifinal (Second Chance)</option><option value="final_c">🎗️ Final (Second Chance)</option></select></div>
   <div class="fr" id="rGrpRow"><select class="fs" id="rGrp" onchange="rPickGrp()"><option value="">Grupo...</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
   <div class="fr"><select class="fs" id="rP1" onchange="syncOpp('rP1','rP2');rAutoWinner()"><option value="">J1...</option></select><span style="color:var(--tm);align-self:center;font-weight:700">VS</span><select class="fs" id="rP2" onchange="rAutoWinner()"><option value="">J2...</option></select></div>
   <div id="rNoOpp" style="display:none;font-size:.72rem;color:#d97706;background:rgba(245,158,11,.1);border-radius:8px;padding:8px 12px;margin-bottom:10px"></div>
@@ -648,6 +648,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 <div class="mbg" id="mEdit" onclick="if(event.target===this)clMod('mEdit')"><div class="mdl">
   <div class="mh"><span class="mt">Editar Resultado</span><button class="mx" onclick="clMod('mEdit')">✕</button></div>
   <div style="font-size:.85rem;color:var(--t2);margin-bottom:14px;text-align:center" id="eMatchInfo"></div>
+  <div class="fr"><select class="fs" id="eFase"><option value="grupos">Fase: Grupos</option><option value="cuartos">🏆 Cuartos (Principal)</option><option value="semis">🏆 Semifinal (Principal)</option><option value="final">🏆 Final (Principal)</option><option value="cuartos_c">🎗️ Cuartos (Second Chance)</option><option value="semis_c">🎗️ Semifinal (Second Chance)</option><option value="final_c">🎗️ Final (Second Chance)</option></select></div>
   <div class="fr"><input class="fi" id="eSc" placeholder="Score (ej: 6-3 6-4)"/></div>
   <div class="fr"><select class="fs" id="eW"><option value="">Ganador...</option><option value="1">Jugador 1</option><option value="2">Jugador 2</option></select></div>
   <div class="fr"><input type="date" class="fi" id="eDt"/></div>
@@ -1005,9 +1006,14 @@ function openResForPlayoffMatch(cat,p1id,p2id,fase,date,time,court){
   document.getElementById('rFase').value=fase;
   document.getElementById('rCat').value=cat;
   document.getElementById('rGrpRow').style.display='none';
-  fillPlByCat(cat,document.getElementById('rP1'),document.getElementById('rP2'));
-  document.getElementById('rP1').value=p1id;document.getElementById('rP2').value=p2id;
-  syncOpp('rP1','rP2');
+  // En playoffs los dos jugadores son fijos: solo esos dos en los desplegables
+  var pA=parts.find(function(p){return p.id===p1id}),pB=parts.find(function(p){return p.id===p2id});
+  var nA=pA?(pA.apellido+' '+pA.nombre):'Jugador 1', nB=pB?(pB.apellido+' '+pB.nombre):'Jugador 2';
+  document.getElementById('rP1').innerHTML='<option value="'+p1id+'">'+nA+'</option><option value="'+p2id+'">'+nB+'</option>';
+  document.getElementById('rP2').innerHTML='<option value="'+p1id+'">'+nA+'</option><option value="'+p2id+'">'+nB+'</option>';
+  document.getElementById('rP1').value=p1id;
+  document.getElementById('rP2').value=p2id;
+  var _h=document.getElementById('rNoOpp');if(_h)_h.style.display='none';
   document.getElementById('rSc').value='';document.getElementById('rW').value='';document.getElementById('rDt').value=date||todayStr;
   document.getElementById('rWinnerDisplay').innerHTML='';
 }
@@ -1377,8 +1383,8 @@ function rAutoWinner(){
   var sc=document.getElementById('rSc').value.trim();
   var disp=document.getElementById('rWinnerDisplay');
   var p1Sel=document.getElementById('rP1'),p2Sel=document.getElementById('rP2');
-  var p1Name=(p1Sel.selectedIndex>0)?p1Sel.options[p1Sel.selectedIndex].text:'Jugador 1';
-  var p2Name=(p2Sel.selectedIndex>0)?p2Sel.options[p2Sel.selectedIndex].text:'Jugador 2';
+  var p1Name=p1Sel.value?p1Sel.options[p1Sel.selectedIndex].text:'Jugador 1';
+  var p2Name=p2Sel.value?p2Sel.options[p2Sel.selectedIndex].text:'Jugador 2';
   if(!sc){document.getElementById('rW').value='';disp.innerHTML='';return}
   var v=validateScore(sc);
   if(!v.ok){
@@ -1637,6 +1643,8 @@ function syncOpp(s1Id,s2Id){
   var esResultado=(s1Id==='rP1');
   var cat=document.getElementById(esResultado?'rCat':'sCat').value;
   var fase=esResultado?(document.getElementById('rFase').value||'grupos'):(_schedFase||'grupos');
+  // En playoffs los dos jugadores vienen fijos de la llave: no filtrar rivales
+  if(fase!=='grupos'){var _h=document.getElementById(esResultado?'rNoOpp':'sNoOpp');if(_h)_h.style.display='none';return}
   // IDs de rivales que ya jugaron contra el J1 seleccionado (misma cat y fase)
   var yaJugaron={};
   if(val&&cat){
@@ -1775,12 +1783,21 @@ function saveRes(){
   // Si el resultado viene de un partido programado, lo sacamos de Próximos Partidos
   if(window._schedMatchToRemove){
     var rm=window._schedMatchToRemove;
-    schedule=schedule.filter(function(s){return!(s.p1id===rm.p1id&&s.p2id===rm.p2id&&s.date===rm.date&&s.time===rm.time&&s.court===rm.court&&s.cat===rm.cat)});
+    var rmFase=fase; // fase del resultado que se está guardando
+    schedule=schedule.filter(function(s){
+      if(s.cat!==rm.cat)return true; // distinto: se mantiene
+      if((s.fase||'grupos')!==rmFase)return true;
+      // Misma pareja (en cualquier orden) → se elimina
+      var mismaPareja=(s.p1id===rm.p1id&&s.p2id===rm.p2id)||(s.p1id===rm.p2id&&s.p2id===rm.p1id);
+      return !mismaPareja;
+    });
     db.ref('programacion').set(schedule);
     window._schedMatchToRemove=null;
     rCal();rUp();
   }
   clMod('mRes');rRes();
+  // Refrescar Cuadros/Playoffs si estamos ahí
+  if(curPg==='cuadros')rGrid();
   // Si estamos en la gestión de Partidos, refrescar esa lista
   var subP=document.getElementById('sub-partidos');
   if(subP&&subP.style.display!=='none'){rGlobalMatchStats();rPartidos()}
@@ -3511,10 +3528,10 @@ function admEditRes(i){
   if(!isAdmin){toast('Solo el administrador puede editar resultados');return}
   editIdx=i;var r=results[i];if(!r)return;
   document.getElementById('eMatchInfo').textContent=r.p1+' vs '+r.p2+' — '+CL[r.cat]+(r.grupo?' Grupo '+r.grupo:'');
+  document.getElementById('eFase').value=r.fase||'grupos';
   document.getElementById('eSc').value=r.score;
   document.getElementById('eW').value=r.winner;
   document.getElementById('eDt').value=r.fecha;
-  // Set winner options with player names
   var wSel=document.getElementById('eW');
   wSel.innerHTML='<option value="">Ganador...</option><option value="1">'+r.p1+'</option><option value="2">'+r.p2+'</option>';
   wSel.value=r.winner;
@@ -3524,12 +3541,15 @@ function saveEdit(){
   if(!isAdmin){toast('Solo el administrador puede editar resultados');return}
   if(editIdx<0||!results[editIdx])return;
   var score=document.getElementById('eSc').value.trim(),winner=parseInt(document.getElementById('eW').value),fecha=document.getElementById('eDt').value;
+  var fase=document.getElementById('eFase').value||'grupos';
   if(!score||!winner||!fecha){toast('Completá todos los campos');return}
   var ve=validateScore(score);
   if(!ve.ok){toast(ve.error);return}
-  results[editIdx].score=score;results[editIdx].winner=winner;results[editIdx].fecha=fecha;
-  logAction('Editó resultado',results[editIdx].p1+' vs '+results[editIdx].p2+' → '+score);
-  db.ref('resultados').set(results);clMod('mEdit');rAdmPanel();rRes();toast('Resultado actualizado');editIdx=-1;
+  results[editIdx].score=score;results[editIdx].winner=winner;results[editIdx].fecha=fecha;results[editIdx].fase=fase;
+  logAction('Editó resultado',results[editIdx].p1+' vs '+results[editIdx].p2+' → '+score+' ('+FASE_L[fase]+')');
+  db.ref('resultados').set(results);clMod('mEdit');rAdmPanel();rRes();
+  if(curPg==='cuadros')rGrid();
+  toast('Resultado actualizado');editIdx=-1;
 }
 
 // Override subPg to handle admin
