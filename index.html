@@ -2387,6 +2387,22 @@ function downloadBracketFlyer(modo){
   bg.onload=function(){
     // Fondo: tu plantilla (título, cancha, pelota, sponsors)
     ctx.drawImage(bg,0,0,W,H);
+    // Tapar "MADERA" de la plantilla y escribir la categoría correcta
+    // (zona aprox: y 452-500, centrada). Tapo con un bloque del color del fondo.
+    ctx.fillStyle='#040a1a';
+    ctx.fillRect(120,450,W-240,58);
+    // Escribir la categoría en el mismo estilo (celeste, bold, con líneas a los costados)
+    ctx.textAlign='center';
+    ctx.fillStyle='#38bdf8';
+    ctx.font='bold 52px Outfit,Arial,sans-serif';
+    var catTxt=CL[cat].toUpperCase();
+    ctx.fillText(catTxt,W/2,494);
+    // Líneas decorativas a los costados del texto
+    var tw=ctx.measureText(catTxt).width;
+    ctx.strokeStyle='#38bdf8';ctx.lineWidth=3;ctx.lineCap='round';
+    var lx1=W/2-tw/2-20, lx2=W/2+tw/2+20;
+    ctx.beginPath();ctx.moveTo(lx1-70,478);ctx.lineTo(lx1,478);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(lx2,478);ctx.lineTo(lx2+70,478);ctx.stroke();
     // Panel oscuro que cubre EXACTAMENTE la zona de la llave original de la plantilla
     var panelX=24,panelY=548,panelW=W-48,panelH=590;
     ctx.save();
