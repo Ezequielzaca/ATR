@@ -427,6 +427,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Partidos</span></div>
     <div class="slbl">Resumen del Torneo</div>
     <div id="mtchGlobal" style="margin-bottom:20px"></div>
+    <div id="mtchPlayoff" style="margin-bottom:20px"></div>
     <div class="slbl">Ver por Grupo</div>
     <div class="selrow">
       <select class="fs catsel" id="mtchCatSel" onchange="rPartidos()"></select>
@@ -1800,7 +1801,7 @@ function saveRes(){
   if(curPg==='cuadros')rGrid();
   // Si estamos en la gestión de Partidos, refrescar esa lista
   var subP=document.getElementById('sub-partidos');
-  if(subP&&subP.style.display!=='none'){rGlobalMatchStats();rPartidos()}
+  if(subP&&subP.style.display!=='none'){rGlobalMatchStats();rPlayoffStatus();rPartidos()}
   toast('Resultado guardado'+(fase!=='grupos'?' — '+FASE_L[fase]:''));
   },{title:'Confirmar resultado',okText:'✓ Guardar',icon:'🎾'});
 }
@@ -2540,6 +2541,58 @@ function rAuditoria(){
   });
   el.innerHTML=html;
 }
+function computePlayoffStatus(){
+  // Para cada categoría y cada cuadro (principal/second), contar cruces jugados/programados/pendientes
+  var out=[];
+  CATS.forEach(function(cat){
+    var groups=['A','B','C','D'];
+    var hayJug=groups.some(function(g){return parts.filter(function(p){return p.cat===cat&&p.grupo===g}).length>=2});
+    if(!hayJug)return;
+    [['principal',true],['second',false]].forEach(function(pr){
+      var esPrincipal=pr[1];
+      var b=buildBracket(cat,esPrincipal);
+      var fases=esPrincipal?['cuartos','semis','final']:['cuartos_c','semis_c','final_c'];
+      // Contar en resultados y programación
+      var jugados=results.filter(function(r){return r.cat===cat&&fases.indexOf(r.fase)!==-1}).length;
+      var programados=schedule.filter(function(s){return s.cat===cat&&fases.indexOf(s.fase)!==-1}).length;
+      // ¿La llave se puede armar? (grupos con posiciones)
+      var listo=!!b;
+      // Total teórico: 4 cuartos + 2 semis + 1 final = 7 (si la categoría tiene los 4 grupos completos)
+      // Pero puede variar. Estimamos por lo definido.
+      out.push({cat:cat,cuadro:esPrincipal?'principal':'second',jugados:jugados,programados:programados,listo:listo,champ:b?b.champ:null});
+    });
+  });
+  return out;
+}
+function rPlayoffStatus(){
+  var el=document.getElementById('mtchPlayoff');if(!el)return;
+  var data=computePlayoffStatus();
+  if(!data.length){el.innerHTML='';return}
+  var html='<div class="slbl" style="margin-top:8px">🏆 Estado de Playoffs</div>';
+  // Agrupar por categoría
+  var porCat={};
+  data.forEach(function(d){if(!porCat[d.cat])porCat[d.cat]=[];porCat[d.cat].push(d)});
+  Object.keys(porCat).forEach(function(cat){
+    var cuadros=porCat[cat];
+    var totalJug=cuadros.reduce(function(a,c){return a+c.jugados},0);
+    var totalProg=cuadros.reduce(function(a,c){return a+c.programados},0);
+    if(totalJug===0&&totalProg===0)return; // sin actividad de playoff todavía
+    html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:12px 14px;margin-bottom:10px">';
+    html+='<div style="font-weight:700;font-size:.85rem;margin-bottom:8px"><span class="lb l-'+CS[cat]+'" style="font-size:.55rem">'+CL[cat]+'</span></div>';
+    cuadros.forEach(function(c){
+      if(c.jugados===0&&c.programados===0)return;
+      var nombre=c.cuadro==='principal'?'🏆 Principal':'🎗️ Second Chance';
+      var champTxt=c.champ?' · 🏆 '+c.champ.nm:'';
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;font-size:.78rem;border-top:1px solid var(--brd)">';
+      html+='<span style="color:var(--t2)">'+nombre+'</span>';
+      html+='<span style="color:var(--tm);font-size:.72rem"><span style="color:var(--win-c);font-weight:700">'+c.jugados+' jugados</span> · <span style="color:#d97706;font-weight:700">'+c.programados+' programados</span>'+champTxt+'</span>';
+      html+='</div>';
+    });
+    html+='</div>';
+  });
+  if(html.indexOf('background:var(--card)')===-1){el.innerHTML='<div class="slbl" style="margin-top:8px">🏆 Estado de Playoffs</div><div style="font-size:.75rem;color:var(--tm);padding:10px;text-align:center">Todavía no se cargó ni programó ningún partido de playoff</div>';return}
+  el.innerHTML=html;
+}
 function partidosInit(){
   var cs=document.getElementById('mtchCatSel');
   var copts='';
@@ -2551,6 +2604,7 @@ function partidosInit(){
   var gs=document.getElementById('mtchGrpSel');
   gs.innerHTML='<option value="A">Grupo A</option><option value="B">Grupo B</option><option value="C">Grupo C</option><option value="D">Grupo D</option>';
   rGlobalMatchStats();
+  rPlayoffStatus();
   rPartidos();
 }
 function rPartidos(){
