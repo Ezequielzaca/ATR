@@ -2555,11 +2555,12 @@ function computePlayoffStatus(){
       // Contar en resultados y programación
       var jugados=results.filter(function(r){return r.cat===cat&&fases.indexOf(r.fase)!==-1}).length;
       var programados=schedule.filter(function(s){return s.cat===cat&&fases.indexOf(s.fase)!==-1}).length;
-      // ¿La llave se puede armar? (grupos con posiciones)
       var listo=!!b;
-      // Total teórico: 4 cuartos + 2 semis + 1 final = 7 (si la categoría tiene los 4 grupos completos)
-      // Pero puede variar. Estimamos por lo definido.
-      out.push({cat:cat,cuadro:esPrincipal?'principal':'second',jugados:jugados,programados:programados,listo:listo,champ:b?b.champ:null});
+      // Total de un cuadro completo: 4 cuartos + 2 semis + 1 final = 7
+      var total=7;
+      // Faltan = los que no están ni jugados ni programados
+      var faltan=Math.max(0,total-jugados-programados);
+      out.push({cat:cat,cuadro:esPrincipal?'principal':'second',jugados:jugados,programados:programados,faltan:faltan,total:total,listo:listo,champ:b?b.champ:null});
     });
   });
   return out;
@@ -2585,7 +2586,7 @@ function rPlayoffStatus(){
       var champTxt=c.champ?' · 🏆 '+c.champ.nm:'';
       html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;font-size:.78rem;border-top:1px solid var(--brd)">';
       html+='<span style="color:var(--t2)">'+nombre+'</span>';
-      html+='<span style="color:var(--tm);font-size:.72rem"><span style="color:var(--win-c);font-weight:700">'+c.jugados+' jugados</span> · <span style="color:#d97706;font-weight:700">'+c.programados+' programados</span>'+champTxt+'</span>';
+      html+='<span style="color:var(--tm);font-size:.72rem"><span style="color:var(--win-c);font-weight:700">'+c.jugados+' jug</span> · <span style="color:#d97706;font-weight:700">'+c.programados+' prog</span> · <span style="color:var(--acc);font-weight:700">'+c.faltan+' faltan</span>'+champTxt+'</span>';
       html+='</div>';
     });
     html+='</div>';
