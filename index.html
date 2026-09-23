@@ -1067,6 +1067,14 @@ function setRepechajeVisible(v){
 // Genera los cruces proyectados de un cuadro. posHi/posLo = posiciones que se cruzan (1&2 principal, 3&4 repechaje)
 function renderBracketQuarters(cat,opts){
   var groups=['A','B','C','D'];
+  // Si los 4 cuartos ya están definidos (programados o jugados), ocultar toda la sección.
+  // Se cuenta por partido real y no por el cruce proyectado, así funciona aunque falte
+  // cargar algún partido de grupo que modificaría los cruces (caso Oro).
+  var cuartosDefinidos={};
+  schedule.concat(results).forEach(function(m){
+    if(m.cat===cat&&m.fase===opts.faseCuartos){cuartosDefinidos[[m.p1id,m.p2id].sort().join('_')]=true;}
+  });
+  if(Object.keys(cuartosDefinidos).length>=4)return '';
   var standings={},incomplete=false;
   groups.forEach(function(g){
     var arr=computeGroupStandings(cat,g);
@@ -1235,6 +1243,41 @@ function rPlayoffsPanel(modo){
   html+='<div style="font-size:.66rem;color:var(--tm);margin-bottom:14px;text-align:center">La llave se actualiza sola según las posiciones. Los cruces cambian hasta que termine la fase de grupos.</div>';
   // Selector de esquema + cruces para programar (solo admin, colapsable)
   html+=esPrincipal?renderProjectedQuarters(selCat):renderConsolationQuarters(selCat);
+  // Programar Semis y Final — solo cuando los dos jugadores están confirmados
+  if(isAdmin){
+    var b2=buildBracket(selCat,esPrincipal);
+    if(b2){
+      var faseSemis=esPrincipal?'semis':'semis_c';
+      var faseFinal=esPrincipal?'final':'final_c';
+      function yaDefinido(fase,id1,id2){
+        return schedule.some(function(s){return s.cat===selCat&&s.fase===fase&&((s.p1id===id1&&s.p2id===id2)||(s.p1id===id2&&s.p2id===id1))})
+            || results.some(function(r){return r.cat===selCat&&r.fase===fase&&((r.p1id===id1&&r.p2id===id2)||(r.p1id===id2&&r.p2id===id1))});
+      }
+      function filaProgramar(fase,slot,label){
+        // slot.p1 y slot.p2 sólo existen si los dos partidos previos ya se jugaron
+        if(!slot.p1||!slot.p2)return '';
+        // Una vez programada (o jugada), la fila desaparece — queda en "Programados" y en la llave.
+        if(yaDefinido(fase,slot.p1.id,slot.p2.id))return '';
+        var btn='<button onclick="openPlayoffSchedule(\''+selCat+'\',\''+slot.p1.id+'\',\''+slot.p2.id+'\',\''+fase+'\')" style="padding:6px 12px;border-radius:8px;border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);font-size:.7rem;font-weight:700;cursor:pointer;flex-shrink:0">📅 Programar</button>';
+        var h='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">';
+        h+='<span style="font-size:.82rem"><span style="color:var(--acc);font-weight:700;font-size:.62rem">'+label+'</span> '+slot.p1.nm+' <span style="color:var(--tm)">vs</span> '+slot.p2.nm+'</span>';
+        h+=btn+'</div>';
+        return h;
+      }
+      var semisRows=filaProgramar(faseSemis,b2.sf[0],'SF1')+filaProgramar(faseSemis,b2.sf[1],'SF2');
+      if(semisRows){
+        html+='<div class="slbl" style="margin-top:14px">📅 Programar Semifinales</div>';
+        html+='<div style="font-size:.64rem;color:var(--tm);margin:-4px 0 8px">Aparecen sólo cuando los dos cuartos que las alimentan ya se jugaron.</div>';
+        html+=semisRows;
+      }
+      var finalRow=filaProgramar(faseFinal,b2.final,'FINAL');
+      if(finalRow){
+        html+='<div class="slbl" style="margin-top:14px">📅 Programar Final</div>';
+        html+='<div style="font-size:.64rem;color:var(--tm);margin:-4px 0 8px">Aparece sólo cuando las dos semis ya se jugaron.</div>';
+        html+=finalRow;
+      }
+    }
+  }
   // Partidos programados de este cuadro
   var pendHtml='';
   fasesModo.forEach(function(f){
