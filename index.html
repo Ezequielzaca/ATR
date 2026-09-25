@@ -2056,7 +2056,7 @@ var entradasFiesta=[]; // [{id,comprador,num,total,usada,ts}]
 var fstFilterVal='todos'; // todos | sinusar | intermedio | completo
 var fstView='jugadores'; // jugadores | externas — separa las dos listas
 db.ref('entradasFiesta').on('value',function(s){entradasFiesta=s.val()||[];if(document.getElementById('sub-fiesta')&&document.getElementById('sub-fiesta').style.display!=='none')rFiesta()});
-function fiestaInit(){rFiesta()}
+function fiestaInit(){precargarBgEntradas();rFiesta()}
 // Paso 1: preguntar cuántas y desplegar un campo de nombre por cada una
 function prepararEntradasFiesta(){
   var cant=parseInt(document.getElementById('fstCant').value);
@@ -2322,81 +2322,79 @@ function _fitFont(pdf,txt,maxW,fsIni,fsMin){
   while(fs>fsMin&&pdf.getTextWidth(txt)>maxW){fs-=1;pdf.setFontSize(fs);}
   return fs;
 }
-function dibujarEntradaPDF(pdf,e){
-  var pageW=210,pageH=297,cx=pageW/2;
+// Cache de las plantillas de fondo (dataURL). Se cargan de bg-entrada-*.jpg
+var _bgEntrada={jugador:null,externa:null};
+function precargarBgEntradas(){ _cargarBgEntrada('jugador',function(){}); _cargarBgEntrada('externa',function(){}); }
+function _cargarBgEntrada(tipo,cb){
+  if(_bgEntrada[tipo]){cb(_bgEntrada[tipo]);return;}
+  var img=new Image();
+  img.onload=function(){
+    try{var c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;c.getContext('2d').drawImage(img,0,0);_bgEntrada[tipo]=c.toDataURL('image/jpeg',0.9);}catch(err){_bgEntrada[tipo]=null;}
+    cb(_bgEntrada[tipo]);
+  };
+  img.onerror=function(){cb(null)};
+  img.src='bg-entrada-'+tipo+'.jpg';
+}
+// Coordenadas del marco del QR (fracción del alto/ancho) medidas sobre las plantillas
+var _frameQR={jugador:{cx:0.499,cy:0.577,w:0.399},externa:{cx:0.499,cy:0.577,w:0.399}};
+function dibujarEntradaPDF(pdf,e,bgData){
+  var W=90,H=160; // formato historia 9:16
   var esJug=(e.id.indexOf('jug-')===0)||!!e.pid;
-  // Paletas: jugadores = fondo azul neón · externos = fondo blanco
-  var NAVY=[10,14,36], CYAN=[45,190,245], CYAN2=[125,211,252];
-  var bg, txtMain, sub, muted, emblema;
-  if(esJug){ bg=NAVY; txtMain=[238,242,255]; sub=CYAN2; muted=[130,150,190]; emblema=CYAN2; }
-  else     { bg=[255,255,255]; txtMain=NAVY; sub=[10,110,160]; muted=[120,130,150]; emblema=[10,110,160]; }
-  // Fondo
-  pdf.setFillColor(bg[0],bg[1],bg[2]);pdf.rect(0,0,pageW,pageH,'F');
-  // Rayas diagonales tipo neón (arriba derecha)
-  pdf.setDrawColor(CYAN[0],CYAN[1],CYAN[2]);
-  for(var i=0;i<4;i++){pdf.setLineWidth(0.5+i*0.35);pdf.line(pageW-62+i*10,10,pageW-22+i*10,56);}
-  // Marco
-  pdf.setDrawColor(emblema[0],emblema[1],emblema[2]);pdf.setLineWidth(1.3);pdf.roundedRect(12,12,pageW-24,pageH-24,6,6,'S');
-  // Emblema ATR (círculo con texto)
-  var eyY=42, er=17;
-  pdf.setDrawColor(emblema[0],emblema[1],emblema[2]);pdf.setLineWidth(1.1);pdf.circle(cx,eyY,er,'S');
-  pdf.circle(cx,eyY,er-2.4,'S');
-  pdf.setTextColor(emblema[0],emblema[1],emblema[2]);pdf.setFont(undefined,'bold');
-  pdf.setFontSize(13);pdf.text('A.T.R.',cx,eyY+1,{align:'center'});
-  pdf.setFontSize(5.5);pdf.text('FRIENDS TOUR · 2026',cx,eyY+7,{align:'center'});
-  // Título FIESTA
-  pdf.setTextColor(sub[0],sub[1],sub[2]);pdf.setFont(undefined,'bold');pdf.setFontSize(52);
-  pdf.text('FIESTA',cx,88,{align:'center'});
-  pdf.setTextColor(txtMain[0],txtMain[1],txtMain[2]);pdf.setFontSize(15);
-  pdf.text('TENIS ATR 2026',cx,101,{align:'center'});
-  // QR sobre panel blanco (siempre blanco para que escanee bien)
-  var qrCanvas=makeQRCanvas('FIESTA-'+e.id,240);
-  var qrImg=qrCanvas.toDataURL('image/png');
-  var qrSize=92, qrX=(pageW-qrSize)/2, qrY=118;
-  pdf.setFillColor(255,255,255);pdf.roundedRect(qrX-7,qrY-7,qrSize+14,qrSize+14,4,4,'F');
-  pdf.setDrawColor(emblema[0],emblema[1],emblema[2]);pdf.setLineWidth(1);pdf.roundedRect(qrX-7,qrY-7,qrSize+14,qrSize+14,4,4,'S');
-  pdf.addImage(qrImg,'PNG',qrX,qrY,qrSize,qrSize);
-  // Nombre (se achica si es largo)
-  var ny=qrY+qrSize+28;
-  pdf.setTextColor(txtMain[0],txtMain[1],txtMain[2]);pdf.setFont(undefined,'bold');
-  _fitFont(pdf,nombreDeEntrada(e),pageW-40,28,12);
-  pdf.text(nombreDeEntrada(e),cx,ny,{align:'center'});
-  // ENTRADA + tipo
-  pdf.setTextColor(sub[0],sub[1],sub[2]);pdf.setFontSize(22);pdf.setFont(undefined,'bold');
-  pdf.text('ENTRADA',cx,ny+16,{align:'center'});
-  pdf.setTextColor(muted[0],muted[1],muted[2]);pdf.setFont(undefined,'normal');pdf.setFontSize(10);
-  pdf.text(esJug?'Jugador / acompañante':'Invitado',cx,ny+25,{align:'center'});
-  pdf.text('Presentá este QR en la entrada. Válido para una sola persona.',cx,ny+34,{align:'center'});
-  // Footer
-  pdf.setTextColor(muted[0],muted[1],muted[2]);pdf.setFontSize(9);
-  pdf.text('A.T.R. FRIENDS TOUR 2026',cx,pageH-22,{align:'center'});
+  var tipo=esJug?'jugador':'externa';
+  if(bgData){
+    pdf.addImage(bgData,'JPEG',0,0,W,H);
+  }else{
+    // Fallback si la imagen no está subida todavía
+    if(esJug){pdf.setFillColor(10,14,36);}else{pdf.setFillColor(255,255,255);}
+    pdf.rect(0,0,W,H,'F');
+    pdf.setTextColor(esJug?125:10,esJug?211:110,esJug?252:160);pdf.setFont(undefined,'bold');pdf.setFontSize(18);
+    pdf.text(esJug?'ENTRADA JUGADOR':'ENTRADA EXTERNA',W/2,42,{align:'center'});
+  }
+  // QR dentro del marco de la plantilla
+  var fr=_frameQR[tipo];
+  var qrSide=fr.w*W*0.98;
+  var qx=fr.cx*W-qrSide/2, qy=fr.cy*H-qrSide/2;
+  var qrCanvas=makeQRCanvas('FIESTA-'+e.id,320);
+  pdf.addImage(qrCanvas.toDataURL('image/png'),'PNG',qx,qy,qrSide,qrSide);
+  // Nombre y apellido, debajo del QR
+  var ny=0.775*H;
+  if(esJug)pdf.setTextColor(238,242,255); else pdf.setTextColor(14,22,44);
+  pdf.setFont(undefined,'bold');
+  _fitFont(pdf,nombreDeEntrada(e),W-14,17,8);
+  pdf.text(nombreDeEntrada(e),W/2,ny,{align:'center'});
 }
 // Descargar UNA entrada como su propio PDF
 function descargarPDFEntrada(id){
   var e=entradasFiesta.find(function(x){return x.id===id});if(!e)return;
   if(typeof window.jspdf==='undefined'){toast('Cargando librería PDF, probá de nuevo en un segundo');return}
-  var jsPDF=window.jspdf.jsPDF;
-  var pdf=new jsPDF({unit:'mm',format:'a4'});
-  dibujarEntradaPDF(pdf,e);
-  var nom=nombreDeEntrada(e).replace(/[^a-zA-Z0-9]/g,'_');
-  pdf.save('entrada_'+nom+'.pdf');
-  toast('Entrada de '+nombreDeEntrada(e)+' descargada 📥');
+  var tipo=((e.id.indexOf('jug-')===0)||e.pid)?'jugador':'externa';
+  _cargarBgEntrada(tipo,function(bg){
+    var jsPDF=window.jspdf.jsPDF;
+    var pdf=new jsPDF({unit:'mm',format:[90,160]});
+    dibujarEntradaPDF(pdf,e,bg);
+    var nom=nombreDeEntrada(e).replace(/[^a-zA-Z0-9]/g,'_');
+    pdf.save('entrada_'+nom+'.pdf');
+    toast('Entrada de '+nombreDeEntrada(e)+' descargada 📥');
+  });
 }
 // Descargar todas las entradas de un lote, cada una como PDF separado
 function descargarPDFLote(lote,comprador){
   if(!lote||!lote.length){toast('No se encontraron entradas');return}
   if(typeof window.jspdf==='undefined'){toast('Cargando librería PDF, probá de nuevo en un segundo');return}
   lote.sort(function(a,b){return a.num-b.num});
-  // Descargar cada una como PDF individual, con un pequeño delay entre cada una
-  lote.forEach(function(e,idx){
-    setTimeout(function(){
-      var jsPDF=window.jspdf.jsPDF;
-      var pdf=new jsPDF({unit:'mm',format:'a4'});
-      dibujarEntradaPDF(pdf,e);
-      var nom=nombreDeEntrada(e).replace(/[^a-zA-Z0-9]/g,'_');
-      pdf.save('entrada_'+nom+'.pdf');
-    },idx*600);
-  });
+  // Precargar ambos fondos y después generar cada PDF individual
+  _cargarBgEntrada('jugador',function(){_cargarBgEntrada('externa',function(){
+    lote.forEach(function(e,idx){
+      setTimeout(function(){
+        var tipo=((e.id.indexOf('jug-')===0)||e.pid)?'jugador':'externa';
+        var jsPDF=window.jspdf.jsPDF;
+        var pdf=new jsPDF({unit:'mm',format:[90,160]});
+        dibujarEntradaPDF(pdf,e,_bgEntrada[tipo]);
+        var nom=nombreDeEntrada(e).replace(/[^a-zA-Z0-9]/g,'_');
+        pdf.save('entrada_'+nom+'.pdf');
+      },idx*600);
+    });
+  });});
   toast('Descargando '+lote.length+' entrada(s)...');
 }
 function makeQRCanvas(text,size){
