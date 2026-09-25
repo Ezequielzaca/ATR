@@ -454,7 +454,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
       <div class="af-t">🏆 Placa de cuadro de Playoffs</div>
       <div class="fr"><select class="fs catsel" id="brFlyerCat" style="width:100%"></select></div>
       <div class="fr" style="gap:8px"><button class="fb" onclick="downloadBracketFlyer('principal')" style="margin:0">⬇ Play Off Principal</button></div>
-      <div class="fr" style="gap:8px;margin-bottom:0"><button class="fb" onclick="downloadBracketFlyer('second')" style="margin:0;background:linear-gradient(135deg,#c4b5fd,#a855f7)">⬇ Second Chance</button></div>
+      <div class="fr" style="gap:8px;margin-bottom:0"><button class="fb" onclick="downloadBracketFlyer('second')" style="margin:0;background:linear-gradient(135deg,#c4b5fd,#a855f7)">⬇ Copa Desafío</button></div>
     </div>
   </div>
   <!-- Entradas Fiesta (admin) -->
@@ -597,7 +597,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 <!-- Modal: Result -->
 <div class="mbg" id="mRes" onclick="if(event.target===this)clMod('mRes')"><div class="mdl">
   <div class="mh"><span class="mt">Cargar Resultado</span><button class="mx" onclick="clMod('mRes')">✕</button></div>
-  <div class="fr"><select class="fs" id="rCat" onchange="rPickCat()"><option value="">Categoría...</option></select><select class="fs" id="rFase" onchange="rPickFase()"><option value="grupos">Fase: Grupos</option><option value="cuartos">🏆 Cuartos (Principal)</option><option value="semis">🏆 Semifinal (Principal)</option><option value="final">🏆 Final (Principal)</option><option value="cuartos_c">🎗️ Cuartos (Second Chance)</option><option value="semis_c">🎗️ Semifinal (Second Chance)</option><option value="final_c">🎗️ Final (Second Chance)</option></select></div>
+  <div class="fr"><select class="fs" id="rCat" onchange="rPickCat()"><option value="">Categoría...</option></select><select class="fs" id="rFase" onchange="rPickFase()"><option value="grupos">Fase: Grupos</option><option value="cuartos">🏆 Cuartos (Principal)</option><option value="semis">🏆 Semifinal (Principal)</option><option value="final">🏆 Final (Principal)</option><option value="cuartos_c">🎗️ Cuartos (Copa Desafío)</option><option value="semis_c">🎗️ Semifinal (Copa Desafío)</option><option value="final_c">🎗️ Final (Copa Desafío)</option></select></div>
   <div class="fr" id="rGrpRow"><select class="fs" id="rGrp" onchange="rPickGrp()"><option value="">Grupo...</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option></select></div>
   <div class="fr"><select class="fs" id="rP1" onchange="syncOpp('rP1','rP2');rAutoWinner()"><option value="">J1...</option></select><span style="color:var(--tm);align-self:center;font-weight:700">VS</span><select class="fs" id="rP2" onchange="rAutoWinner()"><option value="">J2...</option></select></div>
   <div id="rNoOpp" style="display:none;font-size:.72rem;color:#d97706;background:rgba(245,158,11,.1);border-radius:8px;padding:8px 12px;margin-bottom:10px"></div>
@@ -649,7 +649,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
 <div class="mbg" id="mEdit" onclick="if(event.target===this)clMod('mEdit')"><div class="mdl">
   <div class="mh"><span class="mt">Editar Resultado</span><button class="mx" onclick="clMod('mEdit')">✕</button></div>
   <div style="font-size:.85rem;color:var(--t2);margin-bottom:14px;text-align:center" id="eMatchInfo"></div>
-  <div class="fr"><select class="fs" id="eFase"><option value="grupos">Fase: Grupos</option><option value="cuartos">🏆 Cuartos (Principal)</option><option value="semis">🏆 Semifinal (Principal)</option><option value="final">🏆 Final (Principal)</option><option value="cuartos_c">🎗️ Cuartos (Second Chance)</option><option value="semis_c">🎗️ Semifinal (Second Chance)</option><option value="final_c">🎗️ Final (Second Chance)</option></select></div>
+  <div class="fr"><select class="fs" id="eFase"><option value="grupos">Fase: Grupos</option><option value="cuartos">🏆 Cuartos (Principal)</option><option value="semis">🏆 Semifinal (Principal)</option><option value="final">🏆 Final (Principal)</option><option value="cuartos_c">🎗️ Cuartos (Copa Desafío)</option><option value="semis_c">🎗️ Semifinal (Copa Desafío)</option><option value="final_c">🎗️ Final (Copa Desafío)</option></select></div>
   <div class="fr"><input class="fi" id="eSc" placeholder="Score (ej: 6-3 6-4)"/></div>
   <div class="fr"><select class="fs" id="eW"><option value="">Ganador...</option><option value="1">Jugador 1</option><option value="2">Jugador 2</option></select></div>
   <div class="fr"><input type="date" class="fi" id="eDt"/></div>
@@ -724,7 +724,7 @@ var db=firebase.database();
 var MN=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 var DN=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 var CATS=['signature','oro','plata','bronce','madera','mujeres'];
-var FASE_L={grupos:'Grupos',cuartos:'Cuartos de Final',semis:'Semifinal',final:'Final',cuartos_c:'Cuartos (Repechaje)',semis_c:'Semifinal (Repechaje)',final_c:'Final (Repechaje)'};
+var FASE_L={grupos:'Grupos',cuartos:'Cuartos de Final',semis:'Semifinal',final:'Final',cuartos_c:'Cuartos (Copa Desafío)',semis_c:'Semifinal (Copa Desafío)',final_c:'Final (Copa Desafío)'};
 var FASE_PTS={cuartos:2,semis:3,final:5,cuartos_c:1,semis_c:2,final_c:3};
 var BADGE_TYPES={
   trebol:{emoji:'🍀',label:'Más Suerte'},
@@ -924,8 +924,8 @@ function rCModeTabs(){
   if(!selCat){mt.style.display='none';return}
   var completa=categoriaCompleta(selCat);
   // Si la categoría terminó la fase de grupos, ya no se muestra Cuadros; se pasa a Playoffs
-  var tabs=completa?[['playoffs','🏆 Play Off Principal'],['second','🎗️ Second Chance']]
-                   :[['cuadros','📋 Cuadros'],['playoffs','🏆 Play Off Principal'],['second','🎗️ Second Chance']];
+  var tabs=completa?[['playoffs','🏆 Play Off Principal'],['second','🎗️ Copa Desafío']]
+                   :[['cuadros','📋 Cuadros'],['playoffs','🏆 Play Off Principal'],['second','🎗️ Copa Desafío']];
   if(completa&&cView==='cuadros')cView='playoffs';
   mt.style.display='flex';
   mt.style.flexWrap='wrap';
@@ -1054,7 +1054,7 @@ function setCrossScheme(cat,val){
   crossScheme[cat]=val;db.ref('crossScheme').set(crossScheme);rGrid();toast('Esquema de cruce actualizado');
 }
 function setCrossSchemeC(cat,val){
-  crossSchemeC[cat]=val;db.ref('crossSchemeC').set(crossSchemeC);rGrid();toast('Esquema de repechaje actualizado');
+  crossSchemeC[cat]=val;db.ref('crossSchemeC').set(crossSchemeC);rGrid();toast('Esquema de Copa Desafío actualizado');
 }
 function setPlayoffVisible(v){
   playoffConfig.visible=v;db.ref('playoffConfig').set(playoffConfig);rCModeTabs();rCGrpTabs();rGrid();
@@ -1062,7 +1062,7 @@ function setPlayoffVisible(v){
 }
 function setRepechajeVisible(v){
   playoffConfig.repechajeVisible=v;db.ref('playoffConfig').set(playoffConfig);rGrid();
-  toast(v?'Repechaje visible':'Repechaje oculto');
+  toast(v?'Copa Desafío visible':'Copa Desafío oculta');
 }
 // Genera los cruces proyectados de un cuadro. posHi/posLo = posiciones que se cruzan (1&2 principal, 3&4 repechaje)
 function renderBracketQuarters(cat,opts){
@@ -1112,7 +1112,7 @@ function renderProjectedQuarters(cat){
   return renderBracketQuarters(cat,{titulo:'⚡ Cruces Proyectados de Cuartos (1° y 2°)',posHi:1,posLo:2,esScheme:crossScheme,setFn:'setCrossScheme',faseCuartos:'cuartos'});
 }
 function renderConsolationQuarters(cat){
-  return renderBracketQuarters(cat,{titulo:'🎗️ Repechaje — Cruces de 3° y 4°',posHi:3,posLo:4,esScheme:crossSchemeC,setFn:'setCrossSchemeC',faseCuartos:'cuartos_c'});
+  return renderBracketQuarters(cat,{titulo:'🎗️ Copa Desafío — Cruces de 3° y 4°',posHi:3,posLo:4,esScheme:crossSchemeC,setFn:'setCrossSchemeC',faseCuartos:'cuartos_c'});
 }
 function buildBracket(cat,esPrincipal){
   var groups=['A','B','C','D'];
@@ -1171,6 +1171,21 @@ function buildBracket(cat,esPrincipal){
   };
   return {qf:qfSlots,sf:[sf1,sf2],final:finalSlot,champ:fWin};
 }
+function _pairMatch(a,b,x,y){return (a&&b)&&((a===x&&b===y)||(a===y&&b===x));}
+// Detecta la fase real de playoff de un cruce mirando la llave (ambos cuadros).
+// Sirve para corregir un partido guardado con la fase equivocada (ej: una semi que quedó como cuartos).
+function detectPlayoffFase(cat,p1id,p2id){
+  for(var k=0;k<2;k++){
+    var esP=(k===0);
+    var b=buildBracket(cat,esP);
+    if(!b)continue;
+    var fC=esP?'cuartos':'cuartos_c', fS=esP?'semis':'semis_c', fF=esP?'final':'final_c';
+    for(var i=0;i<b.qf.length;i++){if(_pairMatch(b.qf[i].top.pid,b.qf[i].bot.pid,p1id,p2id))return fC;}
+    for(var j=0;j<b.sf.length;j++){var s=b.sf[j];if(s.p1&&s.p2&&_pairMatch(s.p1.id,s.p2.id,p1id,p2id))return fS;}
+    if(b.final.p1&&b.final.p2&&_pairMatch(b.final.p1.id,b.final.p2.id,p1id,p2id))return fF;
+  }
+  return null;
+}
 function shortNm(nm){
   if(!nm)return '—';
   if(nm.length<=16)return nm;
@@ -1228,7 +1243,7 @@ function renderBracketSVG(cat,esPrincipal){
   // Campeón
   var champHtml='';
   if(b.champ){
-    champHtml='<div style="background:linear-gradient(135deg,#1e3a8a,#7c3aed);border-radius:var(--r);padding:16px;text-align:center;margin-top:12px"><div style="font-size:1.5rem">🏆</div><div style="font-size:.58rem;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:2px;margin:3px 0">'+(esPrincipal?'Campeón':'Campeón Second Chance')+' '+CL[cat]+'</div><div style="font-size:1.1rem;font-weight:800;color:#fff">'+b.champ.nm+'</div></div>';
+    champHtml='<div style="background:linear-gradient(135deg,#1e3a8a,#7c3aed);border-radius:var(--r);padding:16px;text-align:center;margin-top:12px"><div style="font-size:1.5rem">🏆</div><div style="font-size:.58rem;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:2px;margin:3px 0">'+(esPrincipal?'Campeón':'Campeón Copa Desafío')+' '+CL[cat]+'</div><div style="font-size:1.1rem;font-weight:800;color:#fff">'+b.champ.nm+'</div></div>';
   }
   return '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:14px 10px;margin-bottom:12px"><div style="min-width:660px">'+svg+'</div></div>'+champHtml;
 }
@@ -1236,7 +1251,7 @@ function rPlayoffsPanel(modo){
   // modo: 'principal' (1° y 2°) | 'second' (3° y 4°)
   var esPrincipal=(modo!=='second');
   var fasesModo=esPrincipal?['cuartos','semis','final']:['cuartos_c','semis_c','final_c'];
-  var titulo=esPrincipal?'🏆 Play Off Principal (1° y 2°)':'🎗️ Second Chance (3° y 4°)';
+  var titulo=esPrincipal?'🏆 Play Off Principal (1° y 2°)':'🎗️ Copa Desafío (3° y 4°)';
   var html='<div class="slbl">'+titulo+'</div>';
   // Bracket visual (llave de competición)
   html+=renderBracketSVG(selCat,esPrincipal);
@@ -1296,7 +1311,7 @@ function rPlayoffsPanel(modo){
 function rPlayoffs(esPrincipal){
   var fases=esPrincipal?['cuartos','semis','final']:['cuartos_c','semis_c','final_c'];
   var icons=esPrincipal?{cuartos:'🎾',semis:'🥎',final:'🏆'}:{cuartos_c:'🎾',semis_c:'🥎',final_c:'🎗️'};
-  var campeonLabel=esPrincipal?'Campeón':'Campeón Second Chance';
+  var campeonLabel=esPrincipal?'Campeón':'Campeón Copa Desafío';
   var html='';
   fases.forEach(function(f){
     var matches=results.filter(function(r){return r.cat===selCat&&r.fase===f}).sort(function(a,b){return(a.fecha||'').localeCompare(b.fecha||'')});
@@ -1791,6 +1806,8 @@ function saveRes(){
   var cat=document.getElementById('rCat').value,p1id=document.getElementById('rP1').value,p2id=document.getElementById('rP2').value;
   var score=document.getElementById('rSc').value.trim(),winner=parseInt(document.getElementById('rW').value),fecha=document.getElementById('rDt').value;
   var fase=document.getElementById('rFase').value||'grupos';
+  // Si es un partido de playoff, corregir la fase según la llave real (evita que una semi quede como cuartos).
+  if(fase!=='grupos'&&cat&&p1id&&p2id&&p1id!==p2id){var _df=detectPlayoffFase(cat,p1id,p2id);if(_df)fase=_df;}
   if(!cat||!p1id||!p2id||!fecha||p1id===p2id){toast('Completá todos los campos');return}
   if(!score||!winner){toast('Cargá un score válido para detectar el ganador');return}
   var vs=validateScore(score);
@@ -1922,6 +1939,8 @@ function saveSch(){
   var date=document.getElementById('sDt').value,time=document.getElementById('sTm').value,court=document.getElementById('sCo').value;
   if(!cat||!p1id||!p2id||!date||!time||!court||p1id===p2id){toast('Completá todos los campos');return}
   var fase=_schedFase||'grupos';
+  // Si es un cruce de playoff, corregir la fase según la llave real.
+  if(fase!=='grupos'){var _df=detectPlayoffFase(cat,p1id,p2id);if(_df)fase=_df;}
   // ── ¿Ya se jugó este partido? ──
   var yaJugado=results.find(function(r){
     if(r.cat!==cat)return false;
@@ -1946,11 +1965,11 @@ function saveSch(){
   }
   var p1=parts.find(function(p){return p.id===p1id}),p2=parts.find(function(p){return p.id===p2id});
   var entry={date:date,time:time,court:parseInt(court),cat:cat,p1id:p1id,p2id:p2id,p1:p1.apellido+' '+p1.nombre,p2:p2.apellido+' '+p2.nombre};
-  if(_schedFase&&_schedFase!=='grupos')entry.fase=_schedFase;
+  if(fase&&fase!=='grupos')entry.fase=fase;
   schedule.push(entry);
   db.ref('programacion').set(schedule);clMod('mSch');rCal();rUp();
   logAction('Programó partido',entry.p1+' vs '+entry.p2+' — '+CL[cat]+' ('+date+(time?' '+time:'')+')');
-  toast(_schedFase!=='grupos'?'Cruce de '+FASE_L[_schedFase]+' programado':'Partido programado');
+  toast(fase!=='grupos'?'Cruce de '+FASE_L[fase]+' programado':'Partido programado');
   _schedFase='grupos';
 }
 
@@ -2625,7 +2644,7 @@ function rPlayoffStatus(){
     html+='<div style="font-weight:700;font-size:.85rem;margin-bottom:8px"><span class="lb l-'+CS[cat]+'" style="font-size:.55rem">'+CL[cat]+'</span></div>';
     cuadros.forEach(function(c){
       if(c.jugados===0&&c.programados===0)return;
-      var nombre=c.cuadro==='principal'?'🏆 Principal':'🎗️ Second Chance';
+      var nombre=c.cuadro==='principal'?'🏆 Principal':'🎗️ Copa Desafío';
       var champTxt=c.champ?' · 🏆 '+c.champ.nm:'';
       html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;font-size:.78rem;border-top:1px solid var(--brd)">';
       html+='<span style="color:var(--t2)">'+nombre+'</span>';
