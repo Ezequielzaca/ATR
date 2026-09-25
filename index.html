@@ -3657,6 +3657,9 @@ function saveEdit(){
   if(!score||!winner||!fecha){toast('Completá todos los campos');return}
   var ve=validateScore(score);
   if(!ve.ok){toast(ve.error);return}
+  // Si es un partido de playoff, corregir la fase según la llave real (ej: Pipa vs Mariano pasa a semis solo).
+  var _er=results[editIdx];
+  if(fase!=='grupos'&&_er){var _df=detectPlayoffFase(_er.cat,_er.p1id,_er.p2id);if(_df)fase=_df;}
   results[editIdx].score=score;results[editIdx].winner=winner;results[editIdx].fecha=fecha;results[editIdx].fase=fase;
   logAction('Editó resultado',results[editIdx].p1+' vs '+results[editIdx].p2+' → '+score+' ('+FASE_L[fase]+')');
   db.ref('resultados').set(results);clMod('mEdit');rAdmPanel();rRes();
