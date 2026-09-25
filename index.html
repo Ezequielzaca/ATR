@@ -1171,20 +1171,39 @@ function buildBracket(cat,esPrincipal){
   };
   return {qf:qfSlots,sf:[sf1,sf2],final:finalSlot,champ:fWin};
 }
-function _pairMatch(a,b,x,y){return (a&&b)&&((a===x&&b===y)||(a===y&&b===x));}
-// Detecta la fase real de playoff de un cruce mirando la llave (ambos cuadros).
-// Sirve para corregir un partido guardado con la fase equivocada (ej: una semi que quedó como cuartos).
+// ¿El jugador es 3° o 4° de su grupo? (cuadro Copa Desafío)
+function _esCopa(cat,pid){
+  var pp=parts.find(function(p){return p.id===pid});
+  if(!pp||!pp.grupo)return false;
+  var arr=computeGroupStandings(cat,pp.grupo);
+  for(var i=0;i<arr.length;i++){if(arr[i].id===pid)return i>=2;}
+  return false;
+}
+// Detecta la fase real de playoff contando las rondas que ya ganó cada jugador.
+// Es a prueba de cruces raros o partidos mal etiquetados: no mira la llave proyectada,
+// mira cuántos partidos de playoff ganó cada uno antes de este.
+//  - los dos con 0 victorias previas → cuartos
+//  - los dos con 1 victoria previa   → semis (ya ganaron su cuarto)
+//  - los dos con 2 victorias previas → final (ganaron cuarto + semi)
 function detectPlayoffFase(cat,p1id,p2id){
-  for(var k=0;k<2;k++){
-    var esP=(k===0);
-    var b=buildBracket(cat,esP);
-    if(!b)continue;
-    var fC=esP?'cuartos':'cuartos_c', fS=esP?'semis':'semis_c', fF=esP?'final':'final_c';
-    for(var i=0;i<b.qf.length;i++){if(_pairMatch(b.qf[i].top.pid,b.qf[i].bot.pid,p1id,p2id))return fC;}
-    for(var j=0;j<b.sf.length;j++){var s=b.sf[j];if(s.p1&&s.p2&&_pairMatch(s.p1.id,s.p2.id,p1id,p2id))return fS;}
-    if(b.final.p1&&b.final.p2&&_pairMatch(b.final.p1.id,b.final.p2.id,p1id,p2id))return fF;
-  }
-  return null;
+  var isC=null, wins1=0, wins2=0;
+  results.forEach(function(r){
+    if(r.cat!==cat)return;
+    var f=r.fase||'grupos';
+    if(f==='grupos')return;
+    var inv1=(r.p1id===p1id||r.p2id===p1id), inv2=(r.p1id===p2id||r.p2id===p2id);
+    if(!inv1&&!inv2)return;
+    if(isC===null)isC=(f.indexOf('_c')>=0); // el sufijo _c define el cuadro
+    // No contar el propio partido que estamos clasificando
+    if((r.p1id===p1id&&r.p2id===p2id)||(r.p1id===p2id&&r.p2id===p1id))return;
+    var winId=r.winner===1?r.p1id:r.p2id;
+    if(winId===p1id)wins1++;
+    if(winId===p2id)wins2++;
+  });
+  if(isC===null)isC=_esCopa(cat,p1id)&&_esCopa(cat,p2id);
+  var lvl=Math.min(wins1,wins2);
+  var fase=lvl>=2?'final':(lvl>=1?'semis':'cuartos');
+  return isC?fase+'_c':fase;
 }
 function shortNm(nm){
   if(!nm)return '—';
