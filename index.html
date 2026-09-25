@@ -2327,13 +2327,20 @@ var _bgEntrada={jugador:null,externa:null};
 function precargarBgEntradas(){ _cargarBgEntrada('jugador',function(){}); _cargarBgEntrada('externa',function(){}); }
 function _cargarBgEntrada(tipo,cb){
   if(_bgEntrada[tipo]){cb(_bgEntrada[tipo]);return;}
-  var img=new Image();
-  img.onload=function(){
-    try{var c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;c.getContext('2d').drawImage(img,0,0);_bgEntrada[tipo]=c.toDataURL('image/jpeg',0.9);}catch(err){_bgEntrada[tipo]=null;}
-    cb(_bgEntrada[tipo]);
-  };
-  img.onerror=function(){cb(null)};
-  img.src='bg-entrada-'+tipo+'.jpg';
+  // Prueba varias extensiones por si el archivo quedó como .jpg.webp, .webp, etc.
+  var cands=['bg-entrada-'+tipo+'.jpg','bg-entrada-'+tipo+'.jpg.webp','bg-entrada-'+tipo+'.webp','bg-entrada-'+tipo+'.png','bg-entrada-'+tipo+'.jpeg'];
+  var i=0;
+  function tryNext(){
+    if(i>=cands.length){cb(null);return;}
+    var img=new Image();
+    img.onload=function(){
+      try{var c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;c.getContext('2d').drawImage(img,0,0);_bgEntrada[tipo]=c.toDataURL('image/jpeg',0.9);}catch(err){_bgEntrada[tipo]=null;}
+      if(_bgEntrada[tipo]){cb(_bgEntrada[tipo]);}else{i++;tryNext();}
+    };
+    img.onerror=function(){i++;tryNext();};
+    img.src=cands[i];
+  }
+  tryNext();
 }
 // Coordenadas del marco del QR (fracción del alto/ancho) medidas sobre las plantillas
 var _frameQR={jugador:{cx:0.499,cy:0.577,w:0.399},externa:{cx:0.499,cy:0.577,w:0.399}};
