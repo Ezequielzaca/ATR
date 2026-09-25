@@ -462,10 +462,9 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Entradas Fiesta</span></div>
     <button class="fb" onclick="openScannerFiesta()" style="margin-bottom:16px">📷 Escanear entrada de fiesta</button>
     <div class="af">
-      <div class="af-t">🎉 Nueva venta de entradas</div>
-      <div class="fr"><input class="fi" id="fstNombre" placeholder="Nombre y apellido del comprador"/></div>
-      <div class="fr"><input class="fi" id="fstCant" type="number" min="1" max="50" placeholder="Cantidad de entradas" value="1"/></div>
-      <button class="fb" onclick="crearEntradasFiesta()">Generar entradas</button>
+      <div class="af-t">🎉 Cargar entradas</div>
+      <div class="fr" style="align-items:stretch"><input class="fi" id="fstCant" type="number" min="1" max="50" placeholder="¿Cuántas entradas vas a cargar?" value="1" style="flex:1"/><button onclick="prepararEntradasFiesta()" style="flex-shrink:0;padding:0 16px;border-radius:var(--rs);border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);font-weight:700;cursor:pointer">Preparar ▾</button></div>
+      <div id="fstNombresWrap"></div>
     </div>
     <div id="fstResumen" style="margin-bottom:14px"></div>
     <div style="position:relative;margin-bottom:10px">
@@ -2056,24 +2055,40 @@ var entradasFiesta=[]; // [{id,comprador,num,total,usada,ts}]
 var fstFilterVal='todos'; // todos | sinusar | intermedio | completo
 db.ref('entradasFiesta').on('value',function(s){entradasFiesta=s.val()||[];if(document.getElementById('sub-fiesta')&&document.getElementById('sub-fiesta').style.display!=='none')rFiesta()});
 function fiestaInit(){rFiesta()}
-function crearEntradasFiesta(){
-  var nombre=document.getElementById('fstNombre').value.trim();
+// Paso 1: preguntar cuántas y desplegar un campo de nombre por cada una
+function prepararEntradasFiesta(){
   var cant=parseInt(document.getElementById('fstCant').value);
-  if(!nombre){toast('Escribí el nombre del comprador');return}
   if(!cant||cant<1||cant>50){toast('Cantidad inválida (1 a 50)');return}
-  var baseId=Date.now().toString(36);
-  var nuevas=[];
+  var w=document.getElementById('fstNombresWrap');if(!w)return;
+  var h='<div style="font-size:.68rem;color:var(--tm);margin:6px 0 8px">Escribí nombre y apellido de cada entrada:</div>';
   for(var i=1;i<=cant;i++){
-    nuevas.push({id:baseId+'-'+i, comprador:nombre, num:i, total:cant, usada:false, ts:Date.now()});
+    h+='<div class="fr"><input class="fi fstNom" data-i="'+i+'" placeholder="'+i+'. Nombre y apellido" onkeydown="if(event.key===\'Enter\'){var n=this.parentNode.nextElementSibling;var x=n&&n.querySelector(\'.fstNom\');if(x)x.focus();}"/></div>';
   }
+  h+='<button class="fb" onclick="generarEntradasFiestaMult()">Generar '+cant+' entrada'+(cant>1?'s':'')+'</button>';
+  w.innerHTML=h;
+  var first=w.querySelector('.fstNom');if(first)first.focus();
+}
+// Paso 2: crear una entrada independiente por cada nombre (1 PDF cada una) y registrar quién la cargó
+function generarEntradasFiestaMult(){
+  var inputs=document.querySelectorAll('#fstNombresWrap .fstNom');
+  if(!inputs.length){toast('Primero tocá Preparar');return}
+  var nombres=[],faltan=false;
+  inputs.forEach(function(inp){var v=inp.value.trim();if(!v)faltan=true;else nombres.push(v);});
+  if(faltan||!nombres.length){toast('Completá todos los nombres');return}
+  var quien=currentActor();
+  var nuevas=[];
+  nombres.forEach(function(nom,idx){
+    var baseId=(Date.now()+idx).toString(36);
+    nuevas.push({id:baseId+'-1', comprador:nom, nombre:nom, num:1, total:1, usada:false, ts:Date.now()+idx, cargadoPor:quien});
+  });
   entradasFiesta=entradasFiesta.concat(nuevas);
   db.ref('entradasFiesta').set(entradasFiesta);
-  logAction('Generó entradas de fiesta',cant+' entrada(s) para '+nombre);
-  document.getElementById('fstNombre').value='';
+  logAction('Cargó entradas de fiesta',nuevas.length+' entrada(s): '+nombres.join(', '));
   document.getElementById('fstCant').value='1';
-  toast('✓ '+cant+' entrada(s) generada(s)');
-  // Ofrecer descarga inmediata del PDF
-  setTimeout(function(){descargarPDFFiesta(baseId,nombre)},400);
+  document.getElementById('fstNombresWrap').innerHTML='';
+  toast('✓ '+nuevas.length+' entrada(s) cargada(s) por '+quien);
+  // Descargar cada una como su propio PDF
+  setTimeout(function(){descargarPDFLote(nuevas,'entradas')},400);
 }
 function rFiesta(){
   var el=document.getElementById('fstList');if(!el)return;
@@ -2181,7 +2196,8 @@ function rFiesta(){
       var us=g.entradas.filter(function(e){return e.usada}).length;
       var tot=g.entradas.length;
       html+='<div style="background:var(--card);border:1px solid var(--brd);border-radius:var(--r);padding:14px;margin-bottom:10px">';
-      html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px"><div><div style="font-weight:700;font-size:.9rem">'+g.comprador+'</div><div style="font-size:.68rem;color:var(--tm)">'+us+' de '+tot+' usadas</div></div>';
+      var cargBy=g.entradas[0].cargadoPor;
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px"><div><div style="font-weight:700;font-size:.9rem">'+g.comprador+'</div><div style="font-size:.68rem;color:var(--tm)">'+us+' de '+tot+' usadas'+(cargBy?' · cargó: '+cargBy:'')+'</div></div>';
       html+='<button onclick="descargarPDFFiesta(\''+g.baseId+'\',\''+g.comprador.replace(/'/g,"")+'\')" style="padding:8px 12px;border-radius:8px;border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);font-size:.7rem;font-weight:700;cursor:pointer;flex-shrink:0">⬇ PDF</button>';
       html+='<button onclick="eliminarLoteFiesta(\''+g.baseId+'\',\''+g.comprador.replace(/'/g,"")+'\')" title="Eliminar toda la venta" style="padding:8px 10px;border-radius:8px;border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.08);color:#f87171;font-size:.7rem;font-weight:700;cursor:pointer;flex-shrink:0">✕</button></div>';
       html+='<div style="display:flex;flex-wrap:wrap;gap:6px">';
@@ -3498,7 +3514,7 @@ function updAdmUI(){
   var addForm=document.querySelector('#sub-part .af');
   if(addForm)addForm.style.display=isAdmin?'block':'none';
   var entBtn=document.getElementById('entradaBtn');
-  if(entBtn)entBtn.style.display=isAdmin?'flex':'none';
+  if(entBtn)entBtn.style.display='none'; // Entradas del torneo ocultas — solo se usa la fiesta
   var pagBtn=document.getElementById('pagosBtn');
   if(pagBtn)pagBtn.style.display=isAdmin?'flex':'none';
   var balBtn=document.getElementById('balanceBtn');
@@ -3521,7 +3537,7 @@ function updAdmUI(){
   if(admMBtn)admMBtn.style.display=isAdmin?'flex':'none';
   ['secGestion','secFiesta','secHerr'].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display=isAdmin?'flex':'none'});
   var miEntBtn=document.getElementById('miEntradaBtn');
-  if(miEntBtn)miEntBtn.style.display=curUser?'flex':'none';
+  if(miEntBtn)miEntBtn.style.display='none'; // Mi Entrada (torneo) oculta — solo se usa la fiesta
   // Update login button text
   var cBtn=document.getElementById('loginBtnTxt'),cSub=document.getElementById('loginBtnSub');
   if(cBtn&&curUser){cBtn.textContent=curUser.nombre;cSub.textContent='Sesión activa — '+CL[curUser.cat]}
