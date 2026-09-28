@@ -2468,6 +2468,8 @@ function rFlyerList(){
 }
 function downloadFlyer(idx){
   var m=window._flyerMatches[idx];if(!m)return;
+  // Si es un partido de playoff, usar el modelo (cuartos/semis/final) con los dos nombres
+  if(m.fase&&m.fase!=='grupos'){generarPlacaModelo(m.fase,m.p1,m.p2);return;}
   var W=1080,H=1920;
   var canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
   var ctx=canvas.getContext('2d');
@@ -2578,27 +2580,30 @@ function _drawPlacaNombre(ctx,name,lineY,W,H){
   while(ctx.measureText(name).width>W*0.82&&fs>16){fs-=2;ctx.font='bold '+fs+'px Outfit,Arial,sans-serif';}
   ctx.fillText(name,W/2,lineY-Math.round(H*0.008));
 }
-function downloadPlacaCruce(idx){
-  var c=window._placaCruces[idx];if(!c)return;
+function generarPlacaModelo(fase,n1,n2){
   var img=new Image();
   img.onload=function(){
     var W=img.naturalWidth,H=img.naturalHeight;
     var canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
     var ctx=canvas.getContext('2d');
     ctx.drawImage(img,0,0,W,H);
-    _drawPlacaNombre(ctx,c.n1,_modeloLineas.l1*H,W,H);
-    _drawPlacaNombre(ctx,c.n2,_modeloLineas.l2*H,W,H);
+    _drawPlacaNombre(ctx,n1,_modeloLineas.l1*H,W,H);
+    _drawPlacaNombre(ctx,n2,_modeloLineas.l2*H,W,H);
     canvas.toBlob(function(blob){
       var url=URL.createObjectURL(blob);
       var a=document.createElement('a');a.href=url;
-      a.download='placa_'+c.n1.split(' ')[0]+'_vs_'+c.n2.split(' ')[0]+'.png';
+      a.download='placa_'+(n1||'').split(' ')[0]+'_vs_'+(n2||'').split(' ')[0]+'.png';
       document.body.appendChild(a);a.click();document.body.removeChild(a);
       setTimeout(function(){URL.revokeObjectURL(url)},1000);
     },'image/png');
     toast('Placa descargada 📥');
   };
   img.onerror=function(){toast('No se pudo cargar el modelo')};
-  img.src=modeloDeFase(c.fase);
+  img.src=modeloDeFase(fase);
+}
+function downloadPlacaCruce(idx){
+  var c=window._placaCruces[idx];if(!c)return;
+  generarPlacaModelo(c.fase,c.n1,c.n2);
 }
 function downloadBracketFlyer(modo){
   var cat=document.getElementById('brFlyerCat').value;
