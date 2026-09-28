@@ -883,7 +883,7 @@ function rUp(){
     var timeDisplay=m.time||'A definir';
     var courtDisplay=m.court||'-';
     var crtClass=m.court?('crt c'+m.court):'crt';
-    var faseBadge=(m.fase&&m.fase!=='grupos')?'<span class="lb" style="background:linear-gradient(135deg,#1e3a8a,#7c3aed);color:#fff;font-size:.5rem;margin-left:4px">'+(m.fase==='final'?'🏆 FINAL':m.fase==='semis'?'SEMI':'4TOS')+'</span>':'';
+    var faseBadge=(m.fase&&m.fase!=='grupos')?'<span class="lb" style="background:linear-gradient(135deg,#1e3a8a,#7c3aed);color:#fff;font-size:.5rem;margin-left:4px">'+((m.fase||'').indexOf('final')===0?'🏆 FINAL':(m.fase||'').indexOf('semis')===0?'SEMI':'4TOS')+'</span>':'';
     html+='<div class="up-card"><div class="up-time">'+timeDisplay+'</div><div class="'+crtClass+'"><span>'+courtDisplay+'</span><small>cancha</small></div><div style="flex:1;min-width:0"><div class="up-pl">'+m.p1+' vs '+m.p2+'</div><div><span class="lb l-'+CS[m.cat]+'">'+CL[m.cat]+'</span>'+faseBadge+'</div></div>'+admPlus+'</div>';
   });
   el.innerHTML=html;
@@ -1705,7 +1705,7 @@ function rRes(){
   var html='';Object.keys(byD).sort().reverse().forEach(function(f){
     var dp=f.split('-'),dO=new Date(dp[0],dp[1]-1,dp[2]),dn=DN[dO.getDay()];
     var h='<div class="rc"><div class="rd">'+dn+' '+dp[2]+' de '+MN[dO.getMonth()]+' '+dp[0]+'</div>';
-    byD[f].forEach(function(m){var faseBadge=(m.fase&&m.fase!=='grupos')?'<span class="lb" style="background:linear-gradient(135deg,#1e3a8a,#7c3aed);color:#fff;flex-shrink:0;font-size:.5rem">'+(m.fase==='final'?'🏆 FINAL':m.fase==='semis'?'SEMI':'4TOS')+'</span>':'';h+='<div class="rm"><span class="lb l-'+CS[m.cat]+'" style="flex-shrink:0">'+CL[m.cat]+'</span>'+faseBadge+'<span class="rp"><span class="'+(m.winner===1?'rw':'')+'">'+m.p1+'</span> vs <span class="'+(m.winner===2?'rw':'')+'">'+m.p2+'</span></span><span class="rsc">'+m.score+'</span></div>'});
+    byD[f].forEach(function(m){var faseBadge=(m.fase&&m.fase!=='grupos')?'<span class="lb" style="background:linear-gradient(135deg,#1e3a8a,#7c3aed);color:#fff;flex-shrink:0;font-size:.5rem">'+((m.fase||'').indexOf('final')===0?'🏆 FINAL':(m.fase||'').indexOf('semis')===0?'SEMI':'4TOS')+'</span>':'';h+='<div class="rm"><span class="lb l-'+CS[m.cat]+'" style="flex-shrink:0">'+CL[m.cat]+'</span>'+faseBadge+'<span class="rp"><span class="'+(m.winner===1?'rw':'')+'">'+m.p1+'</span> vs <span class="'+(m.winner===2?'rw':'')+'">'+m.p2+'</span></span><span class="rsc">'+m.score+'</span></div>'});
     h+='</div>';html+=h;
   });
   el.innerHTML=html;
@@ -3639,7 +3639,7 @@ function rVencidos(){
   venc.forEach(function(m,idx){
     var dp=m.date.split('-'),dO=new Date(dp[0],dp[1]-1,dp[2]),dn=DN[dO.getDay()];
     var fechaTxt=dn+' '+dp[2]+'/'+dp[1];
-    var faseBadge=(m.fase&&m.fase!=='grupos')?'<span class="lb" style="background:linear-gradient(135deg,#1e3a8a,#7c3aed);color:#fff;font-size:.5rem;margin-left:4px">'+(m.fase==='final'?'🏆 FINAL':m.fase==='semis'?'SEMI':'4TOS')+'</span>':'';
+    var faseBadge=(m.fase&&m.fase!=='grupos')?'<span class="lb" style="background:linear-gradient(135deg,#1e3a8a,#7c3aed);color:#fff;font-size:.5rem;margin-left:4px">'+((m.fase||'').indexOf('final')===0?'🏆 FINAL':(m.fase||'').indexOf('semis')===0?'SEMI':'4TOS')+'</span>':'';
     html+='<div style="background:var(--card);border:1.5px solid rgba(245,158,11,.35);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px">';
     html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:.6rem;font-weight:700;color:#d97706;background:rgba(245,158,11,.12);padding:2px 8px;border-radius:10px">⏰ '+fechaTxt+'</span><span class="lb l-'+CS[m.cat]+'" style="font-size:.5rem">'+CL[m.cat]+'</span>'+faseBadge+'</div>';
     html+='<div style="font-size:.85rem;font-weight:600;margin-bottom:10px">'+m.p1+' <span style="color:var(--tm);font-weight:400">vs</span> '+m.p2+'</div>';
