@@ -330,6 +330,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div class="msec" id="secFiesta" style="display:none">Fiesta y entradas</div>
     <div class="mi" id="entradaBtn" style="display:none" onclick="subPg('entrada')"><div class="mic" style="background:linear-gradient(135deg,#0284c7,#1e3a8a)">🎟️</div><div><div class="mit">Entradas del torneo</div><div class="mid">Escanear QR de jugadores</div></div></div>
     <div class="mi" id="fiestaBtn" style="display:none" onclick="subPg('fiesta')"><div class="mic" style="background:linear-gradient(135deg,#ec4899,#a855f7)">🎉</div><div><div class="mit">Entradas Fiesta</div><div class="mid">Generar QR y controlar acceso</div></div></div>
+    <div class="mi" id="ticketsBtn" style="display:none" onclick="subPg('tickets')"><div class="mic" style="background:linear-gradient(135deg,#10b981,#059669)">🎟️</div><div><div class="mit">Tickets de Fiesta</div><div class="mid">Marcar entrega de tickets</div></div></div>
     <div class="mi" id="flyerBtn" style="display:none" onclick="subPg('flyers')"><div class="mic" style="background:linear-gradient(135deg,#7dd3fc,#c4b5fd)">🖼️</div><div><div class="mit">Placas de partidos</div><div class="mid">Versus y cuadros para compartir</div></div></div>
 
     <div class="msec" id="secHerr" style="display:none">Herramientas</div>
@@ -465,7 +466,8 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
   <!-- Entradas Fiesta (admin) -->
   <div id="sub-fiesta" style="display:none">
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Entradas Fiesta</span></div>
-    <button class="fb" onclick="openScannerFiesta()" style="margin-bottom:16px">📷 Escanear entrada de fiesta</button>
+    <div class="fr" style="gap:8px"><button class="fb" onclick="openScannerFiesta()" style="margin:0;flex:1">📷 Escanear entrada</button><button onclick="descargarListaEntradas()" style="flex:1;padding:12px;border-radius:var(--rs);border:1px solid var(--acc2,#c4b5fd);background:rgba(196,181,253,.12);color:var(--acc2,#c4b5fd);font-weight:700;cursor:pointer">⬇ Descargar lista</button></div>
+    <div style="height:16px"></div>
     <div class="af">
       <div class="af-t">🎉 Cargar entradas</div>
       <div class="fr" style="align-items:stretch"><input class="fi" id="fstCant" type="number" min="1" max="50" placeholder="¿Cuántas entradas vas a cargar?" value="1" style="flex:1"/><button onclick="prepararEntradasFiesta()" style="flex-shrink:0;padding:0 16px;border-radius:var(--rs);border:1px solid var(--acc);background:var(--acc-d);color:var(--acc);font-weight:700;cursor:pointer">Preparar ▾</button></div>
@@ -479,6 +481,12 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-he
     <div class="ctabs" id="fstViewTabs" style="margin-bottom:10px"></div>
     <div class="ctabs" id="fstFilter" style="margin-bottom:14px"></div>
     <div id="fstList"></div>
+  </div>
+  <!-- Tickets de Fiesta: estimado (admin) -->
+  <div id="sub-tickets" style="display:none">
+    <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Tickets de Fiesta</span></div>
+    <div style="font-size:.72rem;color:var(--tm);margin-bottom:14px">Cálculo de tickets a entregar: 4 por persona (según las entradas cargadas).</div>
+    <div id="tkEstim"></div>
   </div>
   <div id="sub-part" style="display:none">
     <div class="sub-h"><button class="bk" onclick="backMas()">‹</button><span class="sub-t">Participantes</span></div>
@@ -2062,6 +2070,86 @@ var fstFilterVal='todos'; // todos | sinusar | intermedio | completo
 var fstView='jugadores'; // jugadores | externas — separa las dos listas
 db.ref('entradasFiesta').on('value',function(s){entradasFiesta=s.val()||[];if(document.getElementById('sub-fiesta')&&document.getElementById('sub-fiesta').style.display!=='none')rFiesta()});
 function fiestaInit(){precargarBgEntradas();rFiesta()}
+// Descarga un PDF con todas las entradas cargadas (solo lectura, NO modifica la base)
+function descargarListaEntradas(){
+  if(!entradasFiesta.length){toast('No hay entradas cargadas');return}
+  if(typeof window.jspdf==='undefined'){toast('Cargando librería PDF, probá de nuevo en un segundo');return}
+  var esJug=function(e){return e.id.indexOf('jug-')===0};
+  var jug=entradasFiesta.filter(esJug), ext=entradasFiesta.filter(function(e){return !esJug(e)});
+  function nombrePart(pid){var p=parts.find(function(x){return x.id===pid});return p?p.apellido+' '+p.nombre:'';}
+  jug.sort(function(a,b){return (nombrePart(a.pid)+a.num).localeCompare(nombrePart(b.pid)+b.num)});
+  ext.sort(function(a,b){return (a.ts||0)-(b.ts||0)});
+  var jsPDF=window.jspdf.jsPDF;
+  var pdf=new jsPDF({unit:'mm',format:'a4'});
+  var PW=210, M=14, y=0;
+  // columnas: N° | Nombre | Tipo | Cat | Estado
+  var cols=[{x:M,w:10},{x:M+10,w:78},{x:M+88,w:38},{x:M+126,w:28},{x:M+154,w:28}];
+  var heads=['#','Nombre','Tipo','Categoría','Estado'];
+  function header(){
+    pdf.setFillColor(10,14,36);pdf.rect(0,0,PW,26,'F');
+    pdf.setTextColor(125,211,252);pdf.setFont(undefined,'bold');pdf.setFontSize(15);
+    pdf.text('TENIS ATR 2026 — Entradas de Fiesta',M,13);
+    pdf.setTextColor(165,180,214);pdf.setFont(undefined,'normal');pdf.setFontSize(9);
+    var d=new Date();pdf.text('Generado: '+('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear()+'  ·  Total: '+(jug.length+ext.length)+' entradas',M,20);
+    y=34;
+  }
+  function filaHead(titulo){
+    if(y>272){pdf.addPage();header();}
+    pdf.setFillColor(19,26,53);pdf.rect(M,y-5,PW-2*M,8,'F');
+    pdf.setTextColor(196,181,253);pdf.setFont(undefined,'bold');pdf.setFontSize(10);
+    pdf.text(titulo,M+2,y);y+=9;
+    pdf.setTextColor(125,211,252);pdf.setFontSize(8.5);
+    heads.forEach(function(h,i){pdf.text(h,cols[i].x+(i===0?0:0)+1,y);});
+    y+=2;pdf.setDrawColor(60,70,110);pdf.setLineWidth(0.3);pdf.line(M,y,PW-M,y);y+=5;
+  }
+  function row(n,nombre,tipo,cat,estado){
+    if(y>285){pdf.addPage();header();}
+    pdf.setTextColor(230,235,250);pdf.setFont(undefined,'normal');pdf.setFontSize(9);
+    pdf.text(''+n,cols[0].x+1,y);
+    var nm=nombre;while(pdf.getTextWidth(nm)>cols[1].w-2&&nm.length>4){nm=nm.slice(0,-2);}
+    if(nm!==nombre)nm=nm+'…';
+    pdf.text(nm,cols[1].x+1,y);
+    pdf.setTextColor(165,180,214);
+    pdf.text(tipo,cols[2].x+1,y);
+    pdf.text(cat||'-',cols[3].x+1,y);
+    if(estado==='Usada')pdf.setTextColor(22,163,74);else pdf.setTextColor(217,119,6);
+    pdf.text(estado,cols[4].x+1,y);
+    y+=6;
+  }
+  header();
+  var n=0;
+  if(jug.length){
+    filaHead('JUGADORES ('+jug.length+')');
+    jug.forEach(function(e){var p=parts.find(function(x){return x.id===e.pid});row(++n,nombreDeEntrada(e),e.num===1?'Jugador':'Acompañante',p?CL[p.cat]:'',e.usada?'Usada':'Sin usar');});
+    y+=4;
+  }
+  if(ext.length){
+    filaHead('EXTERNOS ('+ext.length+')');
+    ext.forEach(function(e){row(++n,nombreDeEntrada(e),'Externo','',e.usada?'Usada':'Sin usar');});
+  }
+  pdf.save('entradas_fiesta_'+todayStr+'.pdf');
+  toast('Lista descargada ('+(jug.length+ext.length)+' entradas) 📥');
+}
+// ═══ TICKETS ESTIMADOS (4 por persona) ═══
+var TICKETS_POR_PERSONA=4;
+function ticketsInit(){rTickets()}
+function rTickets(){
+  var el=document.getElementById('tkEstim');if(!el)return;
+  var POR=TICKETS_POR_PERSONA;
+  var esJug=function(e){return e.id.indexOf('jug-')===0};
+  var nJug=entradasFiesta.filter(esJug).length;          // personas jugador (incluye acompañantes)
+  var nExt=entradasFiesta.filter(function(e){return !esJug(e)}).length; // personas externas
+  var nTot=nJug+nExt;
+  function card(titulo,personas,color){
+    return '<div style="background:var(--card);border:1px solid var(--brd);border-left:4px solid '+color+';border-radius:var(--r);padding:16px;margin-bottom:12px">'+
+      '<div style="font-size:.66rem;color:var(--tm);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">'+titulo+'</div>'+
+      '<div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">'+
+      '<div style="font-size:2.1rem;font-weight:800;color:'+color+';line-height:1">'+(personas*POR)+'</div>'+
+      '<div style="font-size:.72rem;color:var(--tm);text-align:right">'+personas+' persona'+(personas===1?'':'s')+' × '+POR+'<br>tickets</div>'+
+      '</div></div>';
+  }
+  el.innerHTML=card('🎾 Jugadores',nJug,'#7dd3fc')+card('🎟️ Externos',nExt,'#c4b5fd')+card('🏆 Total estimado',nTot,'#10b981');
+}
 // Paso 1: preguntar cuántas y desplegar un campo de nombre por cada una
 function prepararEntradasFiesta(){
   var cant=parseInt(document.getElementById('fstCant').value);
@@ -3667,6 +3755,8 @@ function updAdmUI(){
   if(flyerBtn)flyerBtn.style.display=isAdmin?'flex':'none';
   var fiestaBtn=document.getElementById('fiestaBtn');
   if(fiestaBtn)fiestaBtn.style.display=isAdmin?'flex':'none';
+  var ticketsBtn=document.getElementById('ticketsBtn');
+  if(ticketsBtn)ticketsBtn.style.display=isAdmin?'flex':'none';
   var admMBtn=document.getElementById('admMenuBtn');
   if(admMBtn)admMBtn.style.display=isAdmin?'flex':'none';
   ['secGestion','secFiesta','secHerr'].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display=isAdmin?'flex':'none'});
@@ -3854,6 +3944,7 @@ subPg=function(s){
   if(s==='auditoria')rAuditoria();
   if(s==='flyers')flyerInit();
   if(s==='fiesta')fiestaInit();
+  if(s==='tickets')ticketsInit();
   if(s==='mientrada')rMiEntrada();
   if(s==='login'){
     if(curUser){showCuentaLogged()}
